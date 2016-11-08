@@ -1,7 +1,5 @@
 package examples;
 
-import java.io.IOException;
-
 import org.graphstream.algorithm.generator.RandomGenerator;
 import org.graphstream.algorithm.randomWalk.RandomWalk;
 import org.graphstream.graph.Edge;
@@ -28,8 +26,9 @@ public class RandomTraffic {
 	 * for better performance.
 	 * 
 	 * @param args
+	 * @throws InterruptedException
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
 		changeRenderer();
 
 		Graph graph = createRandomGraph(100);
@@ -42,11 +41,6 @@ public class RandomTraffic {
 		System.out.println(graph.getEdgeCount());
 
 		RandomWalk rWalk;
-		try {
-			System.in.read();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 		rWalk = new RandomWalk();
 		rWalk.setEntityCount(graph.getNodeCount());
 		rWalk.setEvaporation(0.99);
@@ -58,12 +52,7 @@ public class RandomTraffic {
 				System.out.println("Step: " + i);
 				UpdateGraph(graph, rWalk);
 			}
-
-			try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			Thread.sleep(10);
 		}
 		rWalk.terminate();
 		System.out.println("done");
@@ -96,7 +85,6 @@ public class RandomTraffic {
 		for (Edge edge : graph.getEachEdge()) {
 			double passes = rWalk.getPasses(edge);
 			double color = passes / (graph.getEdgeCount());
-			System.out.println(passes + " = " + color);
 			edge.setAttribute("ui.color", color);
 		}
 	}

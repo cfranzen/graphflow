@@ -1,4 +1,5 @@
 package examples;
+
 import org.graphstream.algorithm.randomWalk.RandomWalk;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
@@ -9,7 +10,8 @@ import org.graphstream.graph.implementations.MultiGraph;
  */
 
 /**
- * Displays a ring with one entity circling and coloring the ring accordingly to the traffic. 
+ * Displays a ring with one entity circling and coloring the ring accordingly to
+ * the traffic.
  * 
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
@@ -19,17 +21,19 @@ public class RingWalker {
 	public static final String ATTRIBUTE_COLOR = "ui.color";
 	public static final int NODES = 25;
 
-    protected static String styleSheet =
-		"edge {"+
-		"	size: 2px;"+
+	// @formatter:off
+	protected static String styleSheet = 
+		"edge {" +
+		"	size: 2px;" +
 		"	fill-color: green, yellow, red;"+
-		"	fill-mode: dyn-plain;"+
-		"}"+
-		"node {"+
-		"	size: 6px;"+
-		"	fill-color: #444;"+
+		"	fill-mode: dyn-plain;" +
+		"}" +
+		"node {" +
+		"	size: 6px;" +
+		"	fill-color: #444;" +
 		"}";
-	
+	// @formatter:on
+
 	public static void main(String[] args) throws InterruptedException {
 		System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
 		RingWalker ring = new RingWalker();
@@ -40,13 +44,13 @@ public class RingWalker {
 		Graph graph = new MultiGraph("Ring");
 		addRingNodes(graph);
 		graph.addAttribute("ui.stylesheet", styleSheet);
-	    graph.addAttribute("ui.quality");
-	    graph.addAttribute("ui.antialias");
+		graph.addAttribute("ui.quality");
+		graph.addAttribute("ui.antialias");
 		graph.display();
 
 		RandomWalk walker = initWalker(graph);
 
-		while(true){
+		while (true) {
 			walker.compute();
 			UpdateGraph(graph, walker);
 			Thread.sleep(80);
@@ -64,6 +68,8 @@ public class RingWalker {
 		rWalker.setEntityCount(1);
 		rWalker.setEntityMemory(5);
 		rWalker.setEvaporation(0.94);
+		// to display only the current position
+		// rWalker.setEvaporation(0.50);
 		rWalker.init(graph);
 		return rWalker;
 	}

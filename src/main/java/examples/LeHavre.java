@@ -109,7 +109,7 @@ public class LeHavre {
 	 */
 	private Graph processInput() {
 		Graph graph = new MultiGraph("Le Havre");
-		String inputFilePath = "src/main/resources/LeHavre.dgs";
+		String inputFilePath = "src/main/resources/examples/LeHavre.dgs";
 		try {
 			graph.read(inputFilePath);
 		} catch (Exception e) {
