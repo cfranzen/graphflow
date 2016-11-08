@@ -3,7 +3,6 @@ import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.MultiGraph;
 import org.graphstream.graph.implementations.SingleGraph;
-import org.graphstream.ui.graphicGraph.GraphicGraph;
 import org.graphstream.ui.view.Viewer;
 
 /**
@@ -24,7 +23,7 @@ public class App {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// simpleGraph();
+		 simpleGraph();
 
 		changeRenderer();
 

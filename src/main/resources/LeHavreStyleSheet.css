@@ -1,3 +1,8 @@
+/*graph {
+	fill-mode: image-scaled-ratio-max;
+	fill-image: url('C:\Users\Nils Frantzen\git\graphflow\src\main\resources\leHavreStep0.png'); 
+}*/
+	
 node {
 	size: 1px;
 	fill-color: #777;
@@ -6,14 +11,16 @@ node {
 }
 
 edge {
+	size-mode: dyn-size;
 	shape: line;
 	fill-mode: dyn-plain;
-	fill-color: #222, #555, green, yellow;
+	fill-color:  green, yellow, red;
 	arrow-size: 3px, 2px;
+	
 }
 
 edge.tollway {
-	size: 2px;
+/*	size: 2px;*/
 	stroke-color: red;
 	stroke-width: 1px;
 	stroke-mode: plain;
