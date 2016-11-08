@@ -1,9 +1,12 @@
 
+import java.io.IOException;
+
+import org.graphstream.algorithm.generator.RandomGenerator;
+import org.graphstream.algorithm.randomWalk.RandomWalk;
+import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.MultiGraph;
-import org.graphstream.graph.implementations.SingleGraph;
-import org.graphstream.ui.view.Viewer;
 
 /**
  * 
@@ -11,6 +14,9 @@ import org.graphstream.ui.view.Viewer;
  *
  */
 public class App {
+
+	protected static String styleSheet = "edge {" + "	size: 2px;" + "	fill-color: green, yellow, red;"
+			+ "	fill-mode: dyn-plain;" + "}" + "node {" + "	size: 6px;" + "	fill-color: #444;" + "}";
 
 	/**
 	 * Start program with
@@ -23,12 +29,75 @@ public class App {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		 simpleGraph();
-
 		changeRenderer();
 
-		multiGraph();
+		Graph graph = createRandomGraph(100);
+		graph.addAttribute("ui.stylesheet", styleSheet);
+		graph.addAttribute("ui.quality");
+		graph.addAttribute("ui.antialias");
+		graph.display();
 
+		System.out.println(graph.getNodeCount());
+		System.out.println(graph.getEdgeCount());
+
+		RandomWalk rWalk;
+		try {
+			System.in.read();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		rWalk = new RandomWalk();
+		rWalk.setEntityCount(graph.getNodeCount());
+		rWalk.setEvaporation(0.99);
+		rWalk.setEntityMemory(graph.getNodeCount() / 10);
+		rWalk.init(graph);
+		for (int i = 0; i < 30000; i++) {
+			rWalk.compute();
+			if (i % 10 == 0) {
+				System.out.println("Step: " + i);
+				UpdateGraph(graph, rWalk);
+			}
+
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		rWalk.terminate();
+		System.out.println("done");
+		UpdateGraph(graph, rWalk);
+
+	}
+
+	private static Graph createRandomGraph(int nodeCount) {
+		Graph graph = new MultiGraph("random");
+		RandomGenerator rgen = new RandomGenerator(2.5);
+
+		rgen.addSink(graph);
+		rgen.begin();
+		for (int i = 0; i < nodeCount; i++) {
+			rgen.nextEvents();
+		}
+		rgen.end();
+
+		for (Node node : graph.getEachNode()) {
+			if (node.getEdgeSet().isEmpty()) {
+				graph.removeNode(node);
+			}
+		}
+		return graph;
+
+	}
+
+	private static void UpdateGraph(Graph graph, RandomWalk rWalk) {
+
+		for (Edge edge : graph.getEachEdge()) {
+			double passes = rWalk.getPasses(edge);
+			double color = passes / (graph.getEdgeCount());
+			System.out.println(passes + " = " + color);
+			edge.setAttribute("ui.color", color);
+		}
 	}
 
 	/**
@@ -41,47 +110,6 @@ public class App {
 		System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
 		// org.graphstream.ui.swingViewer.GraphRenderer to use own renderer
 
-	}
-
-	private static void simpleGraph() {
-		Graph graph = new SingleGraph("simpleGraph");
-		graph.display();
-
-		graph.addNode("A");
-		graph.addNode("B");
-		graph.addNode("C");
-		graph.addEdge("AB", "A", "B");
-		graph.addEdge("BC", "B", "C");
-		graph.addEdge("CA", "C", "A");
-
-	}
-
-	private static void multiGraph() {
-		Graph graph = new MultiGraph("multiGraph");
-
-		// GraphicGraph g = new GraphicGraph("gGraph");
-		// String name = "ID";
-		// HashMap<String, Object> attributes = new HashMap<String, Object>();
-		// attributes.put("xyz", new int[] { 1, 23, 3 });
-		// Node n = new GraphicNode(g, name, attributes);
-
-		Node n = graph.addNode("A");
-		n.setAttribute("xyz", 1, 3, 0);
-		n = graph.addNode("B");
-		n.setAttribute("xyz", 1, 2.5, 0);
-		n = graph.addNode("C");
-		n.setAttribute("xyz", 1, 5, 0);
-		graph.addNode("D");
-		graph.addEdge("AB", "A", "B");
-		graph.addEdge("BC", "B", "C");
-		graph.addEdge("CA", "C", "A");
-		graph.addEdge("DA", "D", "A");
-
-		Viewer viewer = graph.display();
-
-		// Only shows nodes which have coordinates node.setAttribute("xyz", 1,
-		// 3, 0);
-		viewer.disableAutoLayout(); // = graph.display(false); No auto-layout.
 	}
 
 }

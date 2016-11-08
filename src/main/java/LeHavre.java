@@ -23,6 +23,7 @@ public class LeHavre {
 	private static final double SIZE_FACTOR_EDGE = 2.5;
 	private static final Path STYLESHEET_PATH = FileSystems.getDefault().getPath("src", "main", "resources",
 			"LeHavreStyleSheet.css");
+
 	private static String stylesheet;
 
 	public static void main(String args[]) {
@@ -52,6 +53,23 @@ public class LeHavre {
 		Graph graph = processInput();
 		configureGraphRender(graph);
 		createViewPanel(graph);
+
+	}
+
+	/**
+	 * Creates and displays a panel which contains the given graph.
+	 * 
+	 * @param graph
+	 *            which should be displayed.
+	 */
+	private void createViewPanel(Graph graph) {
+
+		Viewer viewer = graph.display(false); // Creates the window
+		View view = viewer.getDefaultView();
+		((ViewPanel) view).resizeFrame(1600, 800);
+		view.getCamera().setViewPercent(0.5);
+
+		// Im eigenen Panel
 		/*
 		 * // Viewer viewer = new Viewer(graph, //
 		 * Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD); Viewer viewer = new
@@ -67,22 +85,7 @@ public class LeHavre {
 		 * 
 		 * frame.setVisible(true);
 		 */
-	}
 
-	/**
-	 * Creates and displays a panel which contains the given graph.
-	 * 
-	 * @param graph
-	 *            which should be displayed.
-	 */
-	private void createViewPanel(Graph graph) {
-		// graph.display(false); // false = No auto-layout.
-
-		Viewer viewer = graph.display(false); // Creates the window
-		View view = viewer.getDefaultView();
-		((ViewPanel) view).resizeFrame(1600, 800);
-		// view.getCamera().setViewCenter(440000, 2503000, 0);
-		view.getCamera().setViewPercent(0.5);
 	}
 
 	/**
