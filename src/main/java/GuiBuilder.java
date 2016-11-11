@@ -17,6 +17,8 @@ import org.graphstream.ui.swingViewer.GraphRenderer;
 import org.graphstream.ui.view.Viewer;
 
 /**
+ * Gui controller
+ * 
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */
@@ -31,7 +33,9 @@ public class GuiBuilder {
 	/**
 	 * Constructor, creates a new {@link GuiBuilder}-object and saves a
 	 * reference to the controller.
-	 * @param controller reference to the {@link MainController}-object
+	 * 
+	 * @param controller
+	 *            reference to the {@link MainController}-object
 	 */
 	public GuiBuilder(MainController controller) {
 		this.controller = controller;

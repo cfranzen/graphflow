@@ -21,6 +21,7 @@ public class RingWalker {
 	private Graph graph;
 
 	// @formatter:off
+	// for testing purposes CSS file is better 
 	protected static String styleSheet = 
 		"edge {" 
 		+ "	 size: 2px;" 
@@ -43,10 +44,18 @@ public class RingWalker {
 		+ "}";
 	// @formatter:on
 
-	public static void main(String[] args) throws InterruptedException {
+	/**
+	 * For testing only
+	 */
+	public static void main(String[] args) {
 		RingWalker.getRunningGraph().display();
 	}
 
+	/**
+	 * Returns a {@link Graph} object with a moving entity
+	 * 
+	 * @return {@link Graph}
+	 */
 	public static Graph getRunningGraph() {
 		System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
 		RingWalker ring = new RingWalker();
@@ -54,14 +63,18 @@ public class RingWalker {
 		return ring.graph;
 	}
 
-	public RingWalker() {
+	private RingWalker() {
 		graph = new MultiGraph("Ring");
 		addRingNodes(graph);
+		// Rendering attributes
 		graph.addAttribute("ui.stylesheet", styleSheet);
 		graph.addAttribute("ui.quality");
 		graph.addAttribute("ui.antialias");
 	}
 
+	/**
+	 * Starts a moving entity in an other thread
+	 */
 	public void Run() {
 		RandomWalk walker = initWalker(graph);
 		new Thread(new Runnable() {
