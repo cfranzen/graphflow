@@ -153,7 +153,6 @@ public class LeHavre implements Graphs {
 	@Override
 	public Graph getRunningGraph() {
 		// no entities
-		System.out.println("done");
 		return getGraph();
 	}
 

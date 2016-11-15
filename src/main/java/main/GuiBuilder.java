@@ -1,11 +1,15 @@
 package main;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -17,6 +21,8 @@ import org.graphstream.graph.Graph;
 import org.graphstream.ui.layout.Layout;
 import org.graphstream.ui.layout.Layouts;
 import org.graphstream.ui.swingViewer.GraphRenderer;
+import org.graphstream.ui.view.Camera;
+import org.graphstream.ui.view.View;
 import org.graphstream.ui.view.Viewer;
 
 import examples.LeHavre;
@@ -36,7 +42,9 @@ public class GuiBuilder {
 
 	private JFrame mainFrame;
 	private JPanel pnlControl;
-	private JPanel pnlGraph = null;
+	private View view = null;
+	private SpringLayout controlLayout = new SpringLayout();
+	private JButton lastAddedButton;
 
 	/**
 	 * Constructor, creates a new {@link GuiBuilder}-object and saves a
@@ -50,26 +58,49 @@ public class GuiBuilder {
 	}
 
 	private void displayGraph(Graph graph) {
-		if (pnlGraph != null) {
-			pnlGraph.removeAll();
+		Container contentPane = mainFrame.getContentPane();
+		if (view != null) {
+			// view.close((GraphicGraph) graph); // TODO change to graphic graph
+			mainFrame.remove((Component) view);
+			view = null;
 		}
 
-		Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+		Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_GUI_THREAD);
+		// Viewer viewer = graph.display(false);
 		GraphRenderer renderer = Viewer.newGraphRenderer();
 		viewer.addView(Viewer.DEFAULT_VIEW_ID, renderer, false);
-		viewer.disableAutoLayout();
-		Layout graphLayout = Layouts.newLayoutAlgorithm();
-		viewer.enableAutoLayout(graphLayout);
-		pnlGraph = viewer.getDefaultView();
+		if (!controller.isAutoLayout()) {
+			System.out.println("no auto layout");
+			viewer.disableAutoLayout();
+		} else {
+			Layout graphLayout = Layouts.newLayoutAlgorithm();
+			viewer.enableAutoLayout(graphLayout);
+		}
+		view = viewer.getDefaultView();
 
-		Container contentPane = mainFrame.getContentPane();
-
+		Component viewComp = (Component) view;
 		SpringLayout layout = (SpringLayout) contentPane.getLayout();
-		layout.putConstraint(SpringLayout.WEST, pnlGraph, 10, SpringLayout.EAST, pnlControl);
-		layout.putConstraint(SpringLayout.EAST, pnlGraph, -5, SpringLayout.EAST, contentPane);
-		layout.putConstraint(SpringLayout.NORTH, pnlGraph, 5, SpringLayout.NORTH, contentPane);
-		layout.putConstraint(SpringLayout.SOUTH, pnlGraph, -5, SpringLayout.SOUTH, contentPane);
-		contentPane.add(pnlGraph);
+		layout.putConstraint(SpringLayout.WEST, viewComp, 10, SpringLayout.EAST, pnlControl);
+		layout.putConstraint(SpringLayout.EAST, viewComp, -5, SpringLayout.EAST, contentPane);
+		layout.putConstraint(SpringLayout.NORTH, viewComp, 5, SpringLayout.NORTH, contentPane);
+		layout.putConstraint(SpringLayout.SOUTH, viewComp, -5, SpringLayout.SOUTH, contentPane);
+		contentPane.add(viewComp);
+
+		viewComp.addMouseWheelListener(new MouseWheelListener() {
+
+			@Override
+			public void mouseWheelMoved(MouseWheelEvent e) {
+				if (view != null) {
+					Camera camera = view.getCamera();
+					int notches = e.getWheelRotation();
+					if (notches < 0) {
+						camera.setViewPercent(Math.max(0.0001f, camera.getViewPercent() * 0.9f));
+					} else if (notches > 0) {
+						camera.setViewPercent(camera.getViewPercent() * 1.1f);
+					}
+				}
+			}
+		});
 
 		mainFrame.revalidate();
 	}
@@ -85,6 +116,7 @@ public class GuiBuilder {
 		mainFrame.setBounds(screen_dim.width / 5, screen_dim.height / 5, ((int) (screen_dim.width / 1.5)),
 				((int) (screen_dim.height / 1.5)));
 		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
 		Container contentPane = mainFrame.getContentPane();
 		SpringLayout layout = new SpringLayout();
 		contentPane.setLayout(layout);
@@ -93,7 +125,6 @@ public class GuiBuilder {
 		// button bar
 		pnlControl = new JPanel();
 		pnlControl.setBackground(Color.RED);
-		SpringLayout controlLayout = new SpringLayout();
 		pnlControl.setLayout(controlLayout);
 		layout.putConstraint(SpringLayout.WEST, pnlControl, 5, SpringLayout.WEST, contentPane);
 		layout.putConstraint(SpringLayout.EAST, pnlControl, WIDTH_CONTROLS, SpringLayout.WEST, contentPane);
@@ -101,8 +132,8 @@ public class GuiBuilder {
 		layout.putConstraint(SpringLayout.SOUTH, pnlControl, -5, SpringLayout.SOUTH, contentPane);
 		contentPane.add(pnlControl);
 
-		JButton btnLoad = new JButton("Load graph");
-		btnLoad.addActionListener(new ActionListener() {
+		lastAddedButton = addButtonToButtonBar("Load graph");
+		lastAddedButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -114,15 +145,11 @@ public class GuiBuilder {
 				} else {
 					System.out.println("Open command cancelled by user." + "\n");
 				}
-
 			}
 		});
-		controlLayout.putConstraint(SpringLayout.WEST, btnLoad, 0, SpringLayout.WEST, pnlControl);
-		controlLayout.putConstraint(SpringLayout.EAST, btnLoad, 0, SpringLayout.EAST, pnlControl);
-		pnlControl.add(btnLoad);
 
-		JButton btnLoadRing = new JButton("Load ring graph");
-		btnLoadRing.addActionListener(new ActionListener() {
+		lastAddedButton = addButtonToButtonBar("Load ring graph");
+		lastAddedButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -131,13 +158,9 @@ public class GuiBuilder {
 
 			}
 		});
-		controlLayout.putConstraint(SpringLayout.WEST, btnLoadRing, 0, SpringLayout.WEST, pnlControl);
-		controlLayout.putConstraint(SpringLayout.EAST, btnLoadRing, 0, SpringLayout.EAST, pnlControl);
-		controlLayout.putConstraint(SpringLayout.NORTH, btnLoadRing, 10, SpringLayout.SOUTH, btnLoad);
-		pnlControl.add(btnLoadRing);
-		
-		JButton btnLoadLeHavre = new JButton("Load le havre");
-		btnLoadLeHavre.addActionListener(new ActionListener() {
+
+		lastAddedButton = addButtonToButtonBar("Load le havre");
+		lastAddedButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -146,12 +169,34 @@ public class GuiBuilder {
 
 			}
 		});
-		controlLayout.putConstraint(SpringLayout.WEST, btnLoadLeHavre, 0, SpringLayout.WEST, pnlControl);
-		controlLayout.putConstraint(SpringLayout.EAST, btnLoadLeHavre, 0, SpringLayout.EAST, pnlControl);
-		controlLayout.putConstraint(SpringLayout.NORTH, btnLoadLeHavre, 10, SpringLayout.SOUTH, btnLoadRing);
-		pnlControl.add(btnLoadLeHavre);
+
+		lastAddedButton = addButtonToButtonBar("Load example");
+		lastAddedButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// controller.loadGraph(LeHavre.class.getName());
+				controller.loadExample();
+				displayGraph(controller.getGraph());
+
+			}
+		});
 
 		mainFrame.setVisible(true);
+	}
+
+	/**
+	 * @param string
+	 */
+	private JButton addButtonToButtonBar(String caption) {
+		JButton newBtn = new JButton(caption);
+		controlLayout.putConstraint(SpringLayout.WEST, newBtn, 0, SpringLayout.WEST, pnlControl);
+		controlLayout.putConstraint(SpringLayout.EAST, newBtn, 0, SpringLayout.EAST, pnlControl);
+		if (lastAddedButton != null) {
+			controlLayout.putConstraint(SpringLayout.NORTH, newBtn, 10, SpringLayout.SOUTH, lastAddedButton);
+		}
+		pnlControl.add(newBtn);
+		return newBtn;
 	}
 
 }

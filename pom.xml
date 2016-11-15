@@ -12,6 +12,19 @@
 	</properties>
 
 	<dependencies>
+
+		<dependency>
+			<groupId>com.syncrotess.pathfinder</groupId>
+			<artifactId>pathfinder-common</artifactId>
+			<version>0.8.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jxmapviewer</groupId>
+			<artifactId>jxmapviewer2</artifactId>
+			<version>2.2</version>
+		</dependency>
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

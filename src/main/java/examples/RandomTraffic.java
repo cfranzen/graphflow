@@ -14,9 +14,19 @@ import org.graphstream.graph.implementations.MultiGraph;
  */
 public class RandomTraffic {
 
-	protected static String styleSheet = "edge {" + "	size: 2px;" + "	fill-color: green, yellow, red;"
-			+ "	fill-mode: dyn-plain;" + "}" + "node {" + "	size: 6px;" + "	fill-color: #444;" + "}";
-
+	// @formatter:off
+	protected static String styleSheet = 
+	"edge {" 
+	+ "	size: 2px;" 
+	+ "	fill-color: green, yellow, red;"
+	+ "	fill-mode: dyn-plain;" 
+	+ "}" 
+	+ "node {" 
+	+ "	size: 6px;" 
+	+ "	fill-color: #444;" 
+	+ "}";
+	// @formatter:on
+	
 	/**
 	 * Start program with
 	 * <ul>
