@@ -1,3 +1,5 @@
+package main;
+
 /**
  * Entry point of the programm
  * 
@@ -7,7 +9,13 @@
 public class MainClass {
 
 	/**
-	 * Main method
+	 * Main method.</br>
+	 * Start program with
+	 * <ul>
+	 * <li>"java -Dsun.java2d.opengl=True" on linux</li>
+	 * <li>"java -Dsun.java2d.directx=True" on windows</li>
+	 * </ul>
+	 * for better performance.
 	 * 
 	 * @param args
 	 *            - default, no arguments needed

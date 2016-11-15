@@ -12,6 +12,8 @@ import org.graphstream.ui.swingViewer.ViewPanel;
 import org.graphstream.ui.view.View;
 import org.graphstream.ui.view.Viewer;
 
+import model.Graphs;
+
 /**
  * Test class for the graphstream framework. The class displays a city with
  * streets where the speedlimit and lanes are highlighted
@@ -19,16 +21,34 @@ import org.graphstream.ui.view.Viewer;
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */
-public class LeHavre {
+public class LeHavre implements Graphs {
 
 	private static final double MAX_SPEED = 130.0;
 	private static final double SIZE_FACTOR_EDGE = 2.5;
 	private static final Path STYLESHEET_PATH = FileSystems.getDefault().getPath("src", "main", "resources", "examples",
 			"LeHavreStyleSheet.css");
 
-	private static String stylesheet;
+	private String stylesheet;
+	private Graph graph;
 
 	public static void main(String args[]) {
+
+		System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
+
+		LeHavre leHavre = new LeHavre();
+		leHavre.display();
+	}
+
+	/**
+	 * Creates the graph example "Le Havre" from an dgs input file.
+	 */
+	public LeHavre() {
+		readStylesheet();
+		graph = processInput();
+		configureGraphRender(graph);
+	}
+
+	private void readStylesheet() {
 		try {
 			System.out.println(STYLESHEET_PATH.toAbsolutePath());
 			StringBuffer buffer = new StringBuffer();
@@ -37,25 +57,10 @@ public class LeHavre {
 				buffer.append(line);
 			}
 			stylesheet = buffer.toString();
-			System.out.println(stylesheet);
-
-			System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
-
-			new LeHavre();
 		} catch (IOException e) {
+			
 			e.printStackTrace();
 		}
-
-	}
-
-	/**
-	 * Creates the graph example "Le Havre" from an dgs input file.
-	 */
-	public LeHavre() {
-		Graph graph = processInput();
-		configureGraphRender(graph);
-		createViewPanel(graph);
-
 	}
 
 	/**
@@ -64,30 +69,11 @@ public class LeHavre {
 	 * @param graph
 	 *            which should be displayed.
 	 */
-	private void createViewPanel(Graph graph) {
-
+	private void display() {
 		Viewer viewer = graph.display(false); // Creates the window
 		View view = viewer.getDefaultView();
 		((ViewPanel) view).resizeFrame(1600, 800);
 		view.getCamera().setViewPercent(0.5);
-
-		// Im eigenen Panel
-		/*
-		 * // Viewer viewer = new Viewer(graph, //
-		 * Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD); Viewer viewer = new
-		 * Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_GUI_THREAD);
-		 * 
-		 * View view = viewer.addDefaultView(false);
-		 * 
-		 * JFrame frame = new JFrame("title");
-		 * frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		 * frame.add((Component) view);
-		 * 
-		 * frame.setSize(1600, 800);
-		 * 
-		 * frame.setVisible(true);
-		 */
-
 	}
 
 	/**
@@ -117,6 +103,7 @@ public class LeHavre {
 			System.exit(1);
 		}
 		addDesignClassesFromInput(graph);
+		System.out.println("readFile - done");
 		return graph;
 	}
 
@@ -147,4 +134,45 @@ public class LeHavre {
 			edge.setAttribute("ui.size", lanes);
 		}
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see model.Graphs#getGraph()
+	 */
+	@Override
+	public Graph getGraph() {
+		return graph;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see model.PredefinedGraphs#getRunningGraph()
+	 */
+	@Override
+	public Graph getRunningGraph() {
+		// no entities
+		System.out.println("done");
+		return getGraph();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see model.Graphs#destroy()
+	 */
+	@Override
+	public void destroy() {
+		graph.clear();
+	}
+
+	/* (non-Javadoc)
+	 * @see model.Graphs#isAutoLayout()
+	 */
+	@Override
+	public boolean isAutoLayout() {
+		return false;
+	}
+
 }

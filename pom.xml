@@ -1,10 +1,13 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>de.rwth-aachen.or.graphflow</groupId>
-  <artifactId>gf-core</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  
-  	<properties>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>de.rwth-aachen.or.graphflow</groupId>
+	<artifactId>gf-core</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -16,24 +19,24 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-		<!-- https://mvnrepository.com/artifact/org.graphstream/gs-core -->
+			<!-- https://mvnrepository.com/artifact/org.graphstream/gs-core -->
 			<groupId>org.graphstream</groupId>
 			<artifactId>gs-core</artifactId>
 			<version>1.3</version>
 		</dependency>
 		<dependency>
-		<!-- https://mvnrepository.com/artifact/org.graphstream/gs-ui -->
+			<!-- https://mvnrepository.com/artifact/org.graphstream/gs-ui -->
 			<groupId>org.graphstream</groupId>
 			<artifactId>gs-ui</artifactId>
 			<version>1.3</version>
 		</dependency>
 		<dependency>
-		<!-- https://mvnrepository.com/artifact/org.graphstream/gs-algo -->
+			<!-- https://mvnrepository.com/artifact/org.graphstream/gs-algo -->
 			<groupId>org.graphstream</groupId>
 			<artifactId>gs-algo</artifactId>
 			<version>1.3</version>
 		</dependency>
 
 	</dependencies>
-  
+
 </project>

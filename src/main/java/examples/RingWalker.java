@@ -6,6 +6,8 @@ import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.MultiGraph;
 
+import model.Graphs;
+
 /**
  * Displays a ring with one entity circling and coloring the ring accordingly to
  * the traffic.
@@ -13,12 +15,12 @@ import org.graphstream.graph.implementations.MultiGraph;
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */
-public class RingWalker {
+public class RingWalker implements Graphs {
 
-	public static final String ATTRIBUTE_COLOR = "ui.color";
-	public static final int NODES = 25;
+	private static final int NODES = 25;
 
 	private Graph graph;
+	private boolean active = true;
 
 	// @formatter:off
 	// for testing purposes CSS file is better 
@@ -48,40 +50,28 @@ public class RingWalker {
 	 * For testing only
 	 */
 	public static void main(String[] args) {
-		RingWalker.getRunningGraph().display();
+		new RingWalker().getRunningGraph().display();
 	}
 
 	/**
-	 * Returns a {@link Graph} object with a moving entity
-	 * 
-	 * @return {@link Graph}
+	 * Constructor, adds some nodes to the {@link Graph}.
 	 */
-	public static Graph getRunningGraph() {
-		System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
-		RingWalker ring = new RingWalker();
-		ring.Run();
-		return ring.graph;
-	}
-
-	private RingWalker() {
+	public RingWalker() {
 		graph = new MultiGraph("Ring");
 		addRingNodes(graph);
-		// Rendering attributes
-		graph.addAttribute("ui.stylesheet", styleSheet);
-		graph.addAttribute("ui.quality");
-		graph.addAttribute("ui.antialias");
+		graph.addAttribute(ATTRIBUTE_STYLESHEET, styleSheet);
 	}
 
 	/**
 	 * Starts a moving entity in an other thread
 	 */
-	public void Run() {
+	public void run() {
 		RandomWalk walker = initWalker(graph);
 		new Thread(new Runnable() {
 
 			@Override
 			public void run() {
-				while (true) {
+				while (active) {
 					walker.compute();
 					UpdateGraph(graph, walker);
 					try {
@@ -90,7 +80,6 @@ public class RingWalker {
 						e.printStackTrace();
 					}
 				}
-
 			}
 		}).start();
 	}
@@ -114,14 +103,53 @@ public class RingWalker {
 
 	private void addRingNodes(Graph g) {
 		Node n = g.addNode("Node0");
-		n.addAttribute("ui.label", n.getId());
+		n.addAttribute(ATTRIBUTE_LABEL, n.getId());
 		int i;
 		for (i = 1; i < NODES; i++) {
 			n = g.addNode("Node" + i);
-			n.addAttribute("ui.label", n.getId());
+			n.addAttribute(ATTRIBUTE_LABEL, n.getId());
 			g.addEdge((i - 1) + "-" + i, "Node" + (i - 1), "Node" + i);
 		}
 		g.addEdge(i - 1 + "-0", "Node" + (i - 1), "Node0");
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see model.Graphs#getGraph()
+	 */
+	@Override
+	public Graph getGraph() {
+		return graph;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see model.Graphs#getRunningGraph()
+	 */
+	@Override
+	public Graph getRunningGraph() {
+		configureRenderer(graph);
+		run();
+		return graph;
+	}
+
+	/* (non-Javadoc)
+	 * @see model.Graphs#destroy()
+	 */
+	@Override
+	public void destroy() {
+		active = false;
+		graph.clear();
+	}
+
+	/* (non-Javadoc)
+	 * @see model.Graphs#isAutoLayout()
+	 */
+	@Override
+	public boolean isAutoLayout() {
+		return true;
 	}
 
 }
