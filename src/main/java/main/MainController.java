@@ -5,7 +5,7 @@ import java.io.File;
 import org.graphstream.graph.Graph;
 
 import model.DynamicGraph;
-import model.Graphs;
+import model.GraphstreamGraph;
 
 /**
  * Main controller of the programm
@@ -16,7 +16,7 @@ import model.Graphs;
 public class MainController {
 
 	private GuiBuilder gui;
-	private Graphs model;
+	private GraphstreamGraph model;
 	private boolean isActive = false;
 
 	/**
@@ -40,8 +40,8 @@ public class MainController {
 
 		try {
 			Object graphClass = Class.forName(className).newInstance();
-			if (graphClass instanceof Graphs) {
-				model = (Graphs) graphClass;
+			if (graphClass instanceof GraphstreamGraph) {
+				model = (GraphstreamGraph) graphClass;
 			}
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
 			e.printStackTrace();
@@ -53,8 +53,8 @@ public class MainController {
 	 * 
 	 * @return
 	 */
-	public Graph getGraph() {
-		return model.getRunningGraph();
+	public GraphstreamGraph getGraph() {
+		return model;
 	}
 
 	

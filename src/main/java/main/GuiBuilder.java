@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Point;
+import java.awt.Graphics2D;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,16 +17,19 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SpringLayout;
 
-import org.graphstream.graph.Graph;
 import org.graphstream.ui.layout.Layout;
 import org.graphstream.ui.layout.Layouts;
+import org.graphstream.ui.swingViewer.DefaultView;
 import org.graphstream.ui.swingViewer.GraphRenderer;
 import org.graphstream.ui.view.Camera;
 import org.graphstream.ui.view.View;
 import org.graphstream.ui.view.Viewer;
+import org.jxmapviewer.input.ZoomMouseWheelListenerCursor;
 
 import examples.LeHavre;
 import examples.RingWalker;
+import model.GraphstreamGraph;
+import model.MapViewer;
 
 /**
  * Gui controller
@@ -57,7 +60,7 @@ public class GuiBuilder {
 		this.controller = controller;
 	}
 
-	private void displayGraph(Graph graph) {
+	private void displayGraph(GraphstreamGraph graph) {
 		Container contentPane = mainFrame.getContentPane();
 		if (view != null) {
 			// view.close((GraphicGraph) graph); // TODO change to graphic graph
@@ -65,7 +68,7 @@ public class GuiBuilder {
 			view = null;
 		}
 
-		Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_GUI_THREAD);
+		Viewer viewer = new Viewer(graph.getGraphComponent(), Viewer.ThreadingModel.GRAPH_IN_GUI_THREAD);
 		// Viewer viewer = graph.display(false);
 		GraphRenderer renderer = Viewer.newGraphRenderer();
 		viewer.addView(Viewer.DEFAULT_VIEW_ID, renderer, false);
@@ -83,9 +86,27 @@ public class GuiBuilder {
 		layout.putConstraint(SpringLayout.WEST, viewComp, 10, SpringLayout.EAST, pnlControl);
 		layout.putConstraint(SpringLayout.EAST, viewComp, -5, SpringLayout.EAST, contentPane);
 		layout.putConstraint(SpringLayout.NORTH, viewComp, 5, SpringLayout.NORTH, contentPane);
-		layout.putConstraint(SpringLayout.SOUTH, viewComp, -5, SpringLayout.SOUTH, contentPane);
+		layout.putConstraint(SpringLayout.SOUTH, viewComp, -contentPane.getHeight()/2, SpringLayout.SOUTH, contentPane);
 		contentPane.add(viewComp);
 
+		// TODO move/refactor
+		Object[] d =  graph.getGraphComponent().getNode(0).getAttribute("xy");
+		double longitude = (double) d[0];
+		double latitude = (double) d[1];
+		
+		MapViewer mapViewer = new MapViewer();
+		mapViewer.moveTo(longitude, latitude);
+		
+		layout.putConstraint(SpringLayout.WEST, mapViewer, 10, SpringLayout.EAST, pnlControl);
+		layout.putConstraint(SpringLayout.EAST, mapViewer, -5, SpringLayout.EAST, contentPane);
+		layout.putConstraint(SpringLayout.NORTH, mapViewer, 5, SpringLayout.SOUTH, viewComp);
+		layout.putConstraint(SpringLayout.SOUTH, mapViewer, -5, SpringLayout.SOUTH, contentPane);
+		contentPane.add(mapViewer);
+		
+		DefaultView defaultView = (DefaultView)(view);
+		defaultView.setBackLayerRenderer(mapViewer);
+
+		viewComp.addMouseWheelListener(mapViewer.getMouseWheelListeners()[0]);
 		viewComp.addMouseWheelListener(new MouseWheelListener() {
 
 			@Override
@@ -101,7 +122,9 @@ public class GuiBuilder {
 				}
 			}
 		});
-
+		
+		
+		
 		mainFrame.revalidate();
 	}
 
@@ -178,7 +201,6 @@ public class GuiBuilder {
 				// controller.loadGraph(LeHavre.class.getName());
 				controller.loadExample();
 				displayGraph(controller.getGraph());
-
 			}
 		});
 

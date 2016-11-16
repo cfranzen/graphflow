@@ -8,7 +8,7 @@ import org.graphstream.graph.Node;
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */
-public interface Graphs {
+public interface GraphstreamGraph {
 
 	/**
 	 * Configures the renderer to use antialiasing
@@ -32,11 +32,11 @@ public interface Graphs {
 	public static final String ATTRIBUTE_STYLESHEET = "ui.stylesheet";
 
 	/**
-	 * Returns the {@link Graph} from the model.
+	 * Returns the {@link Graph}  from the model.
 	 * 
 	 * @return {@link Graph}
 	 */
-	Graph getGraph();
+	Graph getGraphComponent();
 
 	/**
 	 * Returns an active running {@link Graph} in its own thread.

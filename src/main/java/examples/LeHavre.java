@@ -12,7 +12,7 @@ import org.graphstream.ui.swingViewer.ViewPanel;
 import org.graphstream.ui.view.View;
 import org.graphstream.ui.view.Viewer;
 
-import model.Graphs;
+import model.GraphstreamGraph;
 
 /**
  * Test class for the graphstream framework. The class displays a city with
@@ -21,7 +21,7 @@ import model.Graphs;
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */
-public class LeHavre implements Graphs {
+public class LeHavre implements GraphstreamGraph {
 
 	private static final double MAX_SPEED = 130.0;
 	private static final double SIZE_FACTOR_EDGE = 2.5;
@@ -141,7 +141,7 @@ public class LeHavre implements Graphs {
 	 * @see model.Graphs#getGraph()
 	 */
 	@Override
-	public Graph getGraph() {
+	public Graph getGraphComponent() {
 		return graph;
 	}
 
@@ -153,7 +153,7 @@ public class LeHavre implements Graphs {
 	@Override
 	public Graph getRunningGraph() {
 		// no entities
-		return getGraph();
+		return getGraphComponent();
 	}
 
 	/*

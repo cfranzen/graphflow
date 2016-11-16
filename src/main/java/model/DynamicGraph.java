@@ -2,6 +2,7 @@ package model;
 
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.implementations.MultiGraph;
+import org.graphstream.ui.graphicGraph.GraphicGraph;
 
 import com.syncrotess.pathfinder.model.entity.Node;
 import com.syncrotess.pathfinder.model.entity.Service;
@@ -12,11 +13,14 @@ import examples.ExampleModelLoading;
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */
-public class DynamicGraph implements Graphs {
+public class DynamicGraph implements GraphstreamGraph {
 
 	// @formatter:off
-	protected static String styleSheet = 
-	"edge {" 
+	protected static String styleSheet =
+	"graph {"
+	+ "fill-color: rgba(0, 0, 0, 0);"
+	+ "}"
+	+ "edge {" 
 	+ "	size: 2px;" 
 	+ "	fill-color: green, yellow, red;"
 	+ "	fill-mode: dyn-plain;" 
@@ -38,7 +42,6 @@ public class DynamicGraph implements Graphs {
 	// @formatter:on
 
 	private Graph graph;
-	private boolean active = false;
 
 	/**
 	 * Constructor
@@ -79,16 +82,16 @@ public class DynamicGraph implements Graphs {
 	@Override
 	public Graph getRunningGraph() {
 		// TODO Auto-generated method stub
-		return getGraph();
+		return getGraphComponent();
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see model.Graphs#getGraph()
+	 * @see model.Graphs#getGraphComponent()
 	 */
 	@Override
-	public Graph getGraph() {
+	public Graph getGraphComponent() {
 		return graph;
 	}
 

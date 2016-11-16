@@ -6,7 +6,7 @@ import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.MultiGraph;
 
-import model.Graphs;
+import model.GraphstreamGraph;
 
 /**
  * Displays a ring with one entity circling and coloring the ring accordingly to
@@ -15,7 +15,7 @@ import model.Graphs;
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */
-public class RingWalker implements Graphs {
+public class RingWalker implements GraphstreamGraph {
 
 	private static final int NODES = 25;
 
@@ -119,7 +119,7 @@ public class RingWalker implements Graphs {
 	 * @see model.Graphs#getGraph()
 	 */
 	@Override
-	public Graph getGraph() {
+	public Graph getGraphComponent() {
 		return graph;
 	}
 
