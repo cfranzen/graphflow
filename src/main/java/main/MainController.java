@@ -2,8 +2,6 @@ package main;
 
 import java.io.File;
 
-import org.graphstream.graph.Graph;
-
 import model.DynamicGraph;
 import model.GraphstreamGraph;
 

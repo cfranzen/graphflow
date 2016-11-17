@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Graphics2D;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -24,11 +23,11 @@ import org.graphstream.ui.swingViewer.GraphRenderer;
 import org.graphstream.ui.view.Camera;
 import org.graphstream.ui.view.View;
 import org.graphstream.ui.view.Viewer;
-import org.jxmapviewer.input.ZoomMouseWheelListenerCursor;
 
 import examples.LeHavre;
 import examples.RingWalker;
 import model.GraphstreamGraph;
+import model.MapGraphPanel;
 import model.MapViewer;
 
 /**
@@ -97,12 +96,13 @@ public class GuiBuilder {
 		MapViewer mapViewer = new MapViewer();
 		mapViewer.moveTo(longitude, latitude);
 		
+		// Delete me
 		layout.putConstraint(SpringLayout.WEST, mapViewer, 10, SpringLayout.EAST, pnlControl);
 		layout.putConstraint(SpringLayout.EAST, mapViewer, -5, SpringLayout.EAST, contentPane);
 		layout.putConstraint(SpringLayout.NORTH, mapViewer, 5, SpringLayout.SOUTH, viewComp);
 		layout.putConstraint(SpringLayout.SOUTH, mapViewer, -5, SpringLayout.SOUTH, contentPane);
 		contentPane.add(mapViewer);
-		
+		//--
 		DefaultView defaultView = (DefaultView)(view);
 		defaultView.setBackLayerRenderer(mapViewer);
 
@@ -200,7 +200,23 @@ public class GuiBuilder {
 			public void actionPerformed(ActionEvent e) {
 				// controller.loadGraph(LeHavre.class.getName());
 				controller.loadExample();
-				displayGraph(controller.getGraph());
+//				displayGraph(controller.getGraph());
+				
+				SpringLayout layout = (SpringLayout) contentPane.getLayout();
+				MapGraphPanel viewComp = new MapGraphPanel();
+				layout.putConstraint(SpringLayout.WEST, viewComp, 10, SpringLayout.EAST, pnlControl);
+				layout.putConstraint(SpringLayout.EAST, viewComp, -5, SpringLayout.EAST, contentPane);
+				layout.putConstraint(SpringLayout.NORTH, viewComp, 5, SpringLayout.NORTH, contentPane);
+				layout.putConstraint(SpringLayout.SOUTH, viewComp, -contentPane.getHeight()/2, SpringLayout.SOUTH, contentPane);
+				contentPane.add(viewComp);
+				
+				layout.putConstraint(SpringLayout.WEST, viewComp.mapViewer, 10, SpringLayout.EAST, pnlControl);
+				layout.putConstraint(SpringLayout.EAST, viewComp.mapViewer, -50, SpringLayout.EAST, contentPane);
+				layout.putConstraint(SpringLayout.NORTH, viewComp.mapViewer, 5, SpringLayout.SOUTH, viewComp);
+				layout.putConstraint(SpringLayout.SOUTH, viewComp.mapViewer, -5, SpringLayout.SOUTH, contentPane);
+				contentPane.add(viewComp.mapViewer);
+				
+				mainFrame.revalidate();
 			}
 		});
 

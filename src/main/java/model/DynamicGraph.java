@@ -10,6 +10,9 @@ import com.syncrotess.pathfinder.model.entity.Service;
 import examples.ExampleModelLoading;
 
 /**
+ * 
+ * Facade for the graphstream-framewotk
+ * 
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */
@@ -18,7 +21,6 @@ public class DynamicGraph implements GraphstreamGraph {
 	// @formatter:off
 	protected static String styleSheet =
 	"graph {"
-	+ "fill-color: rgba(0, 0, 0, 0);"
 	+ "}"
 	+ "edge {" 
 	+ "	size: 2px;" 
@@ -58,7 +60,6 @@ public class DynamicGraph implements GraphstreamGraph {
 	 */
 	private Graph processInput() {
 		Graph graph = new MultiGraph("Example");
-		
 
 		ExampleModelLoading example = ExampleModelLoading.loadTestFile();
 		for (Node node : example.nodes) {
