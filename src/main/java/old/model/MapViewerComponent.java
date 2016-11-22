@@ -1,4 +1,4 @@
-package model;
+package old.model;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -29,9 +29,9 @@ import org.jxmapviewer.viewer.TileFactoryInfo;
  * A wrapper for the actual {@link JXMapViewer} component. It connects to the 
  * typical application classes. 
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
- *
+ * @deprecated
  */
-public class MapViewer extends JComponent implements LayerRenderer { 
+public class MapViewerComponent extends JComponent implements LayerRenderer { 
  
     private static final long serialVersionUID = -1636285199192286728L; 
  
@@ -42,7 +42,7 @@ public class MapViewer extends JComponent implements LayerRenderer {
     /**
      * Constructs a new instance 
      */ 
-    public MapViewer() {
+    public MapViewerComponent() {
     	
         // Create a TileFactoryInfo for OpenStreetMap 
         TileFactoryInfo info = new OSMTileFactoryInfo(); 
@@ -78,11 +78,6 @@ public class MapViewer extends JComponent implements LayerRenderer {
     	mapViewer.setAddressLocation(new GeoPosition(latitude, longitude));
     }
 
-    @Override
-    public synchronized MouseWheelListener[] getMouseWheelListeners() {
-    	return mapViewer.getMouseWheelListeners();
-    }
-    
 	/* (non-Javadoc)
 	 * @see org.graphstream.ui.swingViewer.LayerRenderer#render(java.awt.Graphics2D, org.graphstream.ui.graphicGraph.GraphicGraph, double, int, int, double, double, double, double)
 	 */

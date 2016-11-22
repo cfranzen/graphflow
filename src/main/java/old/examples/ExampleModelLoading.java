@@ -1,4 +1,4 @@
-package examples;
+package old.examples;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +21,8 @@ import com.syncrotess.pathfinder.model.reader.TextFileModelReader;
 import com.syncrotess.pathfinder.util.tokenizer.CharacterStreamTokenizer;
 
 public class ExampleModelLoading {
+	
+	public static boolean printDebug = false;
 
 	public static void main(final String[] args) {
 		loadTestFile();
@@ -44,17 +46,19 @@ public class ExampleModelLoading {
 			IOUtils.closeQuietly(fileReader);
 		}
 
-		System.out.println("All nodes of network:");
 		SortedSet<Node> allNodes = model.getServiceNetwork().getNodes();
-		for (Node node : allNodes) {
-			System.out.println(node.getName() + " [" + node.getLatitude() + ", " + node.getLongitude() + "]");
-		}
-
-		System.out.println("All edges of network:");
 		SortedSet<Service> allEdges = model.getServiceNetwork().getServices();
-		for (Service edge : allEdges) {
-			System.out.println(edge.getStartNode().getName() + "->" + edge.getEndNode().getName() + " - Capacity: "
-					+ edge.getCapacities());
+		if (printDebug) {
+			System.out.println("All nodes of network:");
+			for (Node node : allNodes) {
+				System.out.println(node.getName() + " [" + node.getLatitude() + ", " + node.getLongitude() + "]");
+			}
+	
+			System.out.println("All edges of network:");
+			for (Service edge : allEdges) {
+				System.out.println(edge.getStartNode().getName() + "->" + edge.getEndNode().getName() + " - Capacity: "
+						+ edge.getCapacities());
+			}
 		}
 		return new ExampleModelLoading(allNodes, allEdges);
 	}

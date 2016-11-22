@@ -1,4 +1,4 @@
-package examples;
+package old.examples;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -11,8 +11,6 @@ import org.graphstream.graph.implementations.MultiGraph;
 import org.graphstream.ui.swingViewer.ViewPanel;
 import org.graphstream.ui.view.View;
 import org.graphstream.ui.view.Viewer;
-
-import model.GraphstreamGraph;
 
 /**
  * Test class for the graphstream framework. The class displays a city with

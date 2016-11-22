@@ -1,9 +1,9 @@
-package main;
+package old.main;
 
 import java.io.File;
 
-import model.DynamicGraph;
-import model.GraphstreamGraph;
+import old.examples.GraphstreamGraph;
+import old.model.DynamicGraph;
 
 /**
  * Main controller of the programm
@@ -60,11 +60,4 @@ public class MainController {
 		return model.isAutoLayout();
 	}
 	
-	/**
-	 * 
-	 */
-	public void loadExample() {
-		model = new DynamicGraph();
-
-	}
 }

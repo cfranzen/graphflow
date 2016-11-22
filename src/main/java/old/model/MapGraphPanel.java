@@ -1,16 +1,19 @@
 /**
  * 
  */
-package model;
+package old.model;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.event.MouseInputListener;
 
@@ -28,16 +31,18 @@ import org.jxmapviewer.viewer.GeoPosition;
 import org.jxmapviewer.viewer.LocalResponseCache;
 import org.jxmapviewer.viewer.TileFactoryInfo;
 
+import old.examples.GraphstreamGraph;
+
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */
-public class MapGraphPanel extends JComponent implements LayerRenderer {
+public class MapGraphPanel extends JComponent  {
 
 	private static final long serialVersionUID = 1344779740268171587L;
 
-	public JXMapViewer mapViewer = new JXMapViewer();
-	private GraphstreamGraph graph = new DynamicGraph();
+	public MapViewer mapViewer = new MapViewer();
+	private DynamicGraph graph = new DynamicGraph();
 
 	/**
 	 * Constructor
@@ -61,45 +66,29 @@ public class MapGraphPanel extends JComponent implements LayerRenderer {
 		// Set the focus
 		mapViewer.setZoom(10); // TODO berechnen
 		// GeoPosition frankfurt = new GeoPosition(50, 7, 0, 8, 41, 0);
-		// mapViewer.setAddressLocation(frankfurt);
 
-		Viewer viewer = new Viewer(graph.getGraphComponent(), Viewer.ThreadingModel.GRAPH_IN_GUI_THREAD);
-		viewer.addView(Viewer.DEFAULT_VIEW_ID, Viewer.newGraphRenderer(), false);
-		viewer.disableAutoLayout();
-
-		// Layouting
-		DefaultView defaultView = (DefaultView) (viewer.getDefaultView());
-		defaultView.setBackLayerRenderer(this);
-
-		setLayout(new BorderLayout());
-		// add(mapViewer, BorderLayout.CENTER);
-		add(viewer.getDefaultView());
 
 		Set<GeoPosition> positions = new HashSet<>();
-		for (Node node : graph.getGraphComponent().getNodeSet()) {
+		for (Node node : graph.getNodeSet()) {
 			Double[] d = getNodeCoords(node);
 			positions.add(new GeoPosition(d[0], d[1]));
 		}
 
 		mapViewer.zoomToBestFit(positions, 0.8);
-		mapViewer.setCenterPosition(calculateMapCenter(positions));
-
-		mapViewer.revalidate();
+//		mapViewer.setSize(400, 400);
+		
+		setLayout(new BorderLayout());
+		DefaultView view = graph.getView();
+		view.setBackLayerRenderer(mapViewer);
+		add(mapViewer, BorderLayout.CENTER);
+//		add((Component) view, BorderLayout.CENTER);
+		revalidate();
+		repaint();
 	}
 
 	/**
 	 * @param positions
 	 */
-	private GeoPosition calculateMapCenter(Set<GeoPosition> positions) {
-		double longitude = 0;
-		double latitude = 0;
-		for (GeoPosition geoPosition : positions) {
-			longitude = Math.sqrt((longitude * longitude) + (geoPosition.getLongitude() * geoPosition.getLongitude()));
-			latitude = Math.sqrt((latitude * latitude) + (geoPosition.getLatitude() * geoPosition.getLatitude()));
-		}
-
-		return new GeoPosition(latitude, longitude);
-	}
 
 	private Double[] getNodeCoords(Node node) {
 		Object[] d = node.getAttribute("xy");
@@ -124,18 +113,6 @@ public class MapGraphPanel extends JComponent implements LayerRenderer {
 		LocalResponseCache.installResponseCache(baseURL, cacheDir, false);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.graphstream.ui.swingViewer.LayerRenderer#render(java.awt.Graphics2D,
-	 * org.graphstream.ui.graphicGraph.GraphicGraph, double, int, int, double,
-	 * double, double, double)
-	 */
-	@Override
-	public void render(Graphics2D graphics, GraphicGraph graph, double px2Gu, int widthPx, int heightPx, double minXGu,
-			double minYGu, double maxXGu, double maxYGu) {
-		mapViewer.paintAll(graphics);
-	}
+
 
 }

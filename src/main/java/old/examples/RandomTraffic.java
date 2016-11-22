@@ -1,4 +1,4 @@
-package examples;
+package old.examples;
 
 import org.graphstream.algorithm.generator.RandomGenerator;
 import org.graphstream.algorithm.randomWalk.RandomWalk;

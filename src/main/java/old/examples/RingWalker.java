@@ -1,12 +1,10 @@
-package examples;
+package old.examples;
 
 import org.graphstream.algorithm.randomWalk.RandomWalk;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.MultiGraph;
-
-import model.GraphstreamGraph;
 
 /**
  * Displays a ring with one entity circling and coloring the ring accordingly to

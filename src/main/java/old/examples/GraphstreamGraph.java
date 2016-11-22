@@ -1,4 +1,4 @@
-package model;
+package old.examples;
 
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;

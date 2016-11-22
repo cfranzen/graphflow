@@ -1,4 +1,4 @@
-package main;
+package old.main;
 
 /**
  * Entry point of the programm

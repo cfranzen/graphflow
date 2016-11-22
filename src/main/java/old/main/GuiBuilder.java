@@ -1,4 +1,4 @@
-package main;
+package old.main;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -24,11 +24,11 @@ import org.graphstream.ui.view.Camera;
 import org.graphstream.ui.view.View;
 import org.graphstream.ui.view.Viewer;
 
-import examples.LeHavre;
-import examples.RingWalker;
-import model.GraphstreamGraph;
-import model.MapGraphPanel;
-import model.MapViewer;
+import old.examples.GraphstreamGraph;
+import old.examples.LeHavre;
+import old.examples.RingWalker;
+import old.model.MapGraphPanel;
+import old.model.MapViewerComponent;
 
 /**
  * Gui controller
@@ -85,7 +85,7 @@ public class GuiBuilder {
 		layout.putConstraint(SpringLayout.WEST, viewComp, 10, SpringLayout.EAST, pnlControl);
 		layout.putConstraint(SpringLayout.EAST, viewComp, -5, SpringLayout.EAST, contentPane);
 		layout.putConstraint(SpringLayout.NORTH, viewComp, 5, SpringLayout.NORTH, contentPane);
-		layout.putConstraint(SpringLayout.SOUTH, viewComp, -contentPane.getHeight()/2, SpringLayout.SOUTH, contentPane);
+		layout.putConstraint(SpringLayout.SOUTH, viewComp, (int)(-contentPane.getHeight()/2), SpringLayout.SOUTH, contentPane);
 		contentPane.add(viewComp);
 
 		// TODO move/refactor
@@ -93,7 +93,7 @@ public class GuiBuilder {
 		double longitude = (double) d[0];
 		double latitude = (double) d[1];
 		
-		MapViewer mapViewer = new MapViewer();
+		MapViewerComponent mapViewer = new MapViewerComponent();
 		mapViewer.moveTo(longitude, latitude);
 		
 		// Delete me
@@ -136,8 +136,8 @@ public class GuiBuilder {
 		// mainFrame
 		Dimension screen_dim = Toolkit.getDefaultToolkit().getScreenSize();
 		mainFrame = new JFrame();
-		mainFrame.setBounds(screen_dim.width / 5, screen_dim.height / 5, ((int) (screen_dim.width / 1.5)),
-				((int) (screen_dim.height / 1.5)));
+		mainFrame.setBounds(screen_dim.width / 20, screen_dim.height / 20, ((int) (screen_dim.width / 1.2)),
+				((int) (screen_dim.height / 1.2)));
 		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		Container contentPane = mainFrame.getContentPane();
@@ -199,7 +199,7 @@ public class GuiBuilder {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// controller.loadGraph(LeHavre.class.getName());
-				controller.loadExample();
+				
 //				displayGraph(controller.getGraph());
 				
 				SpringLayout layout = (SpringLayout) contentPane.getLayout();
@@ -207,14 +207,20 @@ public class GuiBuilder {
 				layout.putConstraint(SpringLayout.WEST, viewComp, 10, SpringLayout.EAST, pnlControl);
 				layout.putConstraint(SpringLayout.EAST, viewComp, -5, SpringLayout.EAST, contentPane);
 				layout.putConstraint(SpringLayout.NORTH, viewComp, 5, SpringLayout.NORTH, contentPane);
-				layout.putConstraint(SpringLayout.SOUTH, viewComp, -contentPane.getHeight()/2, SpringLayout.SOUTH, contentPane);
+				layout.putConstraint(SpringLayout.SOUTH, viewComp, -5, SpringLayout.SOUTH, contentPane);
 				contentPane.add(viewComp);
 				
-				layout.putConstraint(SpringLayout.WEST, viewComp.mapViewer, 10, SpringLayout.EAST, pnlControl);
-				layout.putConstraint(SpringLayout.EAST, viewComp.mapViewer, -50, SpringLayout.EAST, contentPane);
-				layout.putConstraint(SpringLayout.NORTH, viewComp.mapViewer, 5, SpringLayout.SOUTH, viewComp);
-				layout.putConstraint(SpringLayout.SOUTH, viewComp.mapViewer, -5, SpringLayout.SOUTH, contentPane);
-				contentPane.add(viewComp.mapViewer);
+//				layout.putConstraint(SpringLayout.WEST, viewComp.mapViewer, 10, SpringLayout.EAST, pnlControl);
+//				layout.putConstraint(SpringLayout.EAST, viewComp.mapViewer, -5, SpringLayout.EAST, contentPane);
+//				layout.putConstraint(SpringLayout.NORTH, viewComp.mapViewer, 5, SpringLayout.NORTH, contentPane);
+//				layout.putConstraint(SpringLayout.SOUTH, viewComp.mapViewer, -5, SpringLayout.SOUTH, contentPane);
+//				contentPane.add(viewComp.mapViewer);
+				
+//				layout.putConstraint(SpringLayout.WEST, viewComp.mapViewer, 10, SpringLayout.EAST, pnlControl);
+//				layout.putConstraint(SpringLayout.EAST, viewComp.mapViewer, -50, SpringLayout.EAST, contentPane);
+//				layout.putConstraint(SpringLayout.NORTH, viewComp.mapViewer, 5, SpringLayout.SOUTH, viewComp);
+//				layout.putConstraint(SpringLayout.SOUTH, viewComp.mapViewer, -5, SpringLayout.SOUTH, contentPane);
+//				contentPane.add(viewComp.mapViewer);
 				
 				mainFrame.revalidate();
 			}

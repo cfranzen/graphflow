@@ -1,4 +1,4 @@
-package examples;
+package old.examples;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
