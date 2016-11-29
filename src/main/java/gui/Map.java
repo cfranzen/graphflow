@@ -1,20 +1,16 @@
 /**
  * 
  */
-package main;
+package gui;
 
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
 
-import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.MouseInputListener;
 
 import org.jxmapviewer.JXMapViewer;
@@ -32,8 +28,8 @@ import org.jxmapviewer.viewer.TileFactoryInfo;
 import org.jxmapviewer.viewer.Waypoint;
 import org.jxmapviewer.viewer.WaypointPainter;
 
-import com.syncrotess.pathfinder.model.entity.Node;
-import com.syncrotess.pathfinder.model.entity.Service;
+import main.Controller;
+import models.Edge;
 
 /**
  * 
@@ -46,22 +42,33 @@ public class Map extends JXMapViewer {
 
 	private static final long serialVersionUID = -6620174270673711401L;
 
-	private Set<Waypoint> waypoints;
+	private Controller controller;
+	
+	private Set<Waypoint> waypoints = new HashSet<>();;
 	private WaypointPainter<Waypoint> waypointPainter;
 	private RoutePainter routePainter = new RoutePainter(Collections.emptyList());
-	private Collection<Edge> route = new ArrayList<>();
+	private List<Edge> route = new ArrayList<>();
+	
 
 	/**
 	 * Default Constructor, initializes the tile factory.
 	 */
-	public Map() {
+	public Map(Controller controller) {
 		super();
+		this.controller = controller;
+		
 		addUserInteractions();
 		setUpTileFactory();
-		setZoom(7);
-		setAddressLocation(new GeoPosition(50.11, 8.68)); // Frankfurt
-		waypoints = new HashSet<>();
 
+		// Default values
+		setAddressLocation(new GeoPosition(50.11, 8.68)); // Frankfurt
+		setZoom(3);
+
+		initPainters();
+		// Point2D pixelPoint = getTileFactory().geoToPixel(geoPos, getZoom());
+	}
+
+	private void initPainters() {
 		// Create a waypoint painter that takes all the waypoints
 		waypointPainter = new WaypointPainter<Waypoint>();
 		waypointPainter.setRenderer(new CapacityWaypointRenderer());
@@ -77,37 +84,48 @@ public class Map extends JXMapViewer {
 		setOverlayPainter(painter);
 	}
 
-	public void addPositions(Collection<Node> positions) {
-		Set<GeoPosition> geoPosis = new HashSet<>();
-		for (Node node : positions) {
-			waypoints.add(new CapacityWaypoint(node.getLatitude(), node.getLongitude(), 0));
-			geoPosis.add(new GeoPosition(node.getLatitude(), node.getLongitude()));
+	/**
+	 * Adds the given nodes to the graph.
+	 * 
+	 * @param nodes
+	 *            {@link List} with {@link GeoPosition}s as nodes
+	 */
+	public void addPositions(List<GeoPosition> nodes) {
+		for (GeoPosition geoPos : nodes) {
+			waypoints.add(new CapacityWaypoint(geoPos.getLatitude(), geoPos.getLongitude(), 0));
 		}
-		zoomToBestFit(geoPosis, 0.7);
-		waypointPainter.setWaypoints(waypoints);
 
-		routePainter.setRoute(route);
+		zoomToBestFit(new HashSet<>(nodes), 0.7);
+		waypointPainter.setWaypoints(waypoints);
 	}
 
 	/**
+	 * Adds the given {@link Edge}s to the graph.
+	 * 
 	 * @param edges
+	 *            {@link List} with {@link Edge}s.
 	 */
-	public void addEdges(SortedSet<Service> edges) {
-		for (Service service : edges) {
-			Node start = service.getStartNode();
-			Node end = service.getEndNode();
-			
-			route.add(new Edge(new GeoPosition(start.getLatitude(),start.getLongitude()),
-					new GeoPosition(end.getLatitude(), end.getLongitude()),
-					service.getCapacity(ALLBITS), 0)); // TODO capacity and workload
-		}
+	public void addEdges(List<Edge> edges) {
+		route.addAll(edges);
+		routePainter.setRoute(route);
 	}
 
+	public void setTime(int time) {
+		routePainter.setTimeStep(time);
+		repaint();
+	}
+	
+	/**
+	 * Adds the {@link MouseListener}s
+	 */
 	private void addUserInteractions() {
 		MouseInputListener mia = new PanMouseInputListener(this);
 		addMouseListener(mia);
 		addMouseMotionListener(mia);
 		addMouseListener(new CenterMapListener(this));
+		mia = new InfoMouseInputListener(controller);
+		addMouseListener(mia);
+		addMouseMotionListener(mia);
 		addMouseWheelListener(new ZoomMouseWheelListenerCenter(this));
 		addKeyListener(new PanKeyListener(this));
 	}

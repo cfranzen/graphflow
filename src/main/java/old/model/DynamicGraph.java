@@ -10,7 +10,7 @@ import org.graphstream.ui.view.Viewer;
 import com.syncrotess.pathfinder.model.entity.Node;
 import com.syncrotess.pathfinder.model.entity.Service;
 
-import old.examples.ExampleModelLoading;
+import models.ModelLoader;
 
 /**
  * 
@@ -80,15 +80,15 @@ public class DynamicGraph extends MultiGraph {
 		addAttribute(ATTRIBUTE_STYLESHEET, styleSheet);
 
 		// Processing input to own classes
-		ExampleModelLoading example = ExampleModelLoading.loadTestFile();
-		for (Node node : example.nodes) {
-			org.graphstream.graph.Node newNode = addNode("" + node.getId());
-			newNode.setAttribute("xy", node.getLongitude(), node.getLatitude());
-			newNode.setAttribute("ui.label", node.getName());
-		}
-		for (Service edge : example.edges) {
-			addEdge("" + edge.getId(), "" + edge.getStartNode().getId(), "" + edge.getEndNode().getId());
-		}
+		ModelLoader example = ModelLoader.loadFile();
+//		for (Node node : example.nodes) {
+//			org.graphstream.graph.Node newNode = addNode("" + node.getId());
+//			newNode.setAttribute("xy", node.getLongitude(), node.getLatitude());
+//			newNode.setAttribute("ui.label", node.getName());
+//		}
+//		for (Service edge : example.edges) {
+//			addEdge("" + edge.getId(), "" + edge.getStartNode().getId(), "" + edge.getEndNode().getId());
+//		}
 
 		
 	}

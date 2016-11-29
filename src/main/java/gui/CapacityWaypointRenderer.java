@@ -1,8 +1,9 @@
 /**
  * 
  */
-package main;
+package gui;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
@@ -24,7 +25,7 @@ public class CapacityWaypointRenderer implements WaypointRenderer<Waypoint> {
 
 	private static final Log log = LogFactory.getLog(DefaultWaypointRenderer.class);
 	private static final int circleRadius = 10;
-	
+
 	private BufferedImage img = null;
 
 	/**
@@ -32,9 +33,10 @@ public class CapacityWaypointRenderer implements WaypointRenderer<Waypoint> {
 	 */
 	public CapacityWaypointRenderer() {
 	}
-	
+
 	/**
 	 * Uses an image as {@link Waypoint}-symbol
+	 * 
 	 * @param imageFilePath
 	 */
 	public CapacityWaypointRenderer(String imageFilePath) {
@@ -61,12 +63,18 @@ public class CapacityWaypointRenderer implements WaypointRenderer<Waypoint> {
 		}
 
 	}
-	
+
 	private void drawCircleWaypoint(Graphics2D g, Point2D point) {
 		int x = (int) point.getX() - circleRadius / 2;
 		int y = (int) point.getY() - circleRadius;
 
+		g.setColor(getWaypointColor());
 		g.fillOval(x, y, circleRadius, circleRadius);
+	}
+
+	private Color getWaypointColor() {
+		// TODO Gradient
+		return Color.green;
 	}
 
 	private void drawImageWaypoint(Graphics2D g, Point2D point) {

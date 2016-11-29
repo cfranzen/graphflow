@@ -78,8 +78,10 @@ public class GuiBuilder {
 			Layout graphLayout = Layouts.newLayoutAlgorithm();
 			viewer.enableAutoLayout(graphLayout);
 		}
+		
+		
+		
 		view = viewer.getDefaultView();
-
 		Component viewComp = (Component) view;
 		SpringLayout layout = (SpringLayout) contentPane.getLayout();
 		layout.putConstraint(SpringLayout.WEST, viewComp, 10, SpringLayout.EAST, pnlControl);
@@ -90,12 +92,12 @@ public class GuiBuilder {
 
 		// TODO move/refactor
 		Object[] d =  graph.getGraphComponent().getNode(0).getAttribute("xy");
-		double longitude = (double) d[0];
-		double latitude = (double) d[1];
+//		double longitude = (double) d[0];
+//		double latitude = (double) d[1];
 		
 		MapViewerComponent mapViewer = new MapViewerComponent();
-		mapViewer.moveTo(longitude, latitude);
-		
+//		mapViewer.moveTo(longitude, latitude);
+//		
 		// Delete me
 		layout.putConstraint(SpringLayout.WEST, mapViewer, 10, SpringLayout.EAST, pnlControl);
 		layout.putConstraint(SpringLayout.EAST, mapViewer, -5, SpringLayout.EAST, contentPane);
@@ -106,7 +108,7 @@ public class GuiBuilder {
 		DefaultView defaultView = (DefaultView)(view);
 		defaultView.setBackLayerRenderer(mapViewer);
 
-		viewComp.addMouseWheelListener(mapViewer.getMouseWheelListeners()[0]);
+//		viewComp.addMouseWheelListener(mapViewer.getMouseWheelListeners()[0]);
 		viewComp.addMouseWheelListener(new MouseWheelListener() {
 
 			@Override

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package main;
+package gui;
 
 import org.jxmapviewer.beans.AbstractBean;
 import org.jxmapviewer.viewer.GeoPosition;
