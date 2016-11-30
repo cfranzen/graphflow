@@ -1,7 +1,10 @@
 package gui;
 
 import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -144,6 +147,47 @@ public class Map extends JXMapViewer {
 		String baseURL = info.getBaseURL();
 		File cacheDir = new File(System.getProperty("user.home") + File.separator + ".jxmapviewer2");
 		LocalResponseCache.installResponseCache(baseURL, cacheDir, false);
+	}
+
+	/**
+	 * This method is called automatically when the mouse is over the component.
+	 * Based on the location of the event, we detect if we are over one of the
+	 * circles. If so, we display some information relative to that circle If
+	 * the mouse is not over any circle we return the tooltip of the component.
+	 */
+	@Override
+	public String getToolTipText(MouseEvent event) {
+		Point p = new Point(event.getX(), event.getY());
+		for (Waypoint waypoint : waypoints) {
+			if (isMouseOnWaypoint(p, waypoint)) {
+				return getTooltipForWaypoint(waypoint);
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * @param waypoint
+	 * @return
+	 */
+	private String getTooltipForWaypoint(Waypoint waypoint) {
+		// TODO Change to Node object
+		return "TOOLTIP";
+	}
+
+	/**
+	 * @param p
+	 * @param waypoint
+	 * @return
+	 */
+	private boolean isMouseOnWaypoint(Point p, Waypoint waypoint) {
+		double DELTA = 10;
+
+		Point2D nodePos = convertGeoPositionToPoint(waypoint.getPosition());
+		double deltaX = Math.abs(p.x - nodePos.getX());
+		double deltaY = Math.abs(p.y - nodePos.getY());
+
+		return (deltaX < DELTA) && (deltaY < DELTA);
 	}
 
 }

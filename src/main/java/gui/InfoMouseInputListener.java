@@ -10,8 +10,6 @@ import java.awt.event.MouseEvent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputAdapter;
 
-import org.jxmapviewer.JXMapViewer;
-
 import main.Controller;
 
 /**
@@ -38,12 +36,10 @@ public class InfoMouseInputListener extends MouseInputAdapter {
 			return;
 		}
 
-//		prev = evt.getPoint();
-//		priorCursor = viewer.getCursor();
-//		viewer.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		
-		controller.incTime();
-		
+		prev = evt.getPoint();
+		priorCursor = controller.getMapViewer().getCursor();
+//		controller.getMapViewer().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
 	}
 	
 	/* (non-Javadoc)
@@ -51,9 +47,10 @@ public class InfoMouseInputListener extends MouseInputAdapter {
 	 */
 	@Override
 	public void mouseMoved(MouseEvent e) {
+		String tooltip = controller.getMapViewer().getToolTipText(e);
+		controller.getMapViewer().setToolTipText(tooltip);
 		super.mouseMoved(e);
-		
-		
 	}
 
+	
 }

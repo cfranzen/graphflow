@@ -95,7 +95,7 @@ public class RoutePainter implements Painter<JXMapViewer> {
 		Color stepColor;
 		Color color1 = Color.GREEN;
 		Color color2 = Color.RED;
-		System.out.println(String.format("Workload: %d, Capacity: %d", workload, capacity));
+//		System.out.println(String.format("Workload: %d, Capacity: %d", workload, capacity));
 		float ratio = (float) workload / (float) capacity;
 		int red = (int) (color2.getRed() * ratio + color1.getRed() * (1 - ratio));
 		int green = (int) (color2.getGreen() * ratio + color1.getGreen() * (1 - ratio));

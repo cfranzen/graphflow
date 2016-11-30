@@ -35,7 +35,7 @@ public class Controller {
 	private void run() {
 
 		// Display the viewer in a JFrame
-		frame = new JFrame("JXMapviewer2 Example 2");
+		frame = new JFrame("Graphstream");
 		frame.setSize(1600, 800);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new BorderLayout());
@@ -89,4 +89,10 @@ public class Controller {
 		mapViewer.setTime(currentTime);
 	}
 
+	/**
+	 * @return the mapViewer
+	 */
+	public Map getMapViewer() {
+		return mapViewer;
+	}
 }
