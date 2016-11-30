@@ -1,8 +1,6 @@
-/**
- * 
- */
 package gui;
 
+import java.awt.Dimension;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.ArrayList;
@@ -43,12 +41,11 @@ public class Map extends JXMapViewer {
 	private static final long serialVersionUID = -6620174270673711401L;
 
 	private Controller controller;
-	
+
 	private Set<Waypoint> waypoints = new HashSet<>();;
 	private WaypointPainter<Waypoint> waypointPainter;
 	private RoutePainter routePainter = new RoutePainter(Collections.emptyList());
 	private List<Edge> route = new ArrayList<>();
-	
 
 	/**
 	 * Default Constructor, initializes the tile factory.
@@ -56,7 +53,7 @@ public class Map extends JXMapViewer {
 	public Map(Controller controller) {
 		super();
 		this.controller = controller;
-		
+
 		addUserInteractions();
 		setUpTileFactory();
 
@@ -66,6 +63,9 @@ public class Map extends JXMapViewer {
 
 		initPainters();
 		// Point2D pixelPoint = getTileFactory().geoToPixel(geoPos, getZoom());
+
+		setMinimumSize(new Dimension(250, 250));
+		setPreferredSize(new Dimension(1400, 400));
 	}
 
 	private void initPainters() {
@@ -114,7 +114,7 @@ public class Map extends JXMapViewer {
 		routePainter.setTimeStep(time);
 		repaint();
 	}
-	
+
 	/**
 	 * Adds the {@link MouseListener}s
 	 */

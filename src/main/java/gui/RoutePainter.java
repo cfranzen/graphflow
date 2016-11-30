@@ -61,17 +61,7 @@ public class RoutePainter implements Painter<JXMapViewer> {
 		if (antiAlias) {
 			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		}
-
-		// border drawing
-		// g.setColor(borderColor);
-		// g.setStroke(new BasicStroke((float) 2.5));
-		// drawRoute(g, map);
-
-		// line drawing
-		// g.setColor(lineColor);
-
 		drawRoute(g, map);
-
 		g.dispose();
 	}
 
@@ -91,11 +81,11 @@ public class RoutePainter implements Painter<JXMapViewer> {
 			int currentCapacity = edge.getCapacity(currentTimeStep);
 			if (currentCapacity == 0) {
 				g.setColor(Color.GRAY);
-				g.setStroke(new BasicStroke(0.5f));
+				g.setStroke(new BasicStroke(0.2f));
 			} else {
 				Color lineColor = calculateColor(currentWorkload, currentCapacity);
 				g.setColor(lineColor);
-				g.setStroke(new BasicStroke(2));
+				g.setStroke(new BasicStroke(currentCapacity/400));
 			}
 			g.drawLine((int) startPt.getX(), (int) startPt.getY(), (int) endPt.getX(), (int) endPt.getY());
 		}
