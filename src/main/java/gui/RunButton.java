@@ -20,7 +20,8 @@ public class RunButton extends JButton {
 	private static String RUNNING = "Stop";
 
 	/**
-	 * 
+	 * Creates a new {@link RunButton} object which increases the represented
+	 * time in the graph.
 	 */
 	public RunButton(Controller controller) {
 		setText(STOPPED);

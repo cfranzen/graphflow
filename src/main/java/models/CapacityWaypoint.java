@@ -117,7 +117,7 @@ public class CapacityWaypoint extends AbstractBean implements Waypoint {
 	 */
 	@Override
 	public String toString() {
-		return String.format("Latitude: %f\nLongitude: %f\nCapacity: %d\nWorkload: %d",
+		return String.format("Latitude: %f\nLongitude: %f\nCapacity: %f\nWorkload: %f",
 				position.getLatitude(), position.getLongitude(), maxCapacity, workload);
 	}
 

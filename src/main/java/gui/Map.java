@@ -72,22 +72,6 @@ public class Map extends JXMapViewer {
 		setPreferredSize(new Dimension(1400, 400));
 	}
 
-	private void initPainters() {
-		// Create a waypoint painter that takes all the waypoints
-		waypointPainter = new WaypointPainter<Waypoint>();
-		waypointPainter.setRenderer(new CapacityWaypointRenderer());
-		waypointPainter.setWaypoints(waypoints);
-
-		// Create a compound painter that uses both the route-painter and the
-		// waypoint-painter
-		List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
-		painters.add(routePainter);
-		painters.add(waypointPainter);
-
-		CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>(painters);
-		setOverlayPainter(painter);
-	}
-
 	/**
 	 * Adds the given nodes to the graph.
 	 * 
@@ -114,13 +98,36 @@ public class Map extends JXMapViewer {
 		routePainter.setRoute(route);
 	}
 
+	/**
+	 * Sets the given timestep in the {@link RoutePainter} and repaints the gui.
+	 * 
+	 * @param time
+	 *            to set
+	 */
 	public void setTime(int time) {
 		routePainter.setTimeStep(time);
 		repaint();
 	}
 
 	/**
-	 * Adds the {@link MouseListener}s
+	 * This method is called automatically when the mouse is over the component.
+	 * Based on the location of the event, we detect if we are over one of the
+	 * circles. If so, we display some information relative to that circle If
+	 * the mouse is not over any circle we return the tooltip of the component.
+	 */
+	@Override
+	public String getToolTipText(MouseEvent event) {
+		Point p = new Point(event.getX(), event.getY());
+		for (Waypoint waypoint : waypoints) {
+			if (isMouseOnWaypoint(p, waypoint)) {
+				return getTooltipForWaypoint(waypoint);
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Adds the {@link MouseListener}s for user-interaction
 	 */
 	private void addUserInteractions() {
 		MouseInputListener mia = new PanMouseInputListener(this);
@@ -151,35 +158,48 @@ public class Map extends JXMapViewer {
 	}
 
 	/**
-	 * This method is called automatically when the mouse is over the component.
-	 * Based on the location of the event, we detect if we are over one of the
-	 * circles. If so, we display some information relative to that circle If
-	 * the mouse is not over any circle we return the tooltip of the component.
+	 * Initializes the {@link RoutePainter} and {@link WaypointPainter} of the
+	 * graph.
 	 */
-	@Override
-	public String getToolTipText(MouseEvent event) {
-		Point p = new Point(event.getX(), event.getY());
-		for (Waypoint waypoint : waypoints) {
-			if (isMouseOnWaypoint(p, waypoint)) {
-				return getTooltipForWaypoint(waypoint);
-			}
-		}
-		return null;
+	private void initPainters() {
+		// Create a waypoint painter that takes all the waypoints
+		waypointPainter = new WaypointPainter<Waypoint>();
+		waypointPainter.setRenderer(new CapacityWaypointRenderer());
+		waypointPainter.setWaypoints(waypoints);
+
+		// Create a compound painter that uses both the route-painter and the
+		// waypoint-painter
+		List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
+		painters.add(routePainter);
+		painters.add(waypointPainter);
+
+		CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>(painters);
+		setOverlayPainter(painter);
 	}
 
 	/**
+	 * Creates the html formatted tooltip for the given {@link Waypoint}. The
+	 * {@link Waypoint} should override the {@link #toString()} method
+	 * accordingly.
+	 * 
 	 * @param waypoint
-	 * @return
+	 *            which informations should be presented
+	 * @return a html formatted {@link String} which represents the tooltip.
 	 */
 	private String getTooltipForWaypoint(Waypoint waypoint) {
-		// TODO Change to Node object
-		return "TOOLTIP";
+		return "<html><p width=\"250\">" + waypoint.toString() + "</p></html>";
 	}
 
 	/**
+	 * Checks if the mouse position which represents the {@link Point} is near
+	 * the given {@link Waypoint}.
+	 * 
 	 * @param p
+	 *            mouse position
 	 * @param waypoint
-	 * @return
+	 *            to check
+	 * @return <code>true</code> if the mouse is near the {@link Waypoint}</br>
+	 *         <code>false</code> otherwise
 	 */
 	private boolean isMouseOnWaypoint(Point p, Waypoint waypoint) {
 		double DELTA = 10;

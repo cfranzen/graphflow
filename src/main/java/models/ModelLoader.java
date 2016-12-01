@@ -57,8 +57,8 @@ public class ModelLoader {
 		SortedSet<Service> allServices = model.getServiceNetwork().getServices();
 
 		List<GeoPosition> nodes = createNodes(allNodes);
-		List<Edge> edges = createEdges(model, allServices, solution);
 		int timesteps = model.getPlanningHorizon().getLength();
+		List<Edge> edges = createEdges(timesteps, allServices, solution);
 
 		debugOut(allNodes, allServices);
 		return new ModelLoader(nodes, edges, timesteps);
@@ -90,8 +90,15 @@ public class ModelLoader {
 		return nodes;
 	}
 
-	private static List<Edge> createEdges(Model model, SortedSet<Service> allServices, final Solution solution) {
-		int timesteps = model.getPlanningHorizon().getLength();
+	/**
+	 * Creates {@link Edge}s from the given {@link Service}s.
+	 * 
+	 * @param model
+	 * @param allServices
+	 * @param solution
+	 * @return
+	 */
+	private static List<Edge> createEdges(int timesteps, SortedSet<Service> allServices, final Solution solution) {
 		List<Edge> allEdges = new ArrayList<>();
 		for (Service service : allServices) {
 			Node start = service.getStartNode();
@@ -118,7 +125,7 @@ public class ModelLoader {
 
 			// Other
 			edge.setType(service.getServiceType());
-			
+
 			allEdges.add(edge);
 		}
 		return allEdges;

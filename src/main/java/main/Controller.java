@@ -19,6 +19,8 @@ import gui.RunButton;
 import models.ModelLoader;
 
 /**
+ * Main class from the program
+ * 
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */
@@ -37,6 +39,12 @@ public class Controller {
 
 	private JFrame frame;
 
+	/**
+	 * Returns the {@link Controller} instance, if the instance is
+	 * <code>null</code> a new instance is created.
+	 * 
+	 * @return the {@link Controller} instance
+	 */
 	public static Controller getInstance() {
 		if (controller == null) {
 			controller = new Controller();
@@ -44,23 +52,33 @@ public class Controller {
 		return controller;
 	}
 
+	/**
+	 * Private constructor to override the default and ensure the singleton
+	 * pattern.
+	 */
 	private Controller() {
-		// for singleton
+		// NOP
 
 		// TEST
 
-//		GraphHopper graphHopper = new GraphHopper().forDesktop();
-//		GraphHopperStorage graph = graphHopper.getGraphHopperStorage();
-//
-//		graphHopper.importOrLoad();
-//		
-//		GHRequest ghRequest = new GHRequest(new GHPoint(50.11, 8.68), new GHPoint(50.11, 8.68)).setVehicle("car");
-//		GHResponse response = graphHopper.route(ghRequest);
-		
+		// GraphHopper graphHopper = new GraphHopper().forDesktop();
+		// GraphHopperStorage graph = graphHopper.getGraphHopperStorage();
+		//
+		// graphHopper.importOrLoad();
+		//
+		// GHRequest ghRequest = new GHRequest(new GHPoint(50.11, 8.68), new
+		// GHPoint(50.11, 8.68)).setVehicle("car");
+		// GHResponse response = graphHopper.route(ghRequest);
+
 		// TEST
 
 	}
 
+	/**
+	 * Main method.
+	 * 
+	 * TODO distinct gui creation
+	 */
 	public void run() {
 
 		// Display the viewer in a JFrame
@@ -108,7 +126,8 @@ public class Controller {
 	}
 
 	/**
-	 * 
+	 * Increases the current time step each time its called. If the maximum time
+	 * step from the model is reached it resets the step to zero.
 	 */
 	public void incTime() {
 		currentTime++;
@@ -119,6 +138,8 @@ public class Controller {
 	}
 
 	/**
+	 * Returns the map component
+	 * 
 	 * @return the mapViewer
 	 */
 	public Map getMapViewer() {

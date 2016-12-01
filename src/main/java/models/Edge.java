@@ -7,10 +7,13 @@ import com.syncrotess.pathfinder.model.entity.Service;
 import com.syncrotess.pathfinder.model.entity.ServiceType;
 
 /**
- * Transfer object for the diffrent Edge-classes.
+ * Represents an edge between to Nodes which are saved as
+ * {@link GeoPosition}-objects.
+ * 
+ * The edge also contains informations about the capacity and workload for
+ * diffrent time steps.
  * 
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
- *
  */
 public class Edge {
 
@@ -92,13 +95,16 @@ public class Edge {
 	}
 
 	/**
-	 * @return the type
+	 * @return the type of the edge
 	 */
 	public EdgeType getType() {
 		return type;
 	}
 
 	/**
+	 * Saves the corresponding {@link EdgeType} for the given
+	 * {@link ServiceType}.
+	 * 
 	 * @param type
 	 *            the type to set
 	 */
