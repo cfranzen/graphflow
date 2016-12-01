@@ -30,6 +30,7 @@ import org.jxmapviewer.viewer.Waypoint;
 import org.jxmapviewer.viewer.WaypointPainter;
 
 import main.Controller;
+import models.CapacityWaypoint;
 import models.Edge;
 
 /**

@@ -8,6 +8,12 @@ import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 
+import com.graphhopper.GHRequest;
+import com.graphhopper.GHResponse;
+import com.graphhopper.GraphHopper;
+import com.graphhopper.storage.GraphHopperStorage;
+import com.graphhopper.util.shapes.GHPoint;
+
 import gui.Map;
 import gui.RunButton;
 import models.ModelLoader;
@@ -19,9 +25,11 @@ import models.ModelLoader;
 public class Controller {
 
 	public static void main(String[] args) {
-		Controller controller = new Controller();
+		Controller controller = getInstance();
 		controller.run();
 	}
+
+	private static Controller controller;
 
 	private Map mapViewer;
 	private ModelLoader input;
@@ -29,10 +37,31 @@ public class Controller {
 
 	private JFrame frame;
 
-	/**
-	 * 
-	 */
-	private void run() {
+	public static Controller getInstance() {
+		if (controller == null) {
+			controller = new Controller();
+		}
+		return controller;
+	}
+
+	private Controller() {
+		// for singleton
+
+		// TEST
+
+//		GraphHopper graphHopper = new GraphHopper().forDesktop();
+//		GraphHopperStorage graph = graphHopper.getGraphHopperStorage();
+//
+//		graphHopper.importOrLoad();
+//		
+//		GHRequest ghRequest = new GHRequest(new GHPoint(50.11, 8.68), new GHPoint(50.11, 8.68)).setVehicle("car");
+//		GHResponse response = graphHopper.route(ghRequest);
+		
+		// TEST
+
+	}
+
+	public void run() {
 
 		// Display the viewer in a JFrame
 		frame = new JFrame("Graphstream");

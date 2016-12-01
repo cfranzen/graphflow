@@ -4,6 +4,7 @@ import org.jxmapviewer.viewer.GeoPosition;
 
 import com.syncrotess.pathfinder.model.entity.Node;
 import com.syncrotess.pathfinder.model.entity.Service;
+import com.syncrotess.pathfinder.model.entity.ServiceType;
 
 /**
  * Transfer object for the diffrent Edge-classes.
@@ -15,8 +16,9 @@ public class Edge {
 
 	private GeoPosition start;
 	private GeoPosition dest;
-	public int[] capacites;
-	public int[] workload;
+	private int[] capacites;
+	private int[] workload;
+	private EdgeType type;
 
 	/**
 	 * Creates an {@link Edge} with the given {@link GeoPosition}s.
@@ -41,6 +43,22 @@ public class Edge {
 		new Edge(new GeoPosition(start.getLatitude(), start.getLongitude()),
 				new GeoPosition(end.getLatitude(), end.getLongitude()));
 
+	}
+
+	/**
+	 * @param capacites
+	 *            the capacites to set
+	 */
+	public void setCapacites(int[] capacites) {
+		this.capacites = capacites;
+	}
+
+	/**
+	 * @param workload
+	 *            the workload to set
+	 */
+	public void setWorkload(int[] workload) {
+		this.workload = workload;
 	}
 
 	/**
@@ -71,6 +89,36 @@ public class Edge {
 	 */
 	public int getCapacity(int currentTimeStep) {
 		return capacites[currentTimeStep];
+	}
+
+	/**
+	 * @return the type
+	 */
+	public EdgeType getType() {
+		return type;
+	}
+
+	/**
+	 * @param type
+	 *            the type to set
+	 */
+	public void setType(ServiceType type) {
+		switch (type) {
+		case TRUCK_TRANSPORT:
+			this.type = EdgeType.TRUCK;
+			break;
+		case TRAIN_TRANSPORT:
+			this.type = EdgeType.TRAIN;
+			break;
+		case VESSEL_TRANSPORT:
+			this.type = EdgeType.VESSEL;
+			break;
+		case AIRCRAFT_TRANSPORT:
+			this.type = EdgeType.AIRCRAFT;
+			break;
+		default:
+			this.type = EdgeType.UNKOWN;
+		}
 	}
 
 }

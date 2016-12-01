@@ -1,11 +1,16 @@
 /**
  * 
  */
-package gui;
+package models;
+
+import java.awt.Point;
+import java.awt.geom.Point2D;
 
 import org.jxmapviewer.beans.AbstractBean;
 import org.jxmapviewer.viewer.GeoPosition;
 import org.jxmapviewer.viewer.Waypoint;
+
+import main.Controller;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
@@ -16,6 +21,7 @@ public class CapacityWaypoint extends AbstractBean implements Waypoint {
 	private GeoPosition position;
 	private double maxCapacity;
 	private double workload = 0;
+	private Point mapPosi;
 
 	/**
 	 * Creates a new instance of Waypoint
@@ -37,23 +43,24 @@ public class CapacityWaypoint extends AbstractBean implements Waypoint {
 	}
 
 	/**
-	 * @param coord
+	 * @param geo
 	 *            the geo coordinate
 	 */
-	public CapacityWaypoint(GeoPosition coord, double maxCapacity) {
-		this.position = coord;
+	public CapacityWaypoint(GeoPosition geo, double maxCapacity) {
+		this.position = geo;
 		this.maxCapacity = maxCapacity;
 	}
 
 	/**
 	 * Set a new GeoPosition for this Waypoint
 	 * 
-	 * @param coordinate
+	 * @param geo
 	 *            a new position
 	 */
-	public void setPosition(GeoPosition coordinate) {
+	public void setPosition(GeoPosition geo) {
 		GeoPosition old = getPosition();
-		this.position = coordinate;
+		this.position = geo;
+		setMapPosiFromGeo(geo);
 		firePropertyChange("position", old, getPosition());
 	}
 
@@ -65,7 +72,8 @@ public class CapacityWaypoint extends AbstractBean implements Waypoint {
 	}
 
 	/**
-	 * @param maxCapacity the maxCapacity to set
+	 * @param maxCapacity
+	 *            the maxCapacity to set
 	 */
 	public void setMaxCapacity(double maxCapacity) {
 		this.maxCapacity = maxCapacity;
@@ -79,10 +87,38 @@ public class CapacityWaypoint extends AbstractBean implements Waypoint {
 	}
 
 	/**
-	 * @param workload the workload to set
+	 * @param workload
+	 *            the workload to set
 	 */
 	public void setWorkload(double workload) {
 		this.workload = workload;
+	}
+
+	public void setMapPosiFromGeo(GeoPosition geo) {
+		Point2D p = Controller.getInstance().getMapViewer().convertGeoPositionToPoint(geo);
+		setMapPosi(p.getX(), p.getY());
+	}
+
+	public void setMapPosi(double x, double y) {
+		mapPosi.setLocation(x, y);
+	}
+
+	/**
+	 * @return the mapPosi
+	 */
+	public Point getMapPosi() {
+		return mapPosi;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return String.format("Latitude: %f\nLongitude: %f\nCapacity: %d\nWorkload: %d",
+				position.getLatitude(), position.getLongitude(), maxCapacity, workload);
 	}
 
 	/*

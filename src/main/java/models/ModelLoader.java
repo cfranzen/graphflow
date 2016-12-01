@@ -97,22 +97,28 @@ public class ModelLoader {
 			Node start = service.getStartNode();
 			Node end = service.getEndNode();
 
+			// Position
 			Edge edge = new Edge(new GeoPosition(start.getLatitude(), start.getLongitude()),
 					new GeoPosition(end.getLatitude(), end.getLongitude()));
 
+			// Workloads
 			int[] workloads = new int[timesteps];
 			Set<SolutionItem> items = solution.getItemsForService(service);
 			for (SolutionItem solutionItem : items) {
 				workloads[solutionItem.getTime()] += solutionItem.getVolume();
 			}
-			edge.workload = workloads;
+			edge.setWorkload(workloads);
 
+			// Capacities
 			int[] capacites = new int[timesteps];
 			for (int i = 0; i < timesteps; i++) {
 				capacites[i] = service.getCapacity(i);
 			}
-			edge.capacites = capacites;
+			edge.setCapacites(capacites);
 
+			// Other
+			edge.setType(service.getServiceType());
+			
 			allEdges.add(edge);
 		}
 		return allEdges;

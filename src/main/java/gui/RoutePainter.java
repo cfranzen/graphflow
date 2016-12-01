@@ -14,6 +14,7 @@ import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.painter.Painter;
 
 import models.Edge;
+import models.EdgeType;
 
 /**
  * Paints a route
@@ -85,7 +86,11 @@ public class RoutePainter implements Painter<JXMapViewer> {
 			} else {
 				Color lineColor = calculateColor(currentWorkload, currentCapacity);
 				g.setColor(lineColor);
-				g.setStroke(new BasicStroke(currentCapacity/400));
+				if (edge.getType().equals(EdgeType.VESSEL)) {
+					g.setStroke(new BasicStroke(currentCapacity /500));
+				} else {
+					g.setStroke(new BasicStroke(currentCapacity / 200));
+				}
 			}
 			g.drawLine((int) startPt.getX(), (int) startPt.getY(), (int) endPt.getX(), (int) endPt.getY());
 		}

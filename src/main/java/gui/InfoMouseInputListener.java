@@ -3,11 +3,8 @@
  */
 package gui;
 
-import java.awt.Cursor;
-import java.awt.Point;
 import java.awt.event.MouseEvent;
 
-import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputAdapter;
 
 import main.Controller;
@@ -18,9 +15,7 @@ import main.Controller;
  */
 public class InfoMouseInputListener extends MouseInputAdapter {
 
-	private Point prev;
 	private Controller controller;
-	private Cursor priorCursor;
 
 	/**
 	 * @param viewer
@@ -30,18 +25,6 @@ public class InfoMouseInputListener extends MouseInputAdapter {
 		this.controller = controller;
 	}
 
-	@Override
-	public void mousePressed(MouseEvent evt) {
-		if (SwingUtilities.isLeftMouseButton(evt)) {
-			return;
-		}
-
-		prev = evt.getPoint();
-		priorCursor = controller.getMapViewer().getCursor();
-//		controller.getMapViewer().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-	}
-	
 	/* (non-Javadoc)
 	 * @see java.awt.event.MouseAdapter#mouseMoved(java.awt.event.MouseEvent)
 	 */
