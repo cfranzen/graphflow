@@ -77,12 +77,23 @@ public class RoutePainter implements Painter<JXMapViewer> {
 			// convert geo-coordinate to world bitmap pixel
 			Point2D startPt = map.getTileFactory().geoToPixel(edge.getStart(), map.getZoom());
 			Point2D endPt = map.getTileFactory().geoToPixel(edge.getDest(), map.getZoom());
-
+			
+			List<Double[]> points = edge.getPoints();
+			Double[] last = null;
+			for (Double[] point : points) {
+				if (last == null) {
+					last = point;
+					continue;
+				}
+				
+			
+			
+			
 			int currentWorkload = edge.getWorkload(currentTimeStep);
 			int currentCapacity = edge.getCapacity(currentTimeStep);
 			if (currentCapacity == 0) {
-				g.setColor(Color.GRAY);
-				g.setStroke(new BasicStroke(0.2f));
+				g.setColor(Color.BLUE);
+				g.setStroke(new BasicStroke(2.2f));
 			} else {
 				Color lineColor = calculateColor(currentWorkload, currentCapacity);
 				g.setColor(lineColor);
@@ -92,7 +103,10 @@ public class RoutePainter implements Painter<JXMapViewer> {
 					g.setStroke(new BasicStroke(currentCapacity / 200));
 				}
 			}
-			g.drawLine((int) startPt.getX(), (int) startPt.getY(), (int) endPt.getX(), (int) endPt.getY());
+//			g.drawLine((int) startPt.getX(), (int) startPt.getY(), (int) endPt.getX(), (int) endPt.getY());
+			g.drawLine(last[0].intValue(), last[1].intValue(), point[0].intValue(), point[1].intValue());
+			last = point;
+			}
 		}
 	}
 

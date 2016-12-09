@@ -1,5 +1,8 @@
 package models;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.jxmapviewer.viewer.GeoPosition;
 
 import com.syncrotess.pathfinder.model.entity.Node;
@@ -19,8 +22,8 @@ public class Edge {
 
 	private GeoPosition start;
 	private GeoPosition dest;
-	private int[] capacites;
-	private int[] workload;
+	private int[] capacites = new int[0];
+	private int[] workload = new int[0];
 	private EdgeType type;
 
 	/**
@@ -33,6 +36,31 @@ public class Edge {
 		super();
 		this.start = start;
 		this.dest = dest;
+	}
+	
+	/**
+	 * @param start
+	 * @param dest
+	 * @param capacites
+	 * @param workload
+	 * @param type
+	 */
+	public Edge(GeoPosition start, GeoPosition dest, int[] capacites, int[] workload, EdgeType type) {
+		super();
+		this.start = start;
+		this.dest = dest;
+		this.capacites = capacites;
+		this.workload = workload;
+		this.type = type;
+	}
+
+	public Edge(Edge e) {
+		super();
+		this.start = e.start;
+		this.dest = e.dest;
+		this.capacites = e.capacites;
+		this.workload = e.workload;
+		this.type = e.type;
 	}
 
 	/**
@@ -83,7 +111,11 @@ public class Edge {
 	 * @return the workload for the given time step.
 	 */
 	public int getWorkload(int currentTimeStep) {
-		return workload[currentTimeStep];
+		if (workload.length > currentTimeStep) {
+			return workload[currentTimeStep];
+		} else {
+			return 0;
+		}
 	}
 
 	/**
@@ -91,7 +123,11 @@ public class Edge {
 	 * @return the capacity for the given time step.
 	 */
 	public int getCapacity(int currentTimeStep) {
-		return capacites[currentTimeStep];
+		if (capacites.length > currentTimeStep) {
+			return capacites[currentTimeStep];
+		} else {
+			return 0;
+		}
 	}
 
 	/**
@@ -125,6 +161,15 @@ public class Edge {
 		default:
 			this.type = EdgeType.UNKOWN;
 		}
+	}
+
+	/**
+	 * @return
+	 */
+	public List<Double[]> getPoints() {
+		return Arrays.asList(
+				new Double[]{start.getLatitude(), start.getLongitude()},
+				new Double[]{dest.getLatitude(), dest.getLongitude()});
 	}
 
 }

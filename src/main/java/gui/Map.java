@@ -29,9 +29,12 @@ import org.jxmapviewer.viewer.TileFactoryInfo;
 import org.jxmapviewer.viewer.Waypoint;
 import org.jxmapviewer.viewer.WaypointPainter;
 
+import com.graphhopper.util.PointList;
+
 import main.Controller;
 import models.CapacityWaypoint;
 import models.Edge;
+import models.HighResEdge;
 
 /**
  * 
@@ -50,6 +53,8 @@ public class Map extends JXMapViewer {
 	private WaypointPainter<Waypoint> waypointPainter;
 	private RoutePainter routePainter = new RoutePainter(Collections.emptyList());
 	private List<Edge> route = new ArrayList<>();
+
+	private boolean onlyGermany = true;
 
 	/**
 	 * Default Constructor, initializes the tile factory.
@@ -79,11 +84,25 @@ public class Map extends JXMapViewer {
 	 *            {@link List} with {@link GeoPosition}s as nodes
 	 */
 	public void addPositions(List<GeoPosition> nodes) {
-		for (GeoPosition geoPos : nodes) {
-			waypoints.add(new CapacityWaypoint(geoPos.getLatitude(), geoPos.getLongitude(), 0));
-		}
+		List<GeoPosition> zoomNodes = new ArrayList<>();
+		if (onlyGermany) {
+			for (GeoPosition geoPos : nodes) {
+				double lat = geoPos.getLatitude();
+				double lon = geoPos.getLongitude();
 
-		zoomToBestFit(new HashSet<>(nodes), 0.7);
+				if ((6 < lon && lon < 14) && (45 < lat && lat < 55)) {
+					waypoints.add(new CapacityWaypoint(lat, lon, 0));
+					zoomNodes.add(geoPos);
+				}
+			}
+		} else {
+			for (GeoPosition geoPos : nodes) {
+				waypoints.add(new CapacityWaypoint(geoPos.getLatitude(), geoPos.getLongitude(), 0));
+				zoomNodes.add(geoPos);
+			}
+		}
+		// TODO schöner machen
+		zoomToBestFit(new HashSet<>(zoomNodes), 0.7);
 		waypointPainter.setWaypoints(waypoints);
 	}
 
@@ -94,7 +113,18 @@ public class Map extends JXMapViewer {
 	 *            {@link List} with {@link Edge}s.
 	 */
 	public void addEdges(List<Edge> edges) {
-		route.addAll(edges);
+		if (onlyGermany) {
+			for (Edge edge : edges) {
+				double lat = edge.getStart().getLatitude();
+				double lon = edge.getStart().getLongitude();
+
+				if ((6 < lon && lon < 14) && (45 < lat && lat < 55)) {
+					route.add(edge);
+				}
+			}
+		} else {
+			route.addAll(edges);
+		}
 		routePainter.setRoute(route);
 	}
 
@@ -107,6 +137,54 @@ public class Map extends JXMapViewer {
 	public void setTime(int time) {
 		routePainter.setTimeStep(time);
 		repaint();
+	}
+
+	public void importGrapHopperPoints(PointList points) {
+		GeoPosition last = new GeoPosition(points.getLatitude(0), points.getLongitude(0));
+		waypoints.add(new CapacityWaypoint(last.getLatitude(), last.getLongitude(), 0));
+		for (int i = 1; i < points.size(); i++) {
+			// System.out.println(
+			// String.format("ID: %d, LON: %f, LAT: %f", i,
+			// points.getLongitude(i), points.getLatitude(i)));
+			GeoPosition dest = new GeoPosition(points.getLatitude(i), points.getLongitude(i));
+			route.add(new Edge(last, dest));
+			last = dest;
+		}
+		waypoints.add(new CapacityWaypoint(last.getLatitude(), last.getLongitude(), 0));
+		routePainter.setRoute(route);
+		waypointPainter.setWaypoints(waypoints);
+	}
+
+	/**
+	 * Updates the old {@link Edge} with a new {@link Edge}. Used to update a
+	 * normal {@link Edge} with a {@link HighResEdge}.
+	 * 
+	 * @param oldEdge
+	 * @param newEdge
+	 * @return
+	 */
+	public boolean updateEdge(Edge oldEdge, Edge newEdge) {
+		int index = route.indexOf(oldEdge);
+		if (index != -1) {
+			route.set(index, newEdge);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * @return the route
+	 */
+	public List<Edge> getRoute() {
+		return route;
+	}
+
+	/**
+	 * @param route
+	 *            the route to set
+	 */
+	public void setRoute(List<Edge> route) {
+		this.route = route;
 	}
 
 	/**
