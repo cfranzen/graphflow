@@ -12,7 +12,6 @@
 	</properties>
 
 	<dependencies>
-
 		<dependency>
 			<groupId>com.syncrotess.pathfinder</groupId>
 			<artifactId>pathfinder-common</artifactId>
@@ -31,14 +30,21 @@
 			<version>3.8.1</version>
 			<scope>test</scope>
 		</dependency>
+		
+        
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.21</version>
+        </dependency>
 
-		<!-- https://mvnrepository.com/artifact/com.graphhopper/graphhopper -->
+
+		<!-- https://mvnrepository.com/artifact/com.graphhopper/graphhopper-map-matching-core -->
 		<dependency>
 			<groupId>com.graphhopper</groupId>
-			<artifactId>graphhopper</artifactId>
-			<version>0.7.0</version>
+			<artifactId>graphhopper-map-matching-core</artifactId>
+			<version>0.8.2</version>
 		</dependency>
-
 
 	</dependencies>
 

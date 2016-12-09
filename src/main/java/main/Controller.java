@@ -2,6 +2,8 @@ package main;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.io.IOException;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -11,7 +13,22 @@ import javax.swing.JPanel;
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
 import com.graphhopper.GraphHopper;
-import com.graphhopper.storage.GraphHopperStorage;
+import com.graphhopper.PathWrapper;
+import com.graphhopper.matching.EdgeMatch;
+import com.graphhopper.matching.GPXFile;
+import com.graphhopper.matching.MapMatching;
+import com.graphhopper.matching.MatchResult;
+import com.graphhopper.reader.osm.GraphHopperOSM;
+import com.graphhopper.routing.AlgorithmOptions;
+import com.graphhopper.routing.util.CarFlagEncoder;
+import com.graphhopper.routing.util.EncodingManager;
+import com.graphhopper.routing.util.FlagEncoder;
+import com.graphhopper.routing.weighting.ShortestWeighting;
+import com.graphhopper.routing.weighting.Weighting;
+import com.graphhopper.util.CmdArgs;
+import com.graphhopper.util.GPXEntry;
+import com.graphhopper.util.Parameters;
+import com.graphhopper.util.PointList;
 import com.graphhopper.util.shapes.GHPoint;
 
 import gui.Map;
@@ -60,19 +77,64 @@ public class Controller {
 		// NOP
 
 		// TEST
+		GraphHopper graphHopper = new GraphHopperOSM().forDesktop();
+//		GraphHopperStorage graph = graphHopper.getGraphHopperStorage();
 
-		// GraphHopper graphHopper = new GraphHopper().forDesktop();
-		// GraphHopperStorage graph = graphHopper.getGraphHopperStorage();
-		//
-		// graphHopper.importOrLoad();
-		//
-		// GHRequest ghRequest = new GHRequest(new GHPoint(50.11, 8.68), new
-		// GHPoint(50.11, 8.68)).setVehicle("car");
-		// GHResponse response = graphHopper.route(ghRequest);
+		CarFlagEncoder encoder = new CarFlagEncoder();
+		graphHopper.setEncodingManager(new EncodingManager(encoder));
+		graphHopper.getCHFactoryDecorator().setEnabled(false);
+		
+		try {
+			CmdArgs args= CmdArgs.readFromConfig("src/main/resources/graphhopper/config.properties", "graphhopper.config");
+			graphHopper.init(args);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		graphHopper.importOrLoad();
+		
+		GHPoint köln = new GHPoint(50.933330, 6.950000);
+		GHPoint frankfurt = new GHPoint(50.115520, 8.684170);
 
+		GHRequest ghRequest = new GHRequest(köln, frankfurt).setVehicle("car");
+		GHResponse response = graphHopper.route(ghRequest);
+		
+		PathWrapper path = response.getBest();
+		PointList points = path.getPoints();
+		for (int i = 0; i < points.size(); i++) {
+			System.out.println(String.format("ID: %d, LON: %f, LAT: %f", i, points.getLongitude(i), points.getLatitude(i)));
+		}
 		// TEST
 
 	}
+
+//	void graphop() {
+//		// import OpenStreetMap data
+//		GraphHopper hopper = new GraphHopper();
+//		// hopper.setOSMFile("./map-data/leipzig_germany.osm.pbf");
+//		hopper.setGraphHopperLocation("./target/mapmatchingtest");
+//		CarFlagEncoder encoder = new CarFlagEncoder();
+//		hopper.setEncodingManager(new EncodingManager(encoder));
+//		hopper.getCHFactoryDecorator().setEnabled(false);
+//		hopper.importOrLoad();
+//
+//		// create MapMatching object, can and should be shared accross threads
+//
+//		FlagEncoder flagEncoder = new CarFlagEncoder();
+//		Weighting weighting = new ShortestWeighting(flagEncoder);
+//		AlgorithmOptions algoOptions = new AlgorithmOptions(Parameters.Algorithms.DIJKSTRA_BI, weighting);
+//		MapMatching mapMatching = new MapMatching(hopper, algoOptions);
+//
+//		// do the actual matching, get the GPX entries from a file or via stream
+//		List<GPXEntry> inputGPXEntries = new GPXFile().doImport("nice.gpx").getEntries();
+//		MatchResult mr = mapMatching.doWork(inputGPXEntries);
+//
+//		// return GraphHopper edges with all associated GPX entries
+//		List<EdgeMatch> matches = mr.getEdgeMatches();
+//		// now do something with the edges like storing the edgeIds or doing
+//		// fetchWayGeometry etc
+//		matches.get(0).getEdgeState();
+//	}
 
 	/**
 	 * Main method.
