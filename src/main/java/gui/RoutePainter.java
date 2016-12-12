@@ -3,6 +3,7 @@ package gui;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
@@ -12,6 +13,7 @@ import java.util.List;
 
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.painter.Painter;
+import org.jxmapviewer.viewer.GeoPosition;
 
 import models.Edge;
 import models.EdgeType;
@@ -75,9 +77,11 @@ public class RoutePainter implements Painter<JXMapViewer> {
 	private void drawRoute(Graphics2D g, JXMapViewer map) {
 		for (Edge edge : route) {
 			// convert geo-coordinate to world bitmap pixel
-			Point2D startPt = map.getTileFactory().geoToPixel(edge.getStart(), map.getZoom());
-			Point2D endPt = map.getTileFactory().geoToPixel(edge.getDest(), map.getZoom());
-			
+			// Point2D startPt =
+			// map.getTileFactory().geoToPixel(edge.getStart(), map.getZoom());
+			// Point2D endPt = map.getTileFactory().geoToPixel(edge.getDest(),
+			// map.getZoom());
+			//
 			List<Double[]> points = edge.getPoints();
 			Double[] last = null;
 			for (Double[] point : points) {
@@ -85,27 +89,29 @@ public class RoutePainter implements Painter<JXMapViewer> {
 					last = point;
 					continue;
 				}
-				
-			
-			
-			
-			int currentWorkload = edge.getWorkload(currentTimeStep);
-			int currentCapacity = edge.getCapacity(currentTimeStep);
-			if (currentCapacity == 0) {
-				g.setColor(Color.BLUE);
-				g.setStroke(new BasicStroke(2.2f));
-			} else {
-				Color lineColor = calculateColor(currentWorkload, currentCapacity);
-				g.setColor(lineColor);
-				if (edge.getType().equals(EdgeType.VESSEL)) {
-					g.setStroke(new BasicStroke(currentCapacity /500));
+
+				Point2D startPt2D = map.getTileFactory().geoToPixel(new GeoPosition(last[0], last[1]), map.getZoom());
+				Point2D endPt2D = map.getTileFactory().geoToPixel(new GeoPosition(point[0], point[1]), map.getZoom());
+				last = point;
+
+				Point startPt = new Point((int) startPt2D.getX(), (int) startPt2D.getY());
+				Point endPt = new Point((int) endPt2D.getX(), (int) endPt2D.getY());
+
+				int currentWorkload = edge.getWorkload(currentTimeStep);
+				int currentCapacity = edge.getCapacity(currentTimeStep);
+				if (currentCapacity == 0) {
+					g.setColor(Color.BLUE);
+					g.setStroke(new BasicStroke(2.2f));
 				} else {
-					g.setStroke(new BasicStroke(currentCapacity / 200));
+					Color lineColor = calculateColor(currentWorkload, currentCapacity);
+					g.setColor(lineColor);
+					if (edge.getType().equals(EdgeType.VESSEL)) {
+						g.setStroke(new BasicStroke(currentCapacity / 500));
+					} else {
+						g.setStroke(new BasicStroke(currentCapacity / 200));
+					}
 				}
-			}
-//			g.drawLine((int) startPt.getX(), (int) startPt.getY(), (int) endPt.getX(), (int) endPt.getY());
-			g.drawLine(last[0].intValue(), last[1].intValue(), point[0].intValue(), point[1].intValue());
-			last = point;
+				g.drawLine((int) startPt.getX(), (int) startPt.getY(), (int) endPt.getX(), (int) endPt.getY());
 			}
 		}
 	}
@@ -114,7 +120,8 @@ public class RoutePainter implements Painter<JXMapViewer> {
 		Color stepColor;
 		Color color1 = Color.GREEN;
 		Color color2 = Color.RED;
-//		System.out.println(String.format("Workload: %d, Capacity: %d", workload, capacity));
+		// System.out.println(String.format("Workload: %d, Capacity: %d",
+		// workload, capacity));
 		float ratio = (float) workload / (float) capacity;
 		int red = (int) (color2.getRed() * ratio + color1.getRed() * (1 - ratio));
 		int green = (int) (color2.getGreen() * ratio + color1.getGreen() * (1 - ratio));

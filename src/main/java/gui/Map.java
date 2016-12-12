@@ -75,6 +75,8 @@ public class Map extends JXMapViewer {
 
 		setMinimumSize(new Dimension(250, 250));
 		setPreferredSize(new Dimension(1400, 400));
+		
+		
 	}
 
 	/**

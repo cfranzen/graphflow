@@ -38,7 +38,11 @@ public class HighResEdge extends Edge {
 	 * 
 	 */
 	public void addPositions(List<Double[]> geoJson) {
-		points.addAll(geoJson);
+		for (Double[] point : geoJson) {
+			points.add(new Double[] {point[1], point[0]});
+		}
+		
+//		points.addAll(geoJson);
 
 	}
 
