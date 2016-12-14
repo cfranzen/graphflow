@@ -77,6 +77,13 @@ public class Edge {
 	}
 
 	/**
+	 * Default empty constructor
+	 */
+	public Edge() {
+		//NOP
+	}
+
+	/**
 	 * @param capacites
 	 *            the capacites to set
 	 */

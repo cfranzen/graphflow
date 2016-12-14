@@ -74,7 +74,7 @@ public class CapacityWaypointRenderer implements WaypointRenderer<Waypoint> {
 
 	private Color getWaypointColor() {
 		// TODO Gradient
-		return Color.green;
+		return Color.BLACK;
 	}
 
 	private void drawImageWaypoint(Graphics2D g, Point2D point) {

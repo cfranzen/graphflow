@@ -27,6 +27,7 @@ import models.EdgeType;
 public class RoutePainter implements Painter<JXMapViewer> {
 
 	private boolean antiAlias = true;
+	private boolean showPoints = true;
 	private int currentTimeStep = 0;
 
 	private Collection<Edge> route;
@@ -75,13 +76,10 @@ public class RoutePainter implements Painter<JXMapViewer> {
 	 *            the map
 	 */
 	private void drawRoute(Graphics2D g, JXMapViewer map) {
+		
+		int i = 0;
 		for (Edge edge : route) {
-			// convert geo-coordinate to world bitmap pixel
-			// Point2D startPt =
-			// map.getTileFactory().geoToPixel(edge.getStart(), map.getZoom());
-			// Point2D endPt = map.getTileFactory().geoToPixel(edge.getDest(),
-			// map.getZoom());
-			//
+			i++;
 			List<Double[]> points = edge.getPoints();
 			Double[] last = null;
 			for (Double[] point : points) {
@@ -90,6 +88,7 @@ public class RoutePainter implements Painter<JXMapViewer> {
 					continue;
 				}
 
+				// convert geo-coordinate to world bitmap pixel
 				Point2D startPt2D = map.getTileFactory().geoToPixel(new GeoPosition(last[0], last[1]), map.getZoom());
 				Point2D endPt2D = map.getTileFactory().geoToPixel(new GeoPosition(point[0], point[1]), map.getZoom());
 				last = point;
@@ -100,18 +99,30 @@ public class RoutePainter implements Painter<JXMapViewer> {
 				int currentWorkload = edge.getWorkload(currentTimeStep);
 				int currentCapacity = edge.getCapacity(currentTimeStep);
 				if (currentCapacity == 0) {
-					g.setColor(Color.BLUE);
-					g.setStroke(new BasicStroke(2.2f));
+					g.setColor(Color.GRAY);
+					g.setStroke(new BasicStroke(1.2f));
 				} else {
 					Color lineColor = calculateColor(currentWorkload, currentCapacity);
 					g.setColor(lineColor);
 					if (edge.getType().equals(EdgeType.VESSEL)) {
 						g.setStroke(new BasicStroke(currentCapacity / 500));
+						g.setColor(Color.BLUE);
 					} else {
-						g.setStroke(new BasicStroke(currentCapacity / 200));
+						g.setStroke(new BasicStroke(currentCapacity / 100));
 					}
 				}
 				g.drawLine((int) startPt.getX(), (int) startPt.getY(), (int) endPt.getX(), (int) endPt.getY());
+				
+				
+				if (showPoints) {
+					String index = i + "";
+					
+					final int circleRadius = 10;
+					g.setColor(Color.BLUE);
+					g.fillOval((int)startPt.getX(), (int)startPt.getY(), circleRadius, circleRadius);
+					g.setColor(Color.RED);
+					g.drawString(index, (int)startPt.getX() + i, (int)startPt.getY());
+				}
 			}
 		}
 	}

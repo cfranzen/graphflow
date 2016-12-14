@@ -2,9 +2,18 @@ package main;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.geom.Point2D;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.Future;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -44,7 +53,7 @@ public class Controller {
 	private static Controller controller;
 
 	private ForkJoinPool pool;
-	
+
 	private Map mapViewer;
 	private ModelLoader input;
 	private GraphHopper graphHopper;
@@ -73,115 +82,6 @@ public class Controller {
 		pool = new ForkJoinPool();
 	}
 
-	private void optimizeEdgesWithGH() {
-		// GHPoint köln = new GHPoint(50.933330, 6.950000);
-		// GHPoint frankfurt = new GHPoint(50.115520, 8.684170);
-		//
-		// GHRequest ghRequest = new GHRequest(köln, frankfurt);
-		// GHResponse response = graphHopper.route(ghRequest);
-		//
-		// PathWrapper path = response.getBest();
-		// PointList points = path.getPoints();
-
-		for (Edge edge : mapViewer.getRoute()) {
-			pool.invoke(new ForkJoinTask<Edge>() {
-
-				private static final long serialVersionUID = 1475668164109020735L;
-
-				@Override
-				public Edge getRawResult() {
-					// TODO Auto-generated method stub
-					return null;
-				}
-
-				@Override
-				protected void setRawResult(Edge value) {
-					// TODO Auto-generated method stub
-					
-				}
-
-				@Override
-				protected boolean exec() {
-					HighResEdge highResEdge = getHighRes(edge);
-					System.out.println("DONE");
-					return mapViewer.updateEdge(edge, highResEdge);
-				}
-			});
-			
-			
-		}
-
-//		mapViewer.importGrapHopperPoints(points);
-
-	}
-
-	private HighResEdge getHighRes(Edge edge) {
-		GHPoint start = new GHPoint(edge.getStart().getLatitude(), edge.getStart().getLongitude());
-		GHPoint dest = new GHPoint(edge.getDest().getLatitude(), edge.getDest().getLongitude());
-
-		GHRequest ghRequest = new GHRequest(start, dest);
-		GHResponse response = graphHopper.route(ghRequest);
-
-		PathWrapper path = response.getBest();
-		PointList points = path.getPoints();
-		
-		HighResEdge highResEdge = new HighResEdge(edge);
-		highResEdge.addPositions(points.toGeoJson());
-		return highResEdge;
-	}
-
-	private void initGraphhopper() {
-		graphHopper = new GraphHopperOSM().forDesktop();
-		// GraphHopperStorage graph = graphHopper.getGraphHopperStorage();
-
-		CarFlagEncoder encoder = new CarFlagEncoder();
-		graphHopper.setEncodingManager(new EncodingManager(encoder));
-		graphHopper.getCHFactoryDecorator().setEnabled(false);
-
-		long time = System.currentTimeMillis();
-		System.out.println("Start init GH");
-		try {
-			CmdArgs args = CmdArgs.readFromConfig("src/main/resources/graphhopper/config.properties",
-					"graphhopper.config");
-			graphHopper.init(args);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		graphHopper.importOrLoad();
-		System.out.println("End init GH - " + (System.currentTimeMillis() - time));
-	}
-
-	// void graphop() {
-	// // import OpenStreetMap data
-	// GraphHopper hopper = new GraphHopper();
-	// // hopper.setOSMFile("./map-data/leipzig_germany.osm.pbf");
-	// hopper.setGraphHopperLocation("./target/mapmatchingtest");
-	// CarFlagEncoder encoder = new CarFlagEncoder();
-	// hopper.setEncodingManager(new EncodingManager(encoder));
-	// hopper.getCHFactoryDecorator().setEnabled(false);
-	// hopper.importOrLoad();
-	//
-	// // create MapMatching object, can and should be shared accross threads
-	//
-	// FlagEncoder flagEncoder = new CarFlagEncoder();
-	// Weighting weighting = new ShortestWeighting(flagEncoder);
-	// AlgorithmOptions algoOptions = new
-	// AlgorithmOptions(Parameters.Algorithms.DIJKSTRA_BI, weighting);
-	// MapMatching mapMatching = new MapMatching(hopper, algoOptions);
-	//
-	// // do the actual matching, get the GPX entries from a file or via stream
-	// List<GPXEntry> inputGPXEntries = new
-	// GPXFile().doImport("nice.gpx").getEntries();
-	// MatchResult mr = mapMatching.doWork(inputGPXEntries);
-	//
-	// // return GraphHopper edges with all associated GPX entries
-	// List<EdgeMatch> matches = mr.getEdgeMatches();
-	// // now do something with the edges like storing the edgeIds or doing
-	// // fetchWayGeometry etc
-	// matches.get(0).getEdgeState();
-	// }
-
 	/**
 	 * Main method.
 	 * 
@@ -198,8 +98,6 @@ public class Controller {
 		frame.getContentPane().setBackground(Color.RED);
 
 		JLayeredPane layeredPane = new JLayeredPane();
-		// layeredPane.setLayout(new BorderLayout() );
-
 		layeredPane.setBackground(Color.BLUE);
 		frame.getContentPane().add(layeredPane, BorderLayout.CENTER);
 
@@ -229,7 +127,7 @@ public class Controller {
 		layeredPane.add(p, new Integer(10));
 
 		// TODO resize components on frame resize
-		frame.setResizable(false);
+		frame.setResizable(true);
 		frame.setVisible(true);
 
 		// init GH
@@ -237,8 +135,10 @@ public class Controller {
 		System.out.println("Start GH");
 		initGraphhopper();
 		// optimize GH edges
-		optimizeEdgesWithGH();
+		mapEdgesToStreets();
 		System.out.println("End GH - " + (System.currentTimeMillis() - time));
+
+		optimizeEdges();
 	}
 
 	/**
@@ -260,5 +160,140 @@ public class Controller {
 	 */
 	public Map getMapViewer() {
 		return mapViewer;
+	}
+
+	private void optimizeEdges() {
+
+		calcAllPoints();
+		List<Edge> edges = mapViewer.getRoute();
+		List<Edge> commonEdges = new ArrayList<>();
+		for (int i = 0; i < edges.size(); i++) {
+			
+			HighResEdge updatedEdgeRef = new HighResEdge(edges.get(i));
+			HighResEdge commonEdge = new HighResEdge();
+			for (Double[] refPoint : edges.get(i).getPoints()) {
+				boolean flagNear = false;
+				for (int j = i + 1; j < edges.size(); j++) {
+					HighResEdge updatedEdge = new HighResEdge(edges.get(j));
+					for (Double[] point : edges.get(j).getPoints()) {
+						if (!isNear(refPoint, point)) {
+							updatedEdge.addPosition(new Double[] { point[1], point[0] });
+						} else {
+							flagNear = true;
+						}
+					}
+
+					mapViewer.updateEdge(edges.get(j), updatedEdge);
+
+				}
+				if (flagNear) {
+					commonEdge.addPosition(new Double[] { refPoint[1], refPoint[0] });
+				} else {
+					updatedEdgeRef.addPosition(new Double[] { refPoint[1], refPoint[0] });
+				}
+			}
+			System.out.println("commonEdge: " + commonEdge.getPoints().size());
+			commonEdges.add(commonEdge);
+			mapViewer.updateEdge(edges.get(i), updatedEdgeRef);
+			calcAllPoints();
+		}
+		mapViewer.addEdges(commonEdges);
+	}
+
+	private boolean isNear(Double[] refPoint, Double[] point) {
+		final double DISTANCE = 0.0005;
+		double deltaX = Math.abs(refPoint[0] - point[0]);
+		double deltaY = Math.abs(refPoint[1] - point[1]);
+		if ((deltaX + deltaY) < DISTANCE) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	private void calcAllPoints() {
+		int i = 0;
+		List<Edge> edges = mapViewer.getRoute();
+		for (Edge edge : edges) {
+			i += edge.getPoints().size();
+		}
+		System.out.println(i + " Points");
+
+	}
+
+	private void mapEdgesToStreets() {
+		for (Edge edge : mapViewer.getRoute()) {
+			pool.invoke(new ForkJoinTask<Edge>() {
+
+				private static final long serialVersionUID = 1475668164109020735L;
+
+				@Override
+				public Edge getRawResult() {
+					// TODO Auto-generated method stub
+					return null;
+				}
+
+				@Override
+				protected void setRawResult(Edge value) {
+					// TODO Auto-generated method stub
+
+				}
+
+				@Override
+				protected boolean exec() {
+					HighResEdge highResEdge = getHighRes(edge);
+					System.out.println("DONE");
+					return mapViewer.updateEdge(edge, highResEdge);
+				}
+			});
+		}
+	}
+
+	private HighResEdge getHighRes(Edge edge) {
+		GHPoint start = new GHPoint(edge.getStart().getLatitude(), edge.getStart().getLongitude());
+		GHPoint dest = new GHPoint(edge.getDest().getLatitude(), edge.getDest().getLongitude());
+
+		GHRequest ghRequest = new GHRequest(start, dest);
+		GHResponse response = graphHopper.route(ghRequest);
+
+		PathWrapper path = response.getBest();
+		PointList points = path.getPoints();
+
+		HighResEdge highResEdge = new HighResEdge(edge);
+
+		// --
+		// List<Double[]> pointList = points.toGeoJson();
+		// highResEdge.addPosition(pointList.get(0));
+		// for (int i = 10; i < pointList.size() - 100; i += 100) {
+		// highResEdge.addPosition(pointList.get(i));
+		// }
+		// if (pointList.size() > 1) {
+		// highResEdge.addPosition(pointList.get(pointList.size() - 1));
+		// }
+		// Uses 50 MB more RAM for Germany-example than code above, see
+		// optimizeEdges-function
+		highResEdge.addPositions(points.toGeoJson());
+		return highResEdge;
+	}
+
+	private void initGraphhopper() {
+		graphHopper = new GraphHopperOSM().forDesktop();
+
+		CarFlagEncoder encoder = new CarFlagEncoder();
+		graphHopper.setEncodingManager(new EncodingManager(encoder));
+		graphHopper.getCHFactoryDecorator().setEnabled(false);
+
+		long time = System.currentTimeMillis();
+		System.out.println("Start init GH");
+		try {
+			CmdArgs args = CmdArgs.readFromConfig("src/main/resources/graphhopper/config.properties",
+					"graphhopper.config");
+			graphHopper.init(args);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		graphHopper.importOrLoad();
+		System.out.println("End init GH - " + (System.currentTimeMillis() - time + " ms"));
 	}
 }

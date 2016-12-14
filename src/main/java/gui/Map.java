@@ -117,9 +117,13 @@ public class Map extends JXMapViewer {
 	public void addEdges(List<Edge> edges) {
 		if (onlyGermany) {
 			for (Edge edge : edges) {
-				double lat = edge.getStart().getLatitude();
-				double lon = edge.getStart().getLongitude();
-
+				double lat =50 ;
+				double lon =10 ;
+				if (edge.getStart() != null) {
+				 lat = edge.getStart().getLatitude();
+				 lon = edge.getStart().getLongitude();
+				}
+				
 				if ((6 < lon && lon < 14) && (45 < lat && lat < 55)) {
 					route.add(edge);
 				}
@@ -145,9 +149,6 @@ public class Map extends JXMapViewer {
 		GeoPosition last = new GeoPosition(points.getLatitude(0), points.getLongitude(0));
 		waypoints.add(new CapacityWaypoint(last.getLatitude(), last.getLongitude(), 0));
 		for (int i = 1; i < points.size(); i++) {
-			// System.out.println(
-			// String.format("ID: %d, LON: %f, LAT: %f", i,
-			// points.getLongitude(i), points.getLatitude(i)));
 			GeoPosition dest = new GeoPosition(points.getLatitude(i), points.getLongitude(i));
 			route.add(new Edge(last, dest));
 			last = dest;

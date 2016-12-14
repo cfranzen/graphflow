@@ -4,7 +4,6 @@
 package models;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.jxmapviewer.viewer.GeoPosition;
@@ -16,6 +15,10 @@ import org.jxmapviewer.viewer.GeoPosition;
 public class HighResEdge extends Edge {
 
 	private List<Double[]> points = new ArrayList<>();
+
+	public HighResEdge() {
+		super();
+	}
 
 	/**
 	 * @param start
@@ -39,16 +42,23 @@ public class HighResEdge extends Edge {
 	 */
 	public void addPositions(List<Double[]> geoJson) {
 		for (Double[] point : geoJson) {
-			points.add(new Double[] {point[1], point[0]});
+			addPosition(point);
 		}
-		
-//		points.addAll(geoJson);
+
+		// points.addAll(geoJson);
 
 	}
 
 	@Override
 	public List<Double[]> getPoints() {
 		return points;
+	}
+
+	/**
+	 * @param doubles
+	 */
+	public void addPosition(Double[] point) {
+		points.add(new Double[] { point[1], point[0] });
 	}
 
 }
