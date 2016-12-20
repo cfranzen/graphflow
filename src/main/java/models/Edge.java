@@ -24,7 +24,7 @@ public class Edge {
 	private GeoPosition dest;
 	private int[] capacites = new int[0];
 	private int[] workload = new int[0];
-	private EdgeType type;
+	private EdgeType type = EdgeType.TRUCK;
 
 	/**
 	 * Creates an {@link Edge} with the given {@link GeoPosition}s.

@@ -41,6 +41,8 @@ import gui.MyMap;
 import gui.RunButton;
 import models.Edge;
 import models.HighResEdge;
+import models.MapEdge;
+import models.MapPoint;
 import models.ModelLoader;
 
 /**
@@ -144,8 +146,19 @@ public class Controller {
 		mapEdgesToStreets();
 		System.out.println("End GH - " + (System.currentTimeMillis() - time));
 
-		optimizeEdges();
-		optimizeEdges();
+		
+		removePointCount();
+		
+		optimizeEdges3();
+	}
+
+	private void removePointCount() {
+		calcAllPoints();
+		List<Edge> edges = mapViewer.getRoute();
+		for (Edge edge : edges) {
+			mapViewer.updateEdge(edge, reduceEdgePoints(edge));
+		}
+		calcAllPoints();
 	}
 
 	/**
@@ -169,6 +182,97 @@ public class Controller {
 		return mapViewer;
 	}
 
+	private void optimizeEdges3() {
+		System.out.println("optimize");
+		calcAllPoints();
+		List<Edge> edges = mapViewer.getRoute();
+		List<Edge> savedEdges = new ArrayList<>();
+		for (int i = 0; i < edges.size(); i++) {
+			Edge updatedEdge = new HighResEdge(edges.get(i));
+			MapEdge mapEdge = new MapEdge();
+			for (Double[] point : edges.get(i).getPoints()) {
+				
+				 if (hasAnyNearPoint(point, savedEdges)){
+					 // TODO commonEdge?
+				 } else {
+					 mapEdge.points.add(new MapPoint(point, getNearEdges(point)));
+					 
+//					 updatedEdge.getPoints().add(point);
+				 }
+				
+				
+			}
+//			if (updatedEdge.getPoints().size() > 5) {
+//				savedEdges.add(updatedEdge);
+//			}
+			if (mapEdge.points.size() > 5) {
+				savedEdges.add(mapEdge);
+			}
+		}
+		calcAllPoints();
+		mapViewer.setRoute(savedEdges);
+		calcAllPoints();
+		System.out.println("optimize-end");
+	}
+	
+	/**
+	 * @param point
+	 * @return
+	 */
+	private Map<Edge, Double[]> getNearEdges(Double[] refPoint) {
+		List<Edge> edges = mapViewer.getRoute();
+		Map<Edge, Double[]> nearEdges = new HashMap<>();
+		double distance = 0.01;
+		for (int i = 0; i < edges.size(); i++) {
+			for (Double[] point : edges.get(i).getPoints()) {
+				if (isNear(refPoint, point, distance)) {
+					nearEdges.put(edges.get(i), point);
+//					nearEdges.add(edges.get(i));
+					continue;
+				}
+			}
+		}
+		return nearEdges;
+	}
+
+	/**
+	 * @param point
+	 * @param savedEdges
+	 */
+	private boolean hasAnyNearPoint(Double[] refPoint, List<Edge> savedEdges) {
+		double distance = 0.01;
+		for (int i = 0; i < savedEdges.size(); i++) {
+			for (Double[] point : savedEdges.get(i).getPoints()) {
+				if (isNear(refPoint, point, distance)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * @param edge
+	 * @return
+	 */
+	private Edge reduceEdgePoints(Edge refEdge) {
+		double distance = 0.0075;
+		HighResEdge edge = new HighResEdge(refEdge);
+		for (Double[] point : refEdge.getPoints()) {
+			boolean flag = true;
+			for (Double[] savedPoint : edge.getPoints()) {
+				if (isNear(point, savedPoint, distance)) {
+					flag = false;
+					break;
+				}
+			}
+			if(flag) {
+				edge.getPoints().add(point);
+			}
+		}
+		return edge;
+	}
+	
 	private void optimizeEdges2() {
 		calcAllPoints();
 
@@ -241,7 +345,7 @@ public class Controller {
 
 							HighResEdge commonEdge = new HighResEdge();
 							commonEdge.addPositions(commonPart);
-								edges.add(commonEdge);
+							edges.add(commonEdge);
 						}
 
 					}
@@ -253,7 +357,7 @@ public class Controller {
 		System.out.println((edges.equals(mapViewer.getRoute())));
 		mapViewer.setRoute(edges);
 		calcAllPoints();
-		
+
 		for (Edge edge : mapViewer.getRoute()) {
 			if (edge.getPoints().size() == 1) {
 				edges.remove(edge);
@@ -264,12 +368,9 @@ public class Controller {
 	}
 
 	private void optimizeEdges() {
-
-		calcAllPoints();
 		List<Edge> edges = mapViewer.getRoute();
 		List<Edge> commonEdges = new ArrayList<>();
 		for (int i = 0; i < edges.size(); i++) {
-
 			HighResEdge updatedEdgeRef = new HighResEdge(edges.get(i));
 			HighResEdge commonEdge = new HighResEdge();
 			for (Double[] refPoint : edges.get(i).getPoints()) {
@@ -299,7 +400,7 @@ public class Controller {
 		}
 		mapViewer.addEdges(commonEdges);
 		calcAllPoints();
-		
+
 		for (Edge edge : mapViewer.getRoute()) {
 			if (edge.getPoints().size() < 5) {
 				edges.remove(edge);
@@ -309,15 +410,20 @@ public class Controller {
 		calcAllPoints();
 	}
 
-	private boolean isNear(Double[] refPoint, Double[] point) {
-		final double DISTANCE = 0.0005;
+	private boolean isNear(Double[] refPoint, Double[] point, double distance) {
+		
 		double deltaX = Math.abs(refPoint[0] - point[0]);
 		double deltaY = Math.abs(refPoint[1] - point[1]);
-		if ((deltaX + deltaY) < DISTANCE) {
+		if ((deltaX + deltaY) < distance) {
 			return true;
 		} else {
 			return false;
 		}
+	}
+	
+	private boolean isNear(Double[] refPoint, Double[] point) {
+	final double DISTANCE = 0.0005;
+	return isNear(refPoint,point,DISTANCE);
 	}
 
 	private void calcAllPoints() {

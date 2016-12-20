@@ -188,6 +188,7 @@ public class MyMap extends JXMapViewer {
 	 */
 	public void setRoute(List<Edge> route) {
 		this.route = route;
+		routePainter.setRoute(route);
 	}
 
 	/**
