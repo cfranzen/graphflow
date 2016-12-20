@@ -40,9 +40,9 @@ public class HighResEdge extends Edge {
 	 *            is LON,LAT or LON,LAT,ELE
 	 * 
 	 */
-	public void addPositions(List<Double[]> geoJson) {
+	public void addGhPositions(List<Double[]> geoJson) {
 		for (Double[] point : geoJson) {
-			addPosition(point);
+			addGhPosition(point);
 		}
 
 		// points.addAll(geoJson);
@@ -57,8 +57,22 @@ public class HighResEdge extends Edge {
 	/**
 	 * @param doubles
 	 */
-	public void addPosition(Double[] point) {
+	public void addGhPosition(Double[] point) {
 		points.add(new Double[] { point[1], point[0] });
+	}
+
+	/**
+	 * @param refPoint
+	 */
+	public void addPosition(Double[] refPoint) {
+		points.add(refPoint);
+	}
+
+	/**
+	 * @param oldList
+	 */
+	public void addPositions(List<Double[]> oldList) {
+		points.addAll(oldList);
 	}
 
 }

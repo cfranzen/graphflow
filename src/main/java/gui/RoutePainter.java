@@ -79,10 +79,12 @@ public class RoutePainter implements Painter<JXMapViewer> {
 		
 		int i = 0;
 		for (Edge edge : route) {
+			int j = 0;
 			i++;
 			List<Double[]> points = edge.getPoints();
 			Double[] last = null;
 			for (Double[] point : points) {
+				j++;
 				if (last == null) {
 					last = point;
 					continue;
@@ -118,7 +120,8 @@ public class RoutePainter implements Painter<JXMapViewer> {
 					String index = i + "";
 					
 					final int circleRadius = 10;
-					g.setColor(Color.BLUE);
+//					System.out.println(j + " - " + edge.getPoints().size());
+					g.setColor(calculateColor(j, edge.getPoints().size()+1));
 					g.fillOval((int)startPt.getX(), (int)startPt.getY(), circleRadius, circleRadius);
 					g.setColor(Color.RED);
 					g.drawString(index, (int)startPt.getX() + i, (int)startPt.getY());
@@ -128,7 +131,6 @@ public class RoutePainter implements Painter<JXMapViewer> {
 	}
 
 	private Color calculateColor(int workload, int capacity) {
-		Color stepColor;
 		Color color1 = Color.GREEN;
 		Color color2 = Color.RED;
 		// System.out.println(String.format("Workload: %d, Capacity: %d",
@@ -137,7 +139,6 @@ public class RoutePainter implements Painter<JXMapViewer> {
 		int red = (int) (color2.getRed() * ratio + color1.getRed() * (1 - ratio));
 		int green = (int) (color2.getGreen() * ratio + color1.getGreen() * (1 - ratio));
 		int blue = (int) (color2.getBlue() * ratio + color1.getBlue() * (1 - ratio));
-		stepColor = new Color(red, green, blue);
-		return stepColor;
+		return new Color(red, green, blue);
 	}
 }

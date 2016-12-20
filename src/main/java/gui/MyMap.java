@@ -43,7 +43,7 @@ import models.HighResEdge;
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */
-public class Map extends JXMapViewer {
+public class MyMap extends JXMapViewer {
 
 	private static final long serialVersionUID = -6620174270673711401L;
 
@@ -59,7 +59,7 @@ public class Map extends JXMapViewer {
 	/**
 	 * Default Constructor, initializes the tile factory.
 	 */
-	public Map(Controller controller) {
+	public MyMap(Controller controller) {
 		super();
 		this.controller = controller;
 
@@ -179,7 +179,7 @@ public class Map extends JXMapViewer {
 	 * @return the route
 	 */
 	public List<Edge> getRoute() {
-		return route;
+		return new ArrayList<>(route);
 	}
 
 	/**
