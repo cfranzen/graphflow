@@ -2,29 +2,18 @@ package main;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
-import java.util.concurrent.Future;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-
-import org.jxmapviewer.viewer.GeoPosition;
-import org.jxmapviewer.viewer.util.GeoUtil;
 
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
@@ -146,19 +135,18 @@ public class Controller {
 		mapEdgesToStreets();
 		System.out.println("End GH - " + (System.currentTimeMillis() - time));
 
-		
-		removePointCount();
-		
-		optimizeEdges3();
+		reducePointCount();
+
+		optimizeEdges();
 	}
 
-	private void removePointCount() {
-		calcAllPoints();
+	private void reducePointCount() {
+		sumAllPoints();
 		List<Edge> edges = mapViewer.getRoute();
 		for (Edge edge : edges) {
 			mapViewer.updateEdge(edge, reduceEdgePoints(edge));
 		}
-		calcAllPoints();
+		sumAllPoints();
 	}
 
 	/**
@@ -182,52 +170,75 @@ public class Controller {
 		return mapViewer;
 	}
 
-	private void optimizeEdges3() {
+	private void optimizeEdges() {
 		System.out.println("optimize");
-		calcAllPoints();
+		sumAllPoints();
 		List<Edge> edges = mapViewer.getRoute();
 		List<Edge> savedEdges = new ArrayList<>();
 		for (int i = 0; i < edges.size(); i++) {
-			Edge updatedEdge = new HighResEdge(edges.get(i));
 			MapEdge mapEdge = new MapEdge();
 			for (Double[] point : edges.get(i).getPoints()) {
-				
-				 if (hasAnyNearPoint(point, savedEdges)){
-					 // TODO commonEdge?
-				 } else {
-					 mapEdge.points.add(new MapPoint(point, getNearEdges(point)));
-					 
-//					 updatedEdge.getPoints().add(point);
-				 }
-				
-				
+				if (hasAnyNearPoint(point, savedEdges)) {
+					// TODO commonEdge?
+				} else {
+					double distance = 0.01;
+					MapPoint mp = new MapPoint(point, getNearEdges(point, edges, distance));
+					mapEdge.points.add(mp);
+				}
 			}
-//			if (updatedEdge.getPoints().size() > 5) {
-//				savedEdges.add(updatedEdge);
-//			}
 			if (mapEdge.points.size() > 5) {
 				savedEdges.add(mapEdge);
 			}
 		}
-		calcAllPoints();
+		
+		/*
+		 * Find nearest contact point. TODO connect to thickest part instead of nearest.
+		 */
+		// for (Edge edge : savedEdges) {
+		for (int j = 0; j < savedEdges.size(); j++) {
+			Edge edge = savedEdges.get(j);
+			List<MapPoint> points = ((MapEdge) edge).points;
+			MapPoint mpFirst = points.get(0);
+			MapPoint mpLast = points.get(points.size() - 1);
+			double distance = 0.02;
+
+			for (int i = 0; i < savedEdges.size(); i++) {
+				if (i == j) {
+					continue;
+				}
+				for (Double[] point : savedEdges.get(i).getPoints()) {
+					if (isNear(new Double[] { mpFirst.x, mpFirst.y }, point, distance)) {
+						if (mpFirst.contactPoint == null || getDistance(new Double[] { mpFirst.x, mpFirst.y },
+								point) < getDistance(new Double[] { mpFirst.x, mpFirst.y }, mpFirst.contactPoint)) {
+							mpFirst.contactPoint = point;
+						}
+					}
+					if (isNear(new Double[] { mpLast.x, mpLast.y }, point, distance)) {
+						if (mpLast.contactPoint == null || getDistance(new Double[] { mpLast.x, mpLast.y },
+								point) < getDistance(new Double[] { mpLast.x, mpLast.y }, mpLast.contactPoint)) {
+							mpLast.contactPoint = point;
+						}
+					}
+				}
+			}
+		}
+		sumAllPoints();
 		mapViewer.setRoute(savedEdges);
-		calcAllPoints();
+		sumAllPoints();
 		System.out.println("optimize-end");
 	}
-	
+
 	/**
 	 * @param point
 	 * @return
 	 */
-	private Map<Edge, Double[]> getNearEdges(Double[] refPoint) {
-		List<Edge> edges = mapViewer.getRoute();
+	private Map<Edge, Double[]> getNearEdges(Double[] refPoint, List<Edge> edges, double distance) {
 		Map<Edge, Double[]> nearEdges = new HashMap<>();
-		double distance = 0.01;
+
 		for (int i = 0; i < edges.size(); i++) {
 			for (Double[] point : edges.get(i).getPoints()) {
 				if (isNear(refPoint, point, distance)) {
 					nearEdges.put(edges.get(i), point);
-//					nearEdges.add(edges.get(i));
 					continue;
 				}
 			}
@@ -266,167 +277,28 @@ public class Controller {
 					break;
 				}
 			}
-			if(flag) {
+			if (flag) {
 				edge.getPoints().add(point);
 			}
 		}
 		return edge;
 	}
-	
-	private void optimizeEdges2() {
-		calcAllPoints();
-
-		List<Edge> edges = mapViewer.getRoute();
-		for (Edge edge : mapViewer.getRoute()) {
-			if (edge.getPoints().size() == 1) {
-				edges.remove(edge);
-			}
-		}
-
-		outer: for (int i = 0; i < edges.size(); i++) {
-			Edge edge = edges.get(i);
-			List<Double[]> points = edge.getPoints();
-
-			for (int j = 0; j < points.size(); j++) {
-				Double[] point = points.get(j);
-
-				for (int k = 0; k < edges.size(); k++) {
-					Edge edge2 = edges.get(k);
-					List<Double[]> points2 = edge2.getPoints();
-
-					for (int l = 0; l < points2.size(); l++) {
-						Double[] point2 = points2.get(l);
-
-						if (isNear(point, point2)) {
-							// Begin common Part
-							boolean sameDirection = false;
-							if (points.size() <= j + 1 || points2.size() <= l + 1) {
-								continue outer; // TODO refactor
-							}
-							if (isNear(points.get(j + 1), points2.get(l + 1))) {
-								sameDirection = true;
-							}
-							List<Double[]> commonPart = new ArrayList<>();
-							// cut edges and save only old part
-							// Check direction
-							List<Double[]> old1 = points.subList(0, j);
-							List<Double[]> new1 = points.subList(j, points.size());
-
-							edge = new HighResEdge(edge);
-							((HighResEdge) edge).addPositions(old1);
-
-							List<Double[]> old2;
-							List<Double[]> new2;
-							if (sameDirection) {
-								old2 = points2.subList(0, l);
-								new2 = points2.subList(l, points2.size());
-							} else {
-								new2 = points2.subList(0, l);
-								old2 = points2.subList(l, points2.size());
-							}
-							edge2 = new HighResEdge(edge2);
-							((HighResEdge) edge2).addPositions(old2);
-
-							// while 1 near 2 add to common
-							int m;
-							for (m = 0; m < new1.size() && m < new2.size(); m++) {
-								Double[] p1 = new1.get(m);
-								Double[] p2 = new2.get(m);
-								if (isNear(p1, p2)) {
-									commonPart.add(p1);
-								}
-							}
-							new1 = new1.subList(m, new1.size());
-							new2 = new2.subList(m, new2.size());
-							// after save rest as new edges -> will be optimzed
-							// later
-							edges.set(i, edge);
-							edges.set(k, edge2);
-
-							HighResEdge commonEdge = new HighResEdge();
-							commonEdge.addPositions(commonPart);
-							edges.add(commonEdge);
-						}
-
-					}
-
-				}
-
-			}
-		}
-		System.out.println((edges.equals(mapViewer.getRoute())));
-		mapViewer.setRoute(edges);
-		calcAllPoints();
-
-		for (Edge edge : mapViewer.getRoute()) {
-			if (edge.getPoints().size() == 1) {
-				edges.remove(edge);
-			}
-		}
-		mapViewer.setRoute(edges);
-		calcAllPoints();
-	}
-
-	private void optimizeEdges() {
-		List<Edge> edges = mapViewer.getRoute();
-		List<Edge> commonEdges = new ArrayList<>();
-		for (int i = 0; i < edges.size(); i++) {
-			HighResEdge updatedEdgeRef = new HighResEdge(edges.get(i));
-			HighResEdge commonEdge = new HighResEdge();
-			for (Double[] refPoint : edges.get(i).getPoints()) {
-				boolean flagNear = false;
-				for (int j = i + 1; j < edges.size(); j++) {
-					HighResEdge updatedEdge = new HighResEdge(edges.get(j));
-					for (Double[] point : edges.get(j).getPoints()) {
-						if (!isNear(refPoint, point)) {
-							updatedEdge.addGhPosition(new Double[] { point[1], point[0] });
-						} else {
-							flagNear = true;
-						}
-					}
-					mapViewer.updateEdge(edges.get(j), updatedEdge);
-
-				}
-				if (flagNear) {
-					commonEdge.addGhPosition(new Double[] { refPoint[1], refPoint[0] });
-				} else {
-					updatedEdgeRef.addGhPosition(new Double[] { refPoint[1], refPoint[0] });
-				}
-			}
-			System.out.println("commonEdge: " + commonEdge.getPoints().size());
-			commonEdges.add(commonEdge);
-			mapViewer.updateEdge(edges.get(i), updatedEdgeRef);
-			calcAllPoints();
-		}
-		mapViewer.addEdges(commonEdges);
-		calcAllPoints();
-
-		for (Edge edge : mapViewer.getRoute()) {
-			if (edge.getPoints().size() < 5) {
-				edges.remove(edge);
-			}
-		}
-		mapViewer.setRoute(edges);
-		calcAllPoints();
-	}
 
 	private boolean isNear(Double[] refPoint, Double[] point, double distance) {
-		
-		double deltaX = Math.abs(refPoint[0] - point[0]);
-		double deltaY = Math.abs(refPoint[1] - point[1]);
-		if ((deltaX + deltaY) < distance) {
+		if (getDistance(refPoint, point) < distance) {
 			return true;
 		} else {
 			return false;
 		}
 	}
-	
-	private boolean isNear(Double[] refPoint, Double[] point) {
-	final double DISTANCE = 0.0005;
-	return isNear(refPoint,point,DISTANCE);
+
+	private double getDistance(Double[] refPoint, Double[] point) {
+		double deltaX = Math.abs(refPoint[0] - point[0]);
+		double deltaY = Math.abs(refPoint[1] - point[1]);
+		return deltaX + deltaY;
 	}
 
-	private void calcAllPoints() {
+	private void sumAllPoints() {
 		int i = 0;
 		List<Edge> edges = mapViewer.getRoute();
 		for (Edge edge : edges) {
