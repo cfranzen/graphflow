@@ -1,8 +1,8 @@
 package models;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+
+import org.jxmapviewer.viewer.GeoPosition;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
@@ -10,20 +10,18 @@ import java.util.Map;
  */
 public class MapPoint {
 
-	public double x;
-	public double y;
-	public Map<Edge, Double[]> edgeMap;
-	public Double[] contactPoint = null;
+	private GeoPosition posi;
+	public Map<Edge, GeoPosition> edgeMap;
+	public GeoPosition contactPoint = null;
 	
 	/**
 	 * @param x
 	 * @param y
 	 * @param edges
 	 */
-	public MapPoint(double x, double y, Map<Edge, Double[]> edgeMap) {
+	public MapPoint(double x, double y, Map<Edge, GeoPosition> edgeMap) {
 		super();
-		this.x = x;
-		this.y = y;
+		this.posi = new GeoPosition(x,y);
 		this.edgeMap = edgeMap;
 	}
 
@@ -31,12 +29,15 @@ public class MapPoint {
 	 * @param point
 	 * @param nearEdges
 	 */
-	public MapPoint(Double[] point, Map<Edge, Double[]> edgeMap) {
+	public MapPoint(GeoPosition point, Map<Edge, GeoPosition> edgeMap) {
 		super();
-		this.x = point[0];
-		this.y = point[1];
+		this.posi = point;
 		this.edgeMap = edgeMap;
 		
+	}
+	
+	public GeoPosition getPosition() {
+		return posi;
 	}
 	
 }

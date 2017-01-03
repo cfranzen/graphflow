@@ -15,6 +15,8 @@ import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 
+import org.jxmapviewer.viewer.GeoPosition;
+
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
 import com.graphhopper.GraphHopper;
@@ -177,7 +179,7 @@ public class Controller {
 		List<Edge> savedEdges = new ArrayList<>();
 		for (int i = 0; i < edges.size(); i++) {
 			MapEdge mapEdge = new MapEdge();
-			for (Double[] point : edges.get(i).getPoints()) {
+			for (GeoPosition point : edges.get(i).getPoints()) {
 				if (hasAnyNearPoint(point, savedEdges)) {
 					// TODO commonEdge?
 				} else {
@@ -190,9 +192,10 @@ public class Controller {
 				savedEdges.add(mapEdge);
 			}
 		}
-		
+
 		/*
-		 * Find nearest contact point. TODO connect to thickest part instead of nearest.
+		 * Find nearest contact point. TODO connect to thickest part instead of
+		 * nearest.
 		 */
 		// for (Edge edge : savedEdges) {
 		for (int j = 0; j < savedEdges.size(); j++) {
@@ -206,16 +209,16 @@ public class Controller {
 				if (i == j) {
 					continue;
 				}
-				for (Double[] point : savedEdges.get(i).getPoints()) {
-					if (isNear(new Double[] { mpFirst.x, mpFirst.y }, point, distance)) {
-						if (mpFirst.contactPoint == null || getDistance(new Double[] { mpFirst.x, mpFirst.y },
-								point) < getDistance(new Double[] { mpFirst.x, mpFirst.y }, mpFirst.contactPoint)) {
+				for (GeoPosition point : savedEdges.get(i).getPoints()) {
+					if (isNear(mpFirst.getPosition(), point, distance)) {
+						if (mpFirst.contactPoint == null || getDistance(mpFirst.getPosition(),
+								point) < getDistance(mpFirst.getPosition(), mpFirst.contactPoint)) {
 							mpFirst.contactPoint = point;
 						}
 					}
-					if (isNear(new Double[] { mpLast.x, mpLast.y }, point, distance)) {
-						if (mpLast.contactPoint == null || getDistance(new Double[] { mpLast.x, mpLast.y },
-								point) < getDistance(new Double[] { mpLast.x, mpLast.y }, mpLast.contactPoint)) {
+					if (isNear(mpLast.getPosition(), point, distance)) {
+						if (mpLast.contactPoint == null || getDistance(mpLast.getPosition(),
+								point) < getDistance(mpLast.getPosition(), mpLast.contactPoint)) {
 							mpLast.contactPoint = point;
 						}
 					}
@@ -232,11 +235,11 @@ public class Controller {
 	 * @param point
 	 * @return
 	 */
-	private Map<Edge, Double[]> getNearEdges(Double[] refPoint, List<Edge> edges, double distance) {
-		Map<Edge, Double[]> nearEdges = new HashMap<>();
+	private Map<Edge, GeoPosition> getNearEdges(GeoPosition refPoint, List<Edge> edges, double distance) {
+		Map<Edge, GeoPosition> nearEdges = new HashMap<>();
 
 		for (int i = 0; i < edges.size(); i++) {
-			for (Double[] point : edges.get(i).getPoints()) {
+			for (GeoPosition point : edges.get(i).getPoints()) {
 				if (isNear(refPoint, point, distance)) {
 					nearEdges.put(edges.get(i), point);
 					continue;
@@ -250,10 +253,10 @@ public class Controller {
 	 * @param point
 	 * @param savedEdges
 	 */
-	private boolean hasAnyNearPoint(Double[] refPoint, List<Edge> savedEdges) {
+	private boolean hasAnyNearPoint(GeoPosition refPoint, List<Edge> savedEdges) {
 		double distance = 0.01;
 		for (int i = 0; i < savedEdges.size(); i++) {
-			for (Double[] point : savedEdges.get(i).getPoints()) {
+			for (GeoPosition point : savedEdges.get(i).getPoints()) {
 				if (isNear(refPoint, point, distance)) {
 					return true;
 				}
@@ -269,9 +272,9 @@ public class Controller {
 	private Edge reduceEdgePoints(Edge refEdge) {
 		double distance = 0.0075;
 		HighResEdge edge = new HighResEdge(refEdge);
-		for (Double[] point : refEdge.getPoints()) {
+		for (GeoPosition point : refEdge.getPoints()) {
 			boolean flag = true;
-			for (Double[] savedPoint : edge.getPoints()) {
+			for (GeoPosition savedPoint : edge.getPoints()) {
 				if (isNear(point, savedPoint, distance)) {
 					flag = false;
 					break;
@@ -284,7 +287,7 @@ public class Controller {
 		return edge;
 	}
 
-	private boolean isNear(Double[] refPoint, Double[] point, double distance) {
+	private boolean isNear(GeoPosition refPoint, GeoPosition point, double distance) {
 		if (getDistance(refPoint, point) < distance) {
 			return true;
 		} else {
@@ -292,9 +295,9 @@ public class Controller {
 		}
 	}
 
-	private double getDistance(Double[] refPoint, Double[] point) {
-		double deltaX = Math.abs(refPoint[0] - point[0]);
-		double deltaY = Math.abs(refPoint[1] - point[1]);
+	private double getDistance(GeoPosition refPoint, GeoPosition point) {
+		double deltaX = Math.abs(refPoint.getLatitude() - point.getLatitude());
+		double deltaY = Math.abs(refPoint.getLongitude() - point.getLongitude());
 		return deltaX + deltaY;
 	}
 

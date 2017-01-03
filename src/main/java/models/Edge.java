@@ -173,10 +173,13 @@ public class Edge {
 	/**
 	 * @return
 	 */
-	public List<Double[]> getPoints() {
+	public List<GeoPosition> getPoints() {
+//		return Arrays.asList(
+//				new Double[]{start.getLatitude(), start.getLongitude()},
+//				new Double[]{dest.getLatitude(), dest.getLongitude()});
 		return Arrays.asList(
-				new Double[]{start.getLatitude(), start.getLongitude()},
-				new Double[]{dest.getLatitude(), dest.getLongitude()});
+				new GeoPosition(start.getLatitude(), start.getLongitude()),
+				new GeoPosition(dest.getLatitude(), dest.getLongitude()));
 	}
 
 }

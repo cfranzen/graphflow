@@ -1,6 +1,3 @@
-/**
- * 
- */
 package models;
 
 import java.util.ArrayList;
@@ -8,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import main.Controller;
+import org.jxmapviewer.viewer.GeoPosition;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
@@ -18,17 +15,14 @@ public class MapEdge extends Edge {
 
 	public List<MapPoint> points = new ArrayList<>();
 	
-	// TODO refactor
-	private static final List<Edge> allEdges = Controller.getInstance().getMapViewer().getRoute(); 
-	
 	/* (non-Javadoc)
 	 * @see models.Edge#getPoints()
 	 */
 	@Override
-	public List<Double[]> getPoints() {
-		List<Double[]> returnPoints = new ArrayList<Double[]>();
+	public List<GeoPosition> getPoints() {
+		List<GeoPosition> returnPoints = new ArrayList<>();
 		for (MapPoint mapPoint : points) {
-			returnPoints.add(new Double[] {mapPoint.x, mapPoint.y});
+			returnPoints.add(mapPoint.getPosition());
 		}
 		return returnPoints;
 	}
@@ -39,9 +33,9 @@ public class MapEdge extends Edge {
 	 * @return
 	 */
 	public int getCapacityForPoint(int currentTimeStep, int index) {
-		Map<Edge, Double[]> map = points.get(index).edgeMap;
+		Map<Edge, GeoPosition> map = points.get(index).edgeMap;
 		int capacity = 0;
-		for (Entry<Edge,Double[]> edge : map.entrySet()) {
+		for (Entry<Edge, GeoPosition> edge : map.entrySet()) {
 			capacity += edge.getKey().getCapacity(currentTimeStep);
 		}
 		return capacity;
@@ -53,9 +47,9 @@ public class MapEdge extends Edge {
 	 * @return
 	 */
 	public int getWorkloadForPoint(int currentTimeStep, int index) {
-		Map<Edge, Double[]> map = points.get(index).edgeMap;
+		Map<Edge, GeoPosition> map = points.get(index).edgeMap;
 		int workload = 0;
-		for (Entry<Edge,Double[]> edge : map.entrySet()) {
+		for (Entry<Edge, GeoPosition> edge : map.entrySet()) {
 			workload += edge.getKey().getWorkload(currentTimeStep);
 		}
 		return workload;

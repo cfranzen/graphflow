@@ -81,18 +81,18 @@ public class RoutePainter implements Painter<JXMapViewer> {
 		int i = 0;
 		for (Edge edge : route) {
 			i++;
-			List<Double[]> points = edge.getPoints();
-			Double[] last = null;
+			List<GeoPosition> points = edge.getPoints();
+			GeoPosition last = null;
 			for (int j = 0; j < points.size(); j++) {
-				Double[] point = points.get(j);
+				GeoPosition point = points.get(j);
 				if (last == null) {
 					last = point;
 					
 				}
 
 				// convert geo-coordinate to world bitmap pixel
-				Point2D startPt2D = map.getTileFactory().geoToPixel(new GeoPosition(last[0], last[1]), map.getZoom());
-				Point2D endPt2D = map.getTileFactory().geoToPixel(new GeoPosition(point[0], point[1]), map.getZoom());
+				Point2D startPt2D = map.getTileFactory().geoToPixel(last, map.getZoom());
+				Point2D endPt2D = map.getTileFactory().geoToPixel(point, map.getZoom());
 				last = point;
 
 				Point startPt = new Point((int) startPt2D.getX(), (int) startPt2D.getY());
@@ -123,22 +123,15 @@ public class RoutePainter implements Painter<JXMapViewer> {
 				g.drawLine((int) startPt.getX(), (int) startPt.getY(), (int) endPt.getX(), (int) endPt.getY());
 
 				// Contact Points - not finished
-				// if (points.indexOf(point) <= 1 || points.indexOf(point) >=
-				// points.size()-2) {
-				
 				if (showContactPoints) {
 					if (MapEdge.class.isInstance(edge)) {
 						final int circleRadius = 10;
 						
-						g.setColor(Color.BLUE);
-//						Map<Edge, Double[]> edgeMap = ((MapEdge) edge).points.get(j).edgeMap;
-//						Map<Edge, Double[]> edgeMap = ((MapEdge) edge).points.get(j).contactEdgeMap;
-//						for (Entry<Edge, Double[]> entry : edgeMap.entrySet()) {
-//							Double[] p = entry.getValue();
-						Double[] p = ((MapEdge) edge).points.get(j).contactPoint;
+//						g.setColor(Color.BLUE);
+						GeoPosition p = ((MapEdge) edge).points.get(j).contactPoint;
 						if (p != null) {
 							
-							Point2D pp = map.getTileFactory().geoToPixel(new GeoPosition(p[0], p[1]), map.getZoom());
+							Point2D pp = map.getTileFactory().geoToPixel(p, map.getZoom());
 							g.drawLine((int) pp.getX(), (int) pp.getY(), (int) endPt2D.getX(), (int) endPt2D.getY());
 							g.fillOval((int) pp.getX(), (int) pp.getY(), circleRadius, circleRadius);
 					}}

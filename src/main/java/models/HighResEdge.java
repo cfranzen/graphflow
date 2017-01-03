@@ -14,7 +14,8 @@ import org.jxmapviewer.viewer.GeoPosition;
  */
 public class HighResEdge extends Edge {
 
-	private List<Double[]> points = new ArrayList<>();
+//	private List<Double[]> points = new ArrayList<>();
+	private List<GeoPosition> points = new ArrayList<>();
 
 	public HighResEdge() {
 		super();
@@ -50,7 +51,7 @@ public class HighResEdge extends Edge {
 	}
 
 	@Override
-	public List<Double[]> getPoints() {
+	public List<GeoPosition> getPoints() {
 		return points;
 	}
 
@@ -58,20 +59,20 @@ public class HighResEdge extends Edge {
 	 * @param doubles
 	 */
 	public void addGhPosition(Double[] point) {
-		points.add(new Double[] { point[1], point[0] });
+		points.add(new GeoPosition( point[1], point[0]));
 	}
 
 	/**
 	 * @param refPoint
 	 */
 	public void addPosition(Double[] refPoint) {
-		points.add(refPoint);
+		points.add(new GeoPosition(refPoint[1], refPoint[0]));
 	}
 
 	/**
 	 * @param oldList
 	 */
-	public void addPositions(List<Double[]> oldList) {
+	public void addPositions(List<GeoPosition> oldList) {
 		points.addAll(oldList);
 	}
 
