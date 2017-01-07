@@ -15,9 +15,11 @@ import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.painter.Painter;
 import org.jxmapviewer.viewer.GeoPosition;
 
+import main.Controller;
 import models.Edge;
 import models.EdgeType;
 import models.MapEdge;
+import models.MapPoint;
 
 /**
  * Paints a route
@@ -27,12 +29,15 @@ import models.MapEdge;
  */
 public class RoutePainter implements Painter<JXMapViewer> {
 
+	public final static int zoomLevel = 6;
+	
 	private boolean antiAlias = true;
 	private boolean showPoints = true;
 	private boolean showContactPoints = true;
 	private int currentTimeStep = 0;
+	
 
-	private Collection<Edge> route;
+	private List<Edge> route;
 
 	/**
 	 * @param track
@@ -48,7 +53,7 @@ public class RoutePainter implements Painter<JXMapViewer> {
 	 * @param route
 	 *            the route to set
 	 */
-	public void setRoute(Collection<Edge> route) {
+	public void setRoute(List<Edge> route) {
 		this.route = route;
 	}
 
@@ -79,15 +84,18 @@ public class RoutePainter implements Painter<JXMapViewer> {
 	 */
 	private void drawRoute(Graphics2D g, JXMapViewer map) {
 		int i = 0;
+		showSearchRadius(g, map);
 		for (Edge edge : route) {
 			i++;
 			List<GeoPosition> points = edge.getPoints();
 			GeoPosition last = null;
+
 			for (int j = 0; j < points.size(); j++) {
 				GeoPosition point = points.get(j);
 				if (last == null) {
 					last = point;
-					
+					showContactPoints(g, map, edge, j);
+					continue;
 				}
 
 				// convert geo-coordinate to world bitmap pixel
@@ -100,7 +108,7 @@ public class RoutePainter implements Painter<JXMapViewer> {
 				int currentWorkload = 0;
 				int currentCapacity = 0;
 				if (MapEdge.class.isInstance(edge)) {
-					MapEdge mapEdge = (MapEdge)edge;
+					MapEdge mapEdge = (MapEdge) edge;
 					currentWorkload = mapEdge.getWorkloadForPoint(currentTimeStep, j);
 					currentCapacity = mapEdge.getCapacityForPoint(currentTimeStep, j);
 				} else {
@@ -117,36 +125,78 @@ public class RoutePainter implements Painter<JXMapViewer> {
 						g.setStroke(new BasicStroke(currentCapacity / 500));
 						g.setColor(Color.BLUE);
 					} else {
-						g.setStroke(new BasicStroke(currentCapacity / 100));
+						g.setStroke(new BasicStroke((float) (currentCapacity / 100)));
 					}
 				}
 				g.drawLine((int) startPt.getX(), (int) startPt.getY(), (int) endPt.getX(), (int) endPt.getY());
 
 				// Contact Points - not finished
-				if (showContactPoints) {
-					if (MapEdge.class.isInstance(edge)) {
-						final int circleRadius = 10;
-						
-//						g.setColor(Color.BLUE);
-						GeoPosition p = ((MapEdge) edge).points.get(j).contactPoint;
-						if (p != null) {
-							
-							Point2D pp = map.getTileFactory().geoToPixel(p, map.getZoom());
-							g.drawLine((int) pp.getX(), (int) pp.getY(), (int) endPt2D.getX(), (int) endPt2D.getY());
-							g.fillOval((int) pp.getX(), (int) pp.getY(), circleRadius, circleRadius);
-					}}
+				if (i == 9 && j == 0) {
+					System.out.println("stop");
 				}
+				showContactPoints(g, map, edge, j);
+				showPointDescription(g, map, i, edge, j, startPt, endPt);
+			}
+		}
+	}
 
-				if (showPoints) {
-					String index = i + "";
+	private void showPointDescription(Graphics2D g, JXMapViewer map, int i, Edge edge, int j, Point startPt,
+			Point endPt) {
+		if (showPoints && (map.getZoom() < zoomLevel)) {
+			String index = i + "";
 
-					final int circleRadius = 10;
-					// System.out.println(j + " - " + edge.getPoints().size());
-					g.setColor(calculateColor(j, edge.getPoints().size() + 1));
-					g.fillOval((int) startPt.getX(), (int) startPt.getY(), circleRadius, circleRadius);
-					g.setColor(Color.RED);
-					g.drawString(index + " - " + j, (int) startPt.getX() + i, (int) startPt.getY());
-					g.drawString(index, (int) endPt.getX() + i, (int) endPt.getY());
+			final int circleRadius = 10;
+			g.setColor(calculateColor(j, edge.getPoints().size() + 1));
+			g.fillOval((int) startPt.getX() - (circleRadius / 2), (int) startPt.getY() - (circleRadius / 2),
+					circleRadius, circleRadius);
+			g.setColor(Color.RED);
+			g.drawString(index + " - " + j, (int) startPt.getX() + i, (int) startPt.getY());
+			g.drawString(index, (int) endPt.getX() + i, (int) endPt.getY());
+		}
+	}
+
+	private void showContactPoints(Graphics2D g, JXMapViewer map, Edge edge, int j) {
+		if (showContactPoints) {
+			if (MapEdge.class.isInstance(edge)) {
+				GeoPosition p = ((MapEdge) edge).points.get(j).contactPoint;
+				GeoPosition point = ((MapEdge) edge).points.get(j).getPosition();
+				
+				if (p != null) {
+					Point2D endPt2D = map.getTileFactory().geoToPixel(point, map.getZoom());
+					Point2D pp = map.getTileFactory().geoToPixel(p, map.getZoom());
+
+					if (map.getZoom() < zoomLevel) {
+						g.setColor(Color.BLUE);
+						final int circleRadius = 10;
+						g.fillOval((int) pp.getX(), (int) pp.getY(), circleRadius, circleRadius);
+					}
+					
+					g.drawLine((int) pp.getX(), (int) pp.getY(), (int) endPt2D.getX(), (int) endPt2D.getY());
+
+				}
+			}
+		}
+	}
+
+	private void showSearchRadius(Graphics2D g, JXMapViewer map) {
+		if (map.getZoom() < zoomLevel) {
+			// for (Edge edge : route) {
+			for (int i = 0; i < route.size(); i++) {
+				Edge edge = route.get(i);
+				if (MapEdge.class.isInstance(edge)) {
+
+					for (int j = 0; j < edge.getPoints().size(); j += edge.getPoints().size() - 1) {
+						GeoPosition p = ((MapEdge) edge).points.get(j).getPosition();
+						Point2D pp = map.getTileFactory().geoToPixel(p, map.getZoom());
+//						double distance = 0.05;
+						double distance = Controller.contactSearchDistance;
+						GeoPosition pcopy = new GeoPosition(p.getLatitude() + distance, p.getLongitude() + distance);
+						int circleRadius = (int) Math
+								.abs((map.getTileFactory().geoToPixel(pcopy, map.getZoom())).getX() - pp.getX());
+						g.setColor(Color.CYAN);
+						g.fillOval((int) pp.getX() - (circleRadius / 2), (int) pp.getY() - (circleRadius / 2),
+								circleRadius, circleRadius);
+					}
 				}
 			}
 		}
@@ -155,8 +205,6 @@ public class RoutePainter implements Painter<JXMapViewer> {
 	private Color calculateColor(int workload, int capacity) {
 		Color color1 = Color.GREEN;
 		Color color2 = Color.RED;
-		// System.out.println(String.format("Workload: %d, Capacity: %d",
-		// workload, capacity));
 		float ratio = (float) workload / (float) capacity;
 		int red = (int) (color2.getRed() * ratio + color1.getRed() * (1 - ratio));
 		int green = (int) (color2.getGreen() * ratio + color1.getGreen() * (1 - ratio));

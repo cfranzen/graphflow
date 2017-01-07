@@ -65,8 +65,8 @@ public class CapacityWaypointRenderer implements WaypointRenderer<Waypoint> {
 	}
 
 	private void drawCircleWaypoint(Graphics2D g, Point2D point) {
-		int x = (int) point.getX() - circleRadius / 2;
-		int y = (int) point.getY() - circleRadius;
+		int x = (int) point.getX() - (circleRadius / 2);
+		int y = (int) point.getY() - (circleRadius / 2);
 
 		g.setColor(getWaypointColor());
 		g.fillOval(x, y, circleRadius, circleRadius);

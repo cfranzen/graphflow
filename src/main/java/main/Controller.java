@@ -2,6 +2,8 @@ package main;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,6 +63,19 @@ public class Controller {
 	private JFrame frame;
 
 	/**
+	 * used to searche for contact points with other edges
+	 */
+	public final static double contactSearchDistance = 0.025;
+	/**
+	 * used for removing multiple point which are near together
+	 */
+	public final static double reduceEdgeDistance = 0.0075;
+	/**
+	 * used combininq points and summarizing workload and capacity
+	 */
+	public final static double combinePointsDistance = 0.005;
+
+	/**
 	 * Returns the {@link Controller} instance, if the instance is
 	 * <code>null</code> a new instance is created.
 	 * 
@@ -88,6 +103,11 @@ public class Controller {
 	 */
 	public void run() {
 
+		initGui();
+		optimize();
+	}
+
+	private void initGui() {
 		// Display the viewer in a JFrame
 		frame = new JFrame("Graphstream");
 		frame.setSize(1600, 800);
@@ -107,6 +127,17 @@ public class Controller {
 		JButton btn = new RunButton(this);
 		btn.setSize(150, 50);
 		layeredPane.add(btn, new Integer(20));
+		JButton resetBtn = new JButton();
+		resetBtn.setText("RESET");
+		resetBtn.setSize(10, 50);
+		resetBtn.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				run();
+			}
+		});
+		layeredPane.add(resetBtn, new Integer(30));
 
 		// Processing input to own classes
 		input = ModelLoader.loadFile();
@@ -128,7 +159,9 @@ public class Controller {
 		// TODO resize components on frame resize
 		frame.setResizable(true);
 		frame.setVisible(true);
+	}
 
+	private void optimize() {
 		// init GH
 		long time = System.currentTimeMillis();
 		System.out.println("Start GH");
@@ -140,6 +173,9 @@ public class Controller {
 		reducePointCount();
 
 		optimizeEdges();
+
+		// For Debug
+		mapViewer.setZoom(13);
 	}
 
 	private void reducePointCount() {
@@ -180,11 +216,8 @@ public class Controller {
 		for (int i = 0; i < edges.size(); i++) {
 			MapEdge mapEdge = new MapEdge();
 			for (GeoPosition point : edges.get(i).getPoints()) {
-				if (hasAnyNearPoint(point, savedEdges)) {
-					// TODO commonEdge?
-				} else {
-					double distance = 0.01;
-					MapPoint mp = new MapPoint(point, getNearEdges(point, edges, distance));
+				if (!hasAnyNearPoint(point, savedEdges)) {
+					MapPoint mp = new MapPoint(point, getNearEdges(point, edges, combinePointsDistance));
 					mapEdge.points.add(mp);
 				}
 			}
@@ -192,43 +225,70 @@ public class Controller {
 				savedEdges.add(mapEdge);
 			}
 		}
-
+		/*
+		 * Split partial Edges
+		 */
+//		for (int i = 0; i < savedEdges.size(); i++) {
+//			List<MapPoint> points = ((MapEdge)savedEdges.get(i)).points;
+//			GeoPosition last = points.get(0).getPosition();
+//			
+//			for (int j = 1; j < points.size(); j++) {
+//				if (i == 5 && j == 300) {
+//					System.out.println("stop");
+//				}
+//				GeoPosition current = points.get(j).getPosition();
+//				if (getDistance(last, current) >  contactSearchDistance* 4) {
+//					// Split this edge into two
+//					MapEdge mapEdgeOld = new MapEdge();
+//					mapEdgeOld.points = points.subList(0, j);
+//					mapViewer.updateEdge(savedEdges.get(i), mapEdgeOld);
+//					
+//					MapEdge mapEdgeNew = new MapEdge();
+//					mapEdgeNew.points = points.subList(j, points.size());
+//					savedEdges.add(mapEdgeNew);
+//				}
+//				last = current;
+//				System.out.println(savedEdges.size());
+//			}
+//		}
+		
+		
 		/*
 		 * Find nearest contact point. TODO connect to thickest part instead of
 		 * nearest.
 		 */
-		// for (Edge edge : savedEdges) {
 		for (int j = 0; j < savedEdges.size(); j++) {
 			Edge edge = savedEdges.get(j);
 			List<MapPoint> points = ((MapEdge) edge).points;
 			MapPoint mpFirst = points.get(0);
 			MapPoint mpLast = points.get(points.size() - 1);
-			double distance = 0.02;
 
-			for (int i = 0; i < savedEdges.size(); i++) {
-				if (i == j) {
-					continue;
-				}
-				for (GeoPosition point : savedEdges.get(i).getPoints()) {
-					if (isNear(mpFirst.getPosition(), point, distance)) {
-						if (mpFirst.contactPoint == null || getDistance(mpFirst.getPosition(),
-								point) < getDistance(mpFirst.getPosition(), mpFirst.contactPoint)) {
-							mpFirst.contactPoint = point;
-						}
-					}
-					if (isNear(mpLast.getPosition(), point, distance)) {
-						if (mpLast.contactPoint == null || getDistance(mpLast.getPosition(),
-								point) < getDistance(mpLast.getPosition(), mpLast.contactPoint)) {
-							mpLast.contactPoint = point;
-						}
-					}
-				}
-			}
+			getContactForPoint(savedEdges, j, mpFirst);
+			getContactForPoint(savedEdges, j, mpLast);
+
 		}
 		sumAllPoints();
 		mapViewer.setRoute(savedEdges);
 		sumAllPoints();
 		System.out.println("optimize-end");
+	}
+
+	private void getContactForPoint(List<Edge> savedEdges, int j, MapPoint mp) {
+		for (int i = 0; i < savedEdges.size(); i++) {
+			if (i == j) {
+				continue;
+			}
+			double calcDistRef = contactSearchDistance;
+			for (int k = 0; k < savedEdges.get(i).getPoints().size(); k++) {
+
+				GeoPosition point = savedEdges.get(i).getPoints().get(k);
+				double calcDist = getDistance(mp.getPosition(), point);
+				if (calcDist < calcDistRef) {
+					calcDistRef = calcDist;
+					mp.contactPoint = point;
+				}
+			}
+		}
 	}
 
 	/**
@@ -270,12 +330,11 @@ public class Controller {
 	 * @return
 	 */
 	private Edge reduceEdgePoints(Edge refEdge) {
-		double distance = 0.0075;
 		HighResEdge edge = new HighResEdge(refEdge);
 		for (GeoPosition point : refEdge.getPoints()) {
 			boolean flag = true;
 			for (GeoPosition savedPoint : edge.getPoints()) {
-				if (isNear(point, savedPoint, distance)) {
+				if (isNear(point, savedPoint, reduceEdgeDistance)) {
 					flag = false;
 					break;
 				}
