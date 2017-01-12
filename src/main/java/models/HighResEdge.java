@@ -51,7 +51,7 @@ public class HighResEdge extends Edge {
 	}
 
 	@Override
-	public List<GeoPosition> getPoints() {
+	public List<GeoPosition> getPositions() {
 		return points;
 	}
 

@@ -8,7 +8,6 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.jxmapviewer.JXMapViewer;
@@ -19,7 +18,6 @@ import main.Controller;
 import models.Edge;
 import models.EdgeType;
 import models.MapEdge;
-import models.MapPoint;
 
 /**
  * Paints a route
@@ -30,12 +28,11 @@ import models.MapPoint;
 public class RoutePainter implements Painter<JXMapViewer> {
 
 	public final static int zoomLevel = 6;
-	
+
 	private boolean antiAlias = true;
 	private boolean showPoints = true;
 	private boolean showContactPoints = true;
 	private int currentTimeStep = 0;
-	
 
 	private List<Edge> route;
 
@@ -87,11 +84,13 @@ public class RoutePainter implements Painter<JXMapViewer> {
 		showSearchRadius(g, map);
 		for (Edge edge : route) {
 			i++;
-			List<GeoPosition> points = edge.getPoints();
+			List<GeoPosition> points = edge.getPositions();
 			GeoPosition last = null;
 
 			for (int j = 0; j < points.size(); j++) {
 				GeoPosition point = points.get(j);
+				modifyGraphics(g, edge, j);
+
 				if (last == null) {
 					last = point;
 					showContactPoints(g, map, edge, j);
@@ -105,29 +104,7 @@ public class RoutePainter implements Painter<JXMapViewer> {
 
 				Point startPt = new Point((int) startPt2D.getX(), (int) startPt2D.getY());
 				Point endPt = new Point((int) endPt2D.getX(), (int) endPt2D.getY());
-				int currentWorkload = 0;
-				int currentCapacity = 0;
-				if (MapEdge.class.isInstance(edge)) {
-					MapEdge mapEdge = (MapEdge) edge;
-					currentWorkload = mapEdge.getWorkloadForPoint(currentTimeStep, j);
-					currentCapacity = mapEdge.getCapacityForPoint(currentTimeStep, j);
-				} else {
-					currentWorkload = edge.getWorkload(currentTimeStep);
-					currentCapacity = edge.getCapacity(currentTimeStep);
-				}
-				if (currentCapacity == 0) {
-					g.setColor(Color.GRAY);
-					g.setStroke(new BasicStroke(1.2f));
-				} else {
-					Color lineColor = calculateColor(currentWorkload, currentCapacity);
-					g.setColor(lineColor);
-					if (edge.getType().equals(EdgeType.VESSEL)) {
-						g.setStroke(new BasicStroke(currentCapacity / 500));
-						g.setColor(Color.BLUE);
-					} else {
-						g.setStroke(new BasicStroke((float) (currentCapacity / 100)));
-					}
-				}
+
 				g.drawLine((int) startPt.getX(), (int) startPt.getY(), (int) endPt.getX(), (int) endPt.getY());
 
 				// Contact Points - not finished
@@ -140,13 +117,40 @@ public class RoutePainter implements Painter<JXMapViewer> {
 		}
 	}
 
+	private void modifyGraphics(Graphics2D g, Edge edge, int j) {
+		int currentWorkload = 0;
+		int currentCapacity = 0;
+		if (MapEdge.class.isInstance(edge)) {
+			MapEdge mapEdge = (MapEdge) edge;
+			currentWorkload = mapEdge.getWorkloadForPoint(currentTimeStep, j);
+			currentCapacity = mapEdge.getCapacityForPoint(currentTimeStep, j);
+		} else {
+			currentWorkload = edge.getWorkload(currentTimeStep);
+			currentCapacity = edge.getCapacity(currentTimeStep);
+		}
+
+		if (currentCapacity == 0) {
+			g.setColor(Color.GRAY);
+			g.setStroke(new BasicStroke(1.2f));
+		} else {
+			Color lineColor = calculateColor(currentWorkload, currentCapacity);
+			g.setColor(lineColor);
+			if (edge.getType().equals(EdgeType.VESSEL)) {
+				g.setStroke(new BasicStroke(currentCapacity / 500));
+				g.setColor(Color.PINK);
+			} else {
+				g.setStroke(new BasicStroke((float) (currentCapacity / 100)));
+			}
+		}
+	}
+
 	private void showPointDescription(Graphics2D g, JXMapViewer map, int i, Edge edge, int j, Point startPt,
 			Point endPt) {
 		if (showPoints && (map.getZoom() < zoomLevel)) {
 			String index = i + "";
 
 			final int circleRadius = 10;
-			g.setColor(calculateColor(j, edge.getPoints().size() + 1));
+			g.setColor(calculateColor(j, edge.getPositions().size() + 1));
 			g.fillOval((int) startPt.getX() - (circleRadius / 2), (int) startPt.getY() - (circleRadius / 2),
 					circleRadius, circleRadius);
 			g.setColor(Color.RED);
@@ -158,21 +162,27 @@ public class RoutePainter implements Painter<JXMapViewer> {
 	private void showContactPoints(Graphics2D g, JXMapViewer map, Edge edge, int j) {
 		if (showContactPoints) {
 			if (MapEdge.class.isInstance(edge)) {
-				GeoPosition p = ((MapEdge) edge).points.get(j).contactPoint;
-				GeoPosition point = ((MapEdge) edge).points.get(j).getPosition();
-				
-				if (p != null) {
-					Point2D endPt2D = map.getTileFactory().geoToPixel(point, map.getZoom());
-					Point2D pp = map.getTileFactory().geoToPixel(p, map.getZoom());
+
+				// GeoPosition contactPoint = ((MapEdge)
+				// edge).points.get(j).contactPoint;
+				// GeoPosition point = ((MapEdge)
+				// edge).points.get(j).getPosition();
+
+				GeoPosition contactPoint = ((MapEdge) edge).getContactPointForIndex(j);
+				GeoPosition point = ((MapEdge) edge).getPositions().get(j);
+
+				if (contactPoint != null) {
+					Point2D startPt2D = map.getTileFactory().geoToPixel(point, map.getZoom());
+					Point2D contactPointP = map.getTileFactory().geoToPixel(contactPoint, map.getZoom());
 
 					if (map.getZoom() < zoomLevel) {
 						g.setColor(Color.BLUE);
 						final int circleRadius = 10;
-						g.fillOval((int) pp.getX(), (int) pp.getY(), circleRadius, circleRadius);
+						g.fillOval((int) contactPointP.getX(), (int) contactPointP.getY(), circleRadius, circleRadius);
 					}
-					
-					g.drawLine((int) pp.getX(), (int) pp.getY(), (int) endPt2D.getX(), (int) endPt2D.getY());
 
+					g.drawLine((int) contactPointP.getX(), (int) contactPointP.getY(), (int) startPt2D.getX(),
+							(int) startPt2D.getY());
 				}
 			}
 		}
@@ -185,16 +195,17 @@ public class RoutePainter implements Painter<JXMapViewer> {
 				Edge edge = route.get(i);
 				if (MapEdge.class.isInstance(edge)) {
 
-					for (int j = 0; j < edge.getPoints().size(); j += edge.getPoints().size() - 1) {
-						GeoPosition p = ((MapEdge) edge).points.get(j).getPosition();
+					for (int j = 0; j < edge.getPositions().size(); j += edge.getPositions().size() - 1) {
+						GeoPosition p = ((MapEdge) edge).getPoints().get(j).getPosition();
 						Point2D pp = map.getTileFactory().geoToPixel(p, map.getZoom());
 //						double distance = 0.05;
-						double distance = Controller.contactSearchDistance;
+						double distance = Controller.contactSearchDistance*2.75;
 						GeoPosition pcopy = new GeoPosition(p.getLatitude() + distance, p.getLongitude() + distance);
 						int circleRadius = (int) Math
 								.abs((map.getTileFactory().geoToPixel(pcopy, map.getZoom())).getX() - pp.getX());
 						g.setColor(Color.CYAN);
-						g.fillOval((int) pp.getX() - (circleRadius / 2), (int) pp.getY() - (circleRadius / 2),
+						g.setStroke(new BasicStroke(5f));
+						g.drawOval((int) pp.getX() - (circleRadius / 2), (int) pp.getY() - (circleRadius / 2),
 								circleRadius, circleRadius);
 					}
 				}

@@ -75,7 +75,18 @@ public class MyMap extends JXMapViewer {
 
 		setMinimumSize(new Dimension(250, 250));
 		setPreferredSize(new Dimension(1400, 400));
-		
+
+	}
+
+	/**
+	 * @return the waypoints
+	 */
+	public List<GeoPosition> getWaypoints() {
+		List<GeoPosition> result = new ArrayList<>(waypoints.size());
+		for (Waypoint waypoint : waypoints) {
+			result.add(waypoint.getPosition());
+		}
+		return result;
 	}
 
 	/**
@@ -91,6 +102,7 @@ public class MyMap extends JXMapViewer {
 				double lat = geoPos.getLatitude();
 				double lon = geoPos.getLongitude();
 
+				// Only Germany
 				if ((6 < lon && lon < 14) && (45 < lat && lat < 55)) {
 					waypoints.add(new CapacityWaypoint(lat, lon, 0));
 					zoomNodes.add(geoPos);
@@ -116,16 +128,17 @@ public class MyMap extends JXMapViewer {
 	public void addEdges(List<Edge> edges) {
 		if (onlyGermany) {
 			for (Edge edge : edges) {
-				double lat =50 ;
-				double lon =10 ;
+				double lat = 50;
+				double lon = 10;
 				if (edge.getStart() != null) {
-				 lat = edge.getStart().getLatitude();
-				 lon = edge.getStart().getLongitude();
+					lat = edge.getStart().getLatitude();
+					lon = edge.getStart().getLongitude();
 				}
-				
-				if ((6 < lon && lon < 14) && (45 < lat && lat < 55)) {
-					route.add(edge);
-				}
+
+				// Only Germany
+				 if ((6 < lon && lon < 14) && (45 < lat && lat < 55)) {
+				route.add(edge);
+				 }
 			}
 		} else {
 			route.addAll(edges);
@@ -163,13 +176,19 @@ public class MyMap extends JXMapViewer {
 	 * 
 	 * @param oldEdge
 	 * @param newEdge
-	 * @return
+	 * @return <code>true</code> if oldEdge consists in the saved
+	 *         {@link Edge}s</br>
+	 *         <code>false</code> otherwise
 	 */
 	public boolean updateEdge(Edge oldEdge, Edge newEdge) {
-		int index = route.indexOf(oldEdge);
-		if (index != -1) {
-			route.set(index, newEdge);
-			return true;
+		if (newEdge != null) {
+			int index = route.indexOf(oldEdge);
+			if (index != -1) {
+				route.set(index, newEdge);
+				return true;
+			}
+		} else {
+			route.remove(oldEdge);
 		}
 		return false;
 	}
@@ -198,13 +217,18 @@ public class MyMap extends JXMapViewer {
 	 */
 	@Override
 	public String getToolTipText(MouseEvent event) {
-		Point p = new Point(event.getX(), event.getY());
-		for (Waypoint waypoint : waypoints) {
-			if (isMouseOnWaypoint(p, waypoint)) {
-				return getTooltipForWaypoint(waypoint);
-			}
-		}
-		return null;
+		GeoPosition position = controller.getMapViewer().convertPointToGeoPosition(new Point(event.getX(), event.getY()));
+		String text = String.format("Latitude: %f\nLongitude: %f",
+				position.getLatitude(), position.getLongitude());;
+		
+		return "<html><p width=\"250\">" + text + "</p></html>";
+//		Point p = new Point(event.getX(), event.getY());
+//		for (Waypoint waypoint : waypoints) {
+//			if (isMouseOnWaypoint(p, waypoint)) {
+//				return getTooltipForWaypoint(waypoint);
+//			}
+//		}
+//		return null;
 	}
 
 	/**

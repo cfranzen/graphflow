@@ -20,8 +20,8 @@ import com.syncrotess.pathfinder.model.entity.ServiceType;
  */
 public class Edge {
 
-	private GeoPosition start;
-	private GeoPosition dest;
+	protected GeoPosition start;
+	protected GeoPosition dest;
 	private int[] capacites = new int[0];
 	private int[] workload = new int[0];
 	private EdgeType type = EdgeType.TRUCK;
@@ -173,7 +173,7 @@ public class Edge {
 	/**
 	 * @return
 	 */
-	public List<GeoPosition> getPoints() {
+	public List<GeoPosition> getPositions() {
 		return Arrays.asList(
 				new GeoPosition(start.getLatitude(), start.getLongitude()),
 				new GeoPosition(dest.getLatitude(), dest.getLongitude()));

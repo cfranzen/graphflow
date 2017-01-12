@@ -1,6 +1,7 @@
 package models;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -13,20 +14,22 @@ import org.jxmapviewer.viewer.GeoPosition;
  */
 public class MapEdge extends Edge {
 
-	public List<MapPoint> points = new ArrayList<>();
-	
-	/* (non-Javadoc)
+	private List<MapPoint> points = new ArrayList<>();
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see models.Edge#getPoints()
 	 */
 	@Override
-	public List<GeoPosition> getPoints() {
+	public List<GeoPosition> getPositions() {
 		List<GeoPosition> returnPoints = new ArrayList<>();
 		for (MapPoint mapPoint : points) {
 			returnPoints.add(mapPoint.getPosition());
 		}
 		return returnPoints;
 	}
-	
+
 	/**
 	 * @param currentTimeStep
 	 * @param last
@@ -48,11 +51,37 @@ public class MapEdge extends Edge {
 	 */
 	public int getWorkloadForPoint(int currentTimeStep, int index) {
 		Map<Edge, GeoPosition> map = points.get(index).edgeMap;
+		
 		int workload = 0;
 		for (Entry<Edge, GeoPosition> edge : map.entrySet()) {
 			workload += edge.getKey().getWorkload(currentTimeStep);
 		}
 		return workload;
 	}
-	
+
+	/**
+	 * @param j
+	 * @return
+	 */
+	public GeoPosition getContactPointForIndex(int index) {
+		List<MapPoint> pointList = new ArrayList<>(points);
+		Collections.copy(pointList, points);
+		pointList.add(new MapPoint(dest, Collections.emptyMap()));
+		return pointList.get(index).contactPoint;
+	}
+
+	/**
+	 * @param mp
+	 */
+	public void addPoint(MapPoint mp) {
+		points.add(mp);
+	}
+
+	/**
+	 * @return
+	 */
+	public List<MapPoint> getPoints() {
+		return points;
+	}
+
 }
