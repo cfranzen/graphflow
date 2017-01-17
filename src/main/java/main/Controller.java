@@ -17,7 +17,10 @@ import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 
+import org.apache.log4j.xml.DOMConfigurator;
 import org.jxmapviewer.viewer.GeoPosition;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,21 +51,40 @@ import models.ModelLoader;
  */
 public class Controller {
 
-	public static void main(String[] args) {
-		logger.error("TEST-1");
-		logger.warn("TEST-2");
-		logger.info("TEST-3");
-		logger.debug("TEST-4");
-		Controller controller = getInstance();
-		controller.run();
-	}
-
 	private static final Logger logger = LoggerFactory.getLogger(Controller.class);
-	
+
 	private static Controller controller;
 
-	private ForkJoinPool pool;
+	public static void main(String[] args) {
 
+		/*
+		 * osm file path, gh solution file
+		 */
+		Controller controller = getInstance();
+
+		CmdLineParser parser = new CmdLineParser(controller.cliInput);
+		try {
+			parser.parseArgument(args);
+			controller.run();
+		} catch (CmdLineException e) {
+			// handling of wrong arguments
+			System.err.println(e.getMessage());
+			parser.printUsage(System.err);
+		}
+	}
+
+	private void initializeLogging() {
+		try {
+			DOMConfigurator.configure(getClass().getResource("/log4j.xml"));
+		} catch (Exception e) {
+			System.err.println("FATAL: log configuration failed: " + e);
+			e.printStackTrace();
+		}
+	}
+
+	public cliInput cliInput;
+
+	private ForkJoinPool pool;
 	private MyMap mapViewer;
 	private ModelLoader input;
 	private GraphHopper graphHopper;
@@ -71,16 +93,19 @@ public class Controller {
 	private JFrame frame;
 
 	/**
-	 * used to search for contact points with other edges, distance in lat/lon not pixel
+	 * used to search for contact points with other edges, distance in lat/lon
+	 * not pixel
 	 */
-//	public final static double contactSearchDistance = 0.025;
+	// public final static double contactSearchDistance = 0.025;
 	public final static double contactSearchDistance = 0.021;
 	/**
-	 * used for removing multiple point which are near together, distance in lat/lon not pixel
+	 * used for removing multiple point which are near together, distance in
+	 * lat/lon not pixel
 	 */
 	public final static double reduceEdgeDistance = 0.0075;
 	/**
-	 * used for combining points and summarizing workload and capacity, distance in lat/lon not pixel
+	 * used for combining points and summarizing workload and capacity, distance
+	 * in lat/lon not pixel
 	 */
 	public final static double combinePointsDistance = 0.005;
 
@@ -103,6 +128,8 @@ public class Controller {
 	 */
 	private Controller() {
 		pool = new ForkJoinPool();
+		initializeLogging();
+		cliInput = new cliInput();
 	}
 
 	/**
@@ -111,6 +138,8 @@ public class Controller {
 	 * TODO distinct gui creation
 	 */
 	public void run() {
+		// Processing input to own classes
+		input = ModelLoader.loadFile(cliInput.modelFilePath, cliInput.solutionFilePath);
 
 		initGui();
 		optimize();
@@ -148,9 +177,6 @@ public class Controller {
 		});
 		layeredPane.add(resetBtn, new Integer(30));
 
-		// Processing input to own classes
-		input = ModelLoader.loadFile();
-
 		// Add input to viewer
 		mapViewer = new MyMap(this);
 		mapViewer.addPositions(input.nodes);
@@ -184,7 +210,7 @@ public class Controller {
 		optimizeEdges();
 
 		// XXX For Debug
-		 mapViewer.setZoom(13);
+		mapViewer.setZoom(13);
 	}
 
 	private void reducePointCount() {
@@ -244,9 +270,9 @@ public class Controller {
 			for (int j = 1; j < points.size(); j++) {
 				GeoPosition current = points.get(j).getPosition();
 				if (getDistance(last, current) > contactSearchDistance * 4) {
-					logger.debug("Split this edge into two -> " + i + "-" +j);
-					logger.debug(last.getLatitude() + " - " + last.getLongitude());
-					logger.debug(current.getLatitude() + " - " + current.getLongitude());
+					logger.info("Split this edge into two -> " + i + "-" + j);
+					logger.info(last.getLatitude() + " - " + last.getLongitude());
+					logger.info(current.getLatitude() + " - " + current.getLongitude());
 					MapEdge mapEdgeOld = new MapEdge();
 					for (MapPoint mapPoint : points.subList(0, j)) {
 						mapEdgeOld.addPoint(mapPoint);
@@ -273,7 +299,7 @@ public class Controller {
 			List<MapPoint> points = ((MapEdge) edge).getPoints();
 			MapPoint mpFirst = points.get(0);
 			MapPoint mpLast = points.get(points.size() - 1);
-			
+
 			boolean flagFirst = false;
 			boolean flagLast = false;
 			for (GeoPosition waypoint : waypoints) {
@@ -419,7 +445,7 @@ public class Controller {
 				@Override
 				protected boolean exec() {
 					HighResEdge highResEdge = getHighRes(edge);
-					logger.debug("DONE");
+					logger.info("optimize edge DONE");
 					if (highResEdge != null) {
 						mapViewer.updateEdge(edge, highResEdge);
 					}
@@ -458,8 +484,9 @@ public class Controller {
 		long time = System.currentTimeMillis();
 		logger.info("Start init GH");
 		try {
-			CmdArgs args = CmdArgs.readFromConfig("src/main/resources/graphhopper/config.properties",
-					"graphhopper.config");
+			CmdArgs args = CmdArgs.readFromConfig(cliInput.ghFolder + "config.properties", "graphhopper.config");
+			args.put("datareader.file", cliInput.osmFilePath);
+			args.put("graph.location", cliInput.ghFolder);
 			graphHopper.init(args);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

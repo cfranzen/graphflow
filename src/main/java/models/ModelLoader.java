@@ -34,24 +34,26 @@ import com.syncrotess.pathfinder.util.tokenizer.CharacterStreamTokenizer;
 
 public class ModelLoader {
 
-	/**
-	 * File path to the model which should be represented.
-	 */
-	private static final String FILE_PATH_MODEL = "src/main/resources/examples/testModel.txt.gz";
-
-	/**
-	 * File path to the solution for the given model.
-	 */
-	private static final String FILE_PATH_SOLUTION = "src/main/resources/examples/testModelSolution.sol";
 	public static boolean printDebug = false;
 
 	public static void main(final String[] args) {
-		loadFile();
+		final String FILE_PATH_MODEL = "src/main/resources/examples/testModel.txt.gz";
+		final String FILE_PATH_SOLUTION = "src/main/resources/examples/testModelSolution.sol";
+		loadFile(FILE_PATH_MODEL, FILE_PATH_SOLUTION);
 	}
 
-	public static ModelLoader loadFile() {
-		Model model = loadModel();
-		Solution solution = loadSolution(model);
+	/**
+	 * Parses the nodes and edges from the given files.
+	 * 
+	 * @param filePathModel
+	 *            File path to the model which should be represented.
+	 * @param filePathSolution
+	 *            File path to the solution for the given model.
+	 * @return {@link ModelLoader}-Object with parsed nodes and edges
+	 */
+	public static ModelLoader loadFile(String filePathModel, String filePathSolution) {
+		Model model = loadModel(filePathModel);
+		Solution solution = loadSolution(model, filePathSolution);
 
 		SortedSet<Node> allNodes = model.getServiceNetwork().getNodes();
 		SortedSet<Service> allServices = model.getServiceNetwork().getServices();
@@ -64,11 +66,11 @@ public class ModelLoader {
 		return new ModelLoader(nodes, edges, timesteps);
 	}
 
-	private static Solution loadSolution(Model model) {
+	private static Solution loadSolution(Model model, String filePathSolution) {
 		FileInputStream is;
 		Solution solution = null;
 		try {
-			is = new FileInputStream(FILE_PATH_SOLUTION);
+			is = new FileInputStream(filePathSolution);
 			final InputStreamReader solutionFileReader = new InputStreamReader(is, Constants.DEFAULT_CHARSET);
 			final CharacterStreamTokenizer solutionTokenizer = new CharacterStreamTokenizer(solutionFileReader);
 			final SolutionFactory solutionFactory = new SolutionFactoryImpl();
@@ -146,8 +148,8 @@ public class ModelLoader {
 		}
 	}
 
-	private static Model loadModel() {
-		File modelFile = new File(FILE_PATH_MODEL);
+	private static Model loadModel(String filePathModel) {
+		File modelFile = new File(filePathModel);
 
 		Reader fileReader = null;
 		Model model = null;
