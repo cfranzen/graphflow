@@ -1,6 +1,3 @@
-/**
- * 
- */
 package gui;
 
 import java.awt.event.MouseEvent;
@@ -17,6 +14,8 @@ public class InfoMouseInputListener extends MouseInputAdapter {
 
 	private Controller controller;
 
+	private boolean showTooltip = false;
+
 	/**
 	 * @param viewer
 	 *            the jxmapviewer
@@ -25,15 +24,29 @@ public class InfoMouseInputListener extends MouseInputAdapter {
 		this.controller = controller;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.MouseAdapter#mouseClicked(java.awt.event.MouseEvent)
+	 */
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		if (e.getButton() == MouseEvent.BUTTON3) {
+			showTooltip = !showTooltip;
+		}
+		super.mouseClicked(e);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.awt.event.MouseAdapter#mouseMoved(java.awt.event.MouseEvent)
 	 */
 	@Override
 	public void mouseMoved(MouseEvent e) {
-		String tooltip = controller.getMapViewer().getToolTipText(e);
+		String tooltip = showTooltip ? controller.getMapViewer().getToolTipText(e) : null;
 		controller.getMapViewer().setToolTipText(tooltip);
 		super.mouseMoved(e);
 	}
 
-	
 }

@@ -4,7 +4,6 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,10 +50,14 @@ public class MyMap extends JXMapViewer {
 
 	private Set<Waypoint> waypoints = new HashSet<>();;
 	private WaypointPainter<Waypoint> waypointPainter;
-	private RoutePainter routePainter = new RoutePainter(Collections.emptyList());
-	private List<Edge> route = new ArrayList<>();
+	
+	
+	private RouteController routeController = new RouteController();
+	
+	private IRoutePainter routePainter = new DefaultRoutePainter(Collections.emptyList());
+//	private List<Edge> route = new ArrayList<>();
 
-	private boolean onlyGermany = true;
+	private boolean onlyGermany = false;
 
 	/**
 	 * Default Constructor, initializes the tile factory.
@@ -126,6 +129,7 @@ public class MyMap extends JXMapViewer {
 	 *            {@link List} with {@link Edge}s.
 	 */
 	public void addEdges(List<Edge> edges) {
+		List<Edge> route = routeController.getRoute();
 		if (onlyGermany) {
 			for (Edge edge : edges) {
 				double lat = 50;
@@ -136,18 +140,19 @@ public class MyMap extends JXMapViewer {
 				}
 
 				// Only Germany
-				 if ((6 < lon && lon < 14) && (45 < lat && lat < 55)) {
-				route.add(edge);
-				 }
+				if ((6 < lon && lon < 14) && (45 < lat && lat < 55)) {
+					route.add(edge);
+				}
 			}
 		} else {
 			route.addAll(edges);
 		}
-		routePainter.setRoute(route);
+		routeController.setRoute(route);
 	}
 
 	/**
-	 * Sets the given timestep in the {@link RoutePainter} and repaints the gui.
+	 * Sets the given timestep in the {@link DefaultRoutePainter} and repaints
+	 * the gui.
 	 * 
 	 * @param time
 	 *            to set
@@ -158,6 +163,7 @@ public class MyMap extends JXMapViewer {
 	}
 
 	public void importGrapHopperPoints(PointList points) {
+		List<Edge> route = routeController.getRoute();
 		GeoPosition last = new GeoPosition(points.getLatitude(0), points.getLongitude(0));
 		waypoints.add(new CapacityWaypoint(last.getLatitude(), last.getLongitude(), 0));
 		for (int i = 1; i < points.size(); i++) {
@@ -166,8 +172,8 @@ public class MyMap extends JXMapViewer {
 			last = dest;
 		}
 		waypoints.add(new CapacityWaypoint(last.getLatitude(), last.getLongitude(), 0));
-		routePainter.setRoute(route);
 		waypointPainter.setWaypoints(waypoints);
+		routeController.setRoute(route);
 	}
 
 	/**
@@ -181,32 +187,20 @@ public class MyMap extends JXMapViewer {
 	 *         <code>false</code> otherwise
 	 */
 	public boolean updateEdge(Edge oldEdge, Edge newEdge) {
+		List<Edge> route = routeController.getRoute();
 		if (newEdge != null) {
 			int index = route.indexOf(oldEdge);
 			if (index != -1) {
 				route.set(index, newEdge);
+				routeController.setRoute(route);
 				return true;
 			}
 		} else {
+			// if newEdge = Emtpy -> remove old edge instead null update
 			route.remove(oldEdge);
+			routeController.setRoute(route);
 		}
 		return false;
-	}
-
-	/**
-	 * @return the route
-	 */
-	public List<Edge> getRoute() {
-		return new ArrayList<>(route);
-	}
-
-	/**
-	 * @param route
-	 *            the route to set
-	 */
-	public void setRoute(List<Edge> route) {
-		this.route = route;
-		routePainter.setRoute(route);
 	}
 
 	/**
@@ -217,18 +211,18 @@ public class MyMap extends JXMapViewer {
 	 */
 	@Override
 	public String getToolTipText(MouseEvent event) {
-		GeoPosition position = controller.getMapViewer().convertPointToGeoPosition(new Point(event.getX(), event.getY()));
-		String text = String.format("Latitude: %f\nLongitude: %f",
-				position.getLatitude(), position.getLongitude());;
-		
+		GeoPosition position = controller.getMapViewer()
+				.convertPointToGeoPosition(new Point(event.getX(), event.getY()));
+		String text = String.format("Latitude: %f\nLongitude: %f", position.getLatitude(), position.getLongitude());
+
 		return "<html><p width=\"250\">" + text + "</p></html>";
-//		Point p = new Point(event.getX(), event.getY());
-//		for (Waypoint waypoint : waypoints) {
-//			if (isMouseOnWaypoint(p, waypoint)) {
-//				return getTooltipForWaypoint(waypoint);
-//			}
-//		}
-//		return null;
+		// Point p = new Point(event.getX(), event.getY());
+		// for (Waypoint waypoint : waypoints) {
+		// if (isMouseOnWaypoint(p, waypoint)) {
+		// return getTooltipForWaypoint(waypoint);
+		// }
+		// }
+		// return null;
 	}
 
 	/**
@@ -263,8 +257,8 @@ public class MyMap extends JXMapViewer {
 	}
 
 	/**
-	 * Initializes the {@link RoutePainter} and {@link WaypointPainter} of the
-	 * graph.
+	 * Initializes the {@link DefaultRoutePainter} and {@link WaypointPainter}
+	 * of the graph.
 	 */
 	private void initPainters() {
 		// Create a waypoint painter that takes all the waypoints
@@ -272,10 +266,13 @@ public class MyMap extends JXMapViewer {
 		waypointPainter.setRenderer(new CapacityWaypointRenderer());
 		waypointPainter.setWaypoints(waypoints);
 
+		
+		
 		// Create a compound painter that uses both the route-painter and the
 		// waypoint-painter
 		List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
-		painters.add(routePainter);
+//		painters.add(routePainter);
+		painters.add(routeController.getRoutePainter(this.getZoom()));
 		painters.add(waypointPainter);
 
 		CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>(painters);
@@ -283,37 +280,19 @@ public class MyMap extends JXMapViewer {
 	}
 
 	/**
-	 * Creates the html formatted tooltip for the given {@link Waypoint}. The
-	 * {@link Waypoint} should override the {@link #toString()} method
-	 * accordingly.
-	 * 
-	 * @param waypoint
-	 *            which informations should be presented
-	 * @return a html formatted {@link String} which represents the tooltip.
+	 * @return
 	 */
-	private String getTooltipForWaypoint(Waypoint waypoint) {
-		return "<html><p width=\"250\">" + waypoint.toString() + "</p></html>";
+	public List<Edge> getRoute() {
+		// TODO Refactor, move in RouteController
+		return routeController.getRoute();
 	}
 
 	/**
-	 * Checks if the mouse position which represents the {@link Point} is near
-	 * the given {@link Waypoint}.
-	 * 
-	 * @param p
-	 *            mouse position
-	 * @param waypoint
-	 *            to check
-	 * @return <code>true</code> if the mouse is near the {@link Waypoint}</br>
-	 *         <code>false</code> otherwise
+	 * @param savedEdges
 	 */
-	private boolean isMouseOnWaypoint(Point p, Waypoint waypoint) {
-		double DELTA = 10;
-
-		Point2D nodePos = convertGeoPositionToPoint(waypoint.getPosition());
-		double deltaX = Math.abs(p.x - nodePos.getX());
-		double deltaY = Math.abs(p.y - nodePos.getY());
-
-		return (deltaX < DELTA) && (deltaY < DELTA);
+	public void setRoute(List<Edge> savedEdges) {
+		// TODO Refactor, move in RouteController
+		
 	}
 
 }

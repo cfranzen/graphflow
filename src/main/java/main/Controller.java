@@ -56,12 +56,7 @@ public class Controller {
 	private static Controller controller;
 
 	public static void main(String[] args) {
-
-		/*
-		 * osm file path, gh solution file
-		 */
 		Controller controller = getInstance();
-
 		CmdLineParser parser = new CmdLineParser(controller.cliInput);
 		try {
 			parser.parseArgument(args);
@@ -70,15 +65,6 @@ public class Controller {
 			// handling of wrong arguments
 			System.err.println(e.getMessage());
 			parser.printUsage(System.err);
-		}
-	}
-
-	private void initializeLogging() {
-		try {
-			DOMConfigurator.configure(getClass().getResource("/log4j.xml"));
-		} catch (Exception e) {
-			System.err.println("FATAL: log configuration failed: " + e);
-			e.printStackTrace();
 		}
 	}
 
@@ -96,7 +82,6 @@ public class Controller {
 	 * used to search for contact points with other edges, distance in lat/lon
 	 * not pixel
 	 */
-	// public final static double contactSearchDistance = 0.025;
 	public final static double contactSearchDistance = 0.021;
 	/**
 	 * used for removing multiple point which are near together, distance in
@@ -143,6 +128,36 @@ public class Controller {
 
 		initGui();
 		optimize();
+	}
+
+	/**
+	 * Increases the current time step each time its called. If the maximum time
+	 * step from the model is reached it resets the step to zero.
+	 */
+	public void incTime() {
+		currentTime++;
+		if (currentTime >= input.timesteps) {
+			currentTime = 0;
+		}
+		mapViewer.setTime(currentTime);
+	}
+
+	/**
+	 * Returns the map component
+	 * 
+	 * @return the mapViewer
+	 */
+	public MyMap getMapViewer() {
+		return mapViewer;
+	}
+
+	private void initializeLogging() {
+		try {
+			DOMConfigurator.configure(getClass().getResource("/log4j.xml"));
+		} catch (Exception e) {
+			System.err.println("FATAL: log configuration failed: " + e);
+			e.printStackTrace();
+		}
 	}
 
 	private void initGui() {
@@ -220,27 +235,6 @@ public class Controller {
 			mapViewer.updateEdge(edge, reduceEdgePoints(edge));
 		}
 		sumAllPoints();
-	}
-
-	/**
-	 * Increases the current time step each time its called. If the maximum time
-	 * step from the model is reached it resets the step to zero.
-	 */
-	public void incTime() {
-		currentTime++;
-		if (currentTime >= input.timesteps) {
-			currentTime = 0;
-		}
-		mapViewer.setTime(currentTime);
-	}
-
-	/**
-	 * Returns the map component
-	 * 
-	 * @return the mapViewer
-	 */
-	public MyMap getMapViewer() {
-		return mapViewer;
 	}
 
 	private void optimizeEdges() {
@@ -445,7 +439,7 @@ public class Controller {
 				@Override
 				protected boolean exec() {
 					HighResEdge highResEdge = getHighRes(edge);
-					logger.info("optimize edge DONE");
+					logger.info("map edge to street DONE");
 					if (highResEdge != null) {
 						mapViewer.updateEdge(edge, highResEdge);
 					}
@@ -462,7 +456,9 @@ public class Controller {
 		GHRequest ghRequest = new GHRequest(start, dest);
 		GHResponse response = graphHopper.route(ghRequest);
 
-		if (response.getAll().isEmpty()) {
+		
+		if (response.hasErrors() || response.getAll().isEmpty()) {
+			logger.info("Could not find solution for edge with start: " + edge.getStart().toString());
 			return null;
 		}
 		PathWrapper path = response.getBest();
