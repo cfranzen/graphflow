@@ -8,11 +8,13 @@ import java.util.Map.Entry;
 
 import org.jxmapviewer.viewer.GeoPosition;
 
+import main.MainController;
+
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */
-public class MapEdge extends Edge {
+public class MapRoute extends Edge {
 
 	private List<MapPoint> points = new ArrayList<>();
 
@@ -82,6 +84,56 @@ public class MapEdge extends Edge {
 	 */
 	public List<MapPoint> getPoints() {
 		return points;
+	}
+	
+
+	/**
+	 * @param point
+	 * @param edges
+	 */
+	public void addNewPoint(GeoPosition point, List<Edge> edges) {
+		MapPoint mp = new MapPoint(point, MainController.getNearEdges(point, edges, MainController.combinePointsDistance));
+		addPoint(mp);
+	}
+
+	
+
+	/**
+	 * @author n.frantzen <nils.frantzen@rwth-aachen.de>
+	 *
+	 */
+	public class MapPoint {
+	
+		private GeoPosition posi;
+		public Map<Edge, GeoPosition> edgeMap;
+		public GeoPosition contactPoint = null;
+		
+		/**
+		 * @param x
+		 * @param y
+		 * @param edges
+		 */
+		public MapPoint(double x, double y, Map<Edge, GeoPosition> edgeMap) {
+			super();
+			this.posi = new GeoPosition(x,y);
+			this.edgeMap = edgeMap;
+		}
+	
+		/**
+		 * @param point
+		 * @param nearEdges
+		 */
+		public MapPoint(GeoPosition point, Map<Edge, GeoPosition> edgeMap) {
+			super();
+			this.posi = point;
+			this.edgeMap = edgeMap;
+			
+		}
+		
+		public GeoPosition getPosition() {
+			return posi;
+		}
+		
 	}
 
 }

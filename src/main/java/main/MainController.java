@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,9 +39,10 @@ import com.graphhopper.util.shapes.GHPoint;
 import gui.MyMap;
 import gui.RunButton;
 import models.Edge;
+import models.EdgeType;
 import models.HighResEdge;
-import models.MapEdge;
-import models.MapPoint;
+import models.MapRoute;
+import models.MapRoute.MapPoint;
 import models.ModelLoader;
 
 /**
@@ -49,14 +51,14 @@ import models.ModelLoader;
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */
-public class Controller {
+public class MainController {
 
-	private static final Logger logger = LoggerFactory.getLogger(Controller.class);
+	private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 
-	private static Controller controller;
+	private static MainController controller;
 
 	public static void main(String[] args) {
-		Controller controller = getInstance();
+		MainController controller = getInstance();
 		CmdLineParser parser = new CmdLineParser(controller.cliInput);
 		try {
 			parser.parseArgument(args);
@@ -78,6 +80,11 @@ public class Controller {
 
 	private JFrame frame;
 
+	private RouteController routeController = RouteController.getInstance();
+
+	//XXX for debug
+	public static boolean onlyGermany = false;
+	
 	/**
 	 * used to search for contact points with other edges, distance in lat/lon
 	 * not pixel
@@ -95,14 +102,14 @@ public class Controller {
 	public final static double combinePointsDistance = 0.005;
 
 	/**
-	 * Returns the {@link Controller} instance, if the instance is
+	 * Returns the {@link MainController} instance, if the instance is
 	 * <code>null</code> a new instance is created.
 	 * 
-	 * @return the {@link Controller} instance
+	 * @return the {@link MainController} instance
 	 */
-	public static Controller getInstance() {
+	public static MainController getInstance() {
 		if (controller == null) {
-			controller = new Controller();
+			controller = new MainController();
 		}
 		return controller;
 	}
@@ -111,7 +118,7 @@ public class Controller {
 	 * Private constructor to override the default and ensure the singleton
 	 * pattern.
 	 */
-	private Controller() {
+	private MainController() {
 		pool = new ForkJoinPool();
 		initializeLogging();
 		cliInput = new cliInput();
@@ -119,8 +126,6 @@ public class Controller {
 
 	/**
 	 * Main method.
-	 * 
-	 * TODO distinct gui creation
 	 */
 	public void run() {
 		// Processing input to own classes
@@ -128,6 +133,8 @@ public class Controller {
 
 		initGui();
 		optimize();
+		
+
 	}
 
 	/**
@@ -195,7 +202,7 @@ public class Controller {
 		// Add input to viewer
 		mapViewer = new MyMap(this);
 		mapViewer.addPositions(input.nodes);
-		mapViewer.addEdges(input.edges);
+		routeController.addEdges(input.edges);
 
 		JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());
@@ -222,43 +229,80 @@ public class Controller {
 
 		reducePointCount();
 
-		optimizeEdges();
+		if (true) return; // XXX Skip for debug
+		
+		
+		// own thread so that the gui thread is not blocked
+		Thread t = new Thread(new Runnable() {
 
-		// XXX For Debug
-		mapViewer.setZoom(13);
+			@Override
+			public void run() {
+				optimizeEdges();
+			}
+		});
+		t.start();
+
+		
 	}
 
 	private void reducePointCount() {
+		logger.info("Reduce point resolution per edge; before - after");
 		sumAllPoints();
-		List<Edge> edges = mapViewer.getRoute();
+		List<Edge> edges = routeController.getRoute();
 		for (Edge edge : edges) {
-			mapViewer.updateEdge(edge, reduceEdgePoints(edge));
+			routeController.updateEdge(mapViewer, edge, reduceEdgePoints(edge));
 		}
 		sumAllPoints();
 	}
 
 	private void optimizeEdges() {
 		logger.info("optimize");
+
+		// combine near points from multiple edges into one
+		// uses multiple edges at once -> linear
 		sumAllPoints();
-		List<Edge> edges = mapViewer.getRoute();
+		List<Edge> edges = routeController.getRoute();
 		List<Edge> savedEdges = new ArrayList<>();
 		for (int i = 0; i < edges.size(); i++) {
-			MapEdge mapEdge = new MapEdge();
+			MapRoute mapEdge = new MapRoute();
 			for (GeoPosition point : edges.get(i).getPositions()) {
 				if (!hasAnyNearPoint(point, savedEdges)) {
-					MapPoint mp = new MapPoint(point, getNearEdges(point, edges, combinePointsDistance));
-					mapEdge.addPoint(mp);
+					mapEdge.addNewPoint(point, edges);
 				}
 			}
 			if (mapEdge.getPositions().size() > 1) {
 				savedEdges.add(mapEdge);
 			}
 		}
+
+		// updateView
+		routeController.setRoute(savedEdges);
+
 		/*
-		 * Split partial Edges
+		 * Split partial Edges.
+		 * 
+		 * TODO Acces to saved Edges should be synchronized so that this step
+		 * can be parallelized.
 		 */
+
+		savedEdges = Collections.synchronizedList(savedEdges);
+
+		logger.info("Split partial edges into multiple");
+
+//		List<Edge> refEdges = null;
+//		//XXX
+//		RecursiveTask<List<Edge>> task = new RecursiveTask<List<Edge>>() {
+//			
+//			
+//			@Override
+//			protected List<Edge> compute() {
+//				// TODO Auto-generated method stub
+//				return null;
+//			}
+//		};
+//		
 		for (int i = 0; i < savedEdges.size(); i++) {
-			List<MapPoint> points = ((MapEdge) savedEdges.get(i)).getPoints();
+			List<MapPoint> points = ((MapRoute) savedEdges.get(i)).getPoints();
 			GeoPosition last = points.get(0).getPosition();
 
 			for (int j = 1; j < points.size(); j++) {
@@ -267,17 +311,22 @@ public class Controller {
 					logger.info("Split this edge into two -> " + i + "-" + j);
 					logger.info(last.getLatitude() + " - " + last.getLongitude());
 					logger.info(current.getLatitude() + " - " + current.getLongitude());
-					MapEdge mapEdgeOld = new MapEdge();
-					for (MapPoint mapPoint : points.subList(0, j)) {
+					MapRoute mapEdgeOld = new MapRoute();
+					for (MapRoute.MapPoint mapPoint : points.subList(0, j)) {
 						mapEdgeOld.addPoint(mapPoint);
 					}
-					savedEdges.set(i, mapEdgeOld);
+					synchronized (savedEdges) {
+						savedEdges.set(i, mapEdgeOld);
+					}
 
-					MapEdge mapEdgeNew = new MapEdge();
+					MapRoute mapEdgeNew = new MapRoute();
 					for (MapPoint mapPoint : points.subList(j, points.size())) {
 						mapEdgeNew.addPoint(mapPoint);
 					}
-					savedEdges.add(mapEdgeNew);
+					synchronized (savedEdges) {
+						savedEdges.add(mapEdgeNew);
+						// TODO new taks for new edge
+					}
 				}
 				last = current;
 			}
@@ -285,12 +334,15 @@ public class Controller {
 
 		/*
 		 * Find nearest contact point. TODO connect to thickest part instead of
-		 * nearest.
+		 * nearest. Maybe get Edge from point. 
+		 * </br>Every edge has to be connected to either an other edge or a
+		 * waypoint.
 		 */
+		logger.debug("Connect waypoints/edges to edges");
 		List<GeoPosition> waypoints = mapViewer.getWaypoints();
 		for (int j = 0; j < savedEdges.size(); j++) {
 			Edge edge = savedEdges.get(j);
-			List<MapPoint> points = ((MapEdge) edge).getPoints();
+			List<MapPoint> points = ((MapRoute) edge).getPoints();
 			MapPoint mpFirst = points.get(0);
 			MapPoint mpLast = points.get(points.size() - 1);
 
@@ -316,13 +368,15 @@ public class Controller {
 			}
 		}
 		sumAllPoints();
-		mapViewer.setRoute(savedEdges);
+		routeController.setRoute(savedEdges);
 		sumAllPoints();
 		logger.info("optimize-end");
 	}
 
 	private void getContactForPoint(List<Edge> savedEdges, int j, MapPoint mp) {
 		for (int i = 0; i < savedEdges.size(); i++) {
+			// So that the edge do not connect to the same edge, the edge list
+			// has to be ordered to function.
 			if (i == j) {
 				continue;
 			}
@@ -331,6 +385,7 @@ public class Controller {
 
 				GeoPosition point = savedEdges.get(i).getPositions().get(k);
 				double calcDist = getDistance(mp.getPosition(), point);
+				// iterate through all points to find the nearest point
 				if (calcDist < calcDistRef) {
 					calcDistRef = calcDist;
 					mp.contactPoint = point;
@@ -343,7 +398,7 @@ public class Controller {
 	 * @param point
 	 * @return
 	 */
-	private Map<Edge, GeoPosition> getNearEdges(GeoPosition refPoint, List<Edge> edges, double distance) {
+	public static Map<Edge, GeoPosition> getNearEdges(GeoPosition refPoint, List<Edge> edges, double distance) {
 		Map<Edge, GeoPosition> nearEdges = new HashMap<>();
 
 		for (int i = 0; i < edges.size(); i++) {
@@ -358,8 +413,15 @@ public class Controller {
 	}
 
 	/**
-	 * @param point
+	 * Returns if the given {@link GeoPosition} has any near point in the given
+	 * {@link List} of {@link Edge}s.
+	 * 
+	 * @param refPoint
+	 *            point to check
 	 * @param savedEdges
+	 *            {@link List} of {@link Edge}s which points are to compare
+	 * @return <code>true</code> if the point has a near point </br>
+	 *         <code>false</code> otherwise
 	 */
 	private boolean hasAnyNearPoint(GeoPosition refPoint, List<Edge> savedEdges) {
 		double distance = 0.01;
@@ -374,6 +436,13 @@ public class Controller {
 	}
 
 	/**
+	 * Checks if an {@link Edge} has multiple nearby points and only leaves one
+	 * point at this position.
+	 * 
+	 * Create new Edge with old parameters. Iterate trough all points from the
+	 * old edge but add the current point only if it do not have any near points
+	 * in the new savedPoint list.
+	 * 
 	 * @param edge
 	 * @return
 	 */
@@ -394,7 +463,7 @@ public class Controller {
 		return edge;
 	}
 
-	private boolean isNear(GeoPosition refPoint, GeoPosition point, double distance) {
+	private static boolean isNear(GeoPosition refPoint, GeoPosition point, double distance) {
 		if (getDistance(refPoint, point) < distance) {
 			return true;
 		} else {
@@ -402,7 +471,7 @@ public class Controller {
 		}
 	}
 
-	private double getDistance(GeoPosition refPoint, GeoPosition point) {
+	private static double getDistance(GeoPosition refPoint, GeoPosition point) {
 		double deltaX = Math.abs(refPoint.getLatitude() - point.getLatitude());
 		double deltaY = Math.abs(refPoint.getLongitude() - point.getLongitude());
 		return deltaX + deltaY;
@@ -410,7 +479,7 @@ public class Controller {
 
 	private void sumAllPoints() {
 		int i = 0;
-		List<Edge> edges = mapViewer.getRoute();
+		List<Edge> edges = routeController.getRoute();
 		for (Edge edge : edges) {
 			i += edge.getPositions().size();
 		}
@@ -419,7 +488,7 @@ public class Controller {
 	}
 
 	private void mapEdgesToStreets() {
-		for (Edge edge : mapViewer.getRoute()) {
+		for (Edge edge : routeController.getRoute()) {
 			pool.invoke(new ForkJoinTask<Edge>() {
 
 				private static final long serialVersionUID = 1475668164109020735L;
@@ -438,10 +507,14 @@ public class Controller {
 
 				@Override
 				protected boolean exec() {
-					HighResEdge highResEdge = getHighRes(edge);
-					logger.info("map edge to street DONE");
-					if (highResEdge != null) {
-						mapViewer.updateEdge(edge, highResEdge);
+					if (edge.getType().equals(EdgeType.VESSEL)) {
+						logger.info("do not map sea edge, start: " + edge.getStart());
+					} else {
+						HighResEdge highResEdge = getHighRes(edge);
+						logger.info("map edge to street DONE");
+						if (highResEdge != null) {
+							routeController.updateEdge(mapViewer, edge, highResEdge);
+						}
 					}
 					return true;
 				}
@@ -456,7 +529,6 @@ public class Controller {
 		GHRequest ghRequest = new GHRequest(start, dest);
 		GHResponse response = graphHopper.route(ghRequest);
 
-		
 		if (response.hasErrors() || response.getAll().isEmpty()) {
 			logger.info("Could not find solution for edge with start: " + edge.getStart().toString());
 			return null;
@@ -464,6 +536,9 @@ public class Controller {
 		PathWrapper path = response.getBest();
 		PointList points = path.getPoints();
 
+		// XXX Instructions contain GPX Data for saving see Method:
+//		path.getInstructions().createGPX()
+		
 		HighResEdge highResEdge = new HighResEdge(edge);
 
 		highResEdge.addGhPositions(points.toGeoJson());
@@ -490,5 +565,12 @@ public class Controller {
 		}
 		graphHopper.importOrLoad();
 		logger.info("End init GH - " + (System.currentTimeMillis() - time + " ms"));
+	}
+
+	/**
+	 * @return
+	 */
+	public RouteController getRouteController() {
+		return routeController;
 	}
 }

@@ -6,7 +6,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,16 +27,13 @@ import org.jxmapviewer.viewer.TileFactoryInfo;
 import org.jxmapviewer.viewer.Waypoint;
 import org.jxmapviewer.viewer.WaypointPainter;
 
-import com.graphhopper.util.PointList;
-
-import main.Controller;
+import main.MainController;
 import models.CapacityWaypoint;
 import models.Edge;
-import models.HighResEdge;
 
 /**
  * 
- * Facade for the {@link JXMapViewer}-framework
+ * Facade for the {@link JXMapViewer}-framework. The used map component is also controller and gui component.
  * 
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
@@ -46,23 +42,22 @@ public class MyMap extends JXMapViewer {
 
 	private static final long serialVersionUID = -6620174270673711401L;
 
-	private Controller controller;
-
+	private MainController controller;
+	
+	
 	private Set<Waypoint> waypoints = new HashSet<>();;
 	private WaypointPainter<Waypoint> waypointPainter;
 	
+	private IRoutePainter routePainter = new DefaultRoutePainter();
 	
-	private RouteController routeController = new RouteController();
-	
-	private IRoutePainter routePainter = new DefaultRoutePainter(Collections.emptyList());
-//	private List<Edge> route = new ArrayList<>();
+	// TODO Refactor
+	private IRoutePainter defaultPainter = new DefaultRoutePainter();
 
-	private boolean onlyGermany = false;
 
 	/**
 	 * Default Constructor, initializes the tile factory.
 	 */
-	public MyMap(Controller controller) {
+	public MyMap(MainController controller) {
 		super();
 		this.controller = controller;
 
@@ -100,7 +95,7 @@ public class MyMap extends JXMapViewer {
 	 */
 	public void addPositions(List<GeoPosition> nodes) {
 		List<GeoPosition> zoomNodes = new ArrayList<>();
-		if (onlyGermany) {
+		if (MainController.onlyGermany) {
 			for (GeoPosition geoPos : nodes) {
 				double lat = geoPos.getLatitude();
 				double lon = geoPos.getLongitude();
@@ -122,33 +117,7 @@ public class MyMap extends JXMapViewer {
 		waypointPainter.setWaypoints(waypoints);
 	}
 
-	/**
-	 * Adds the given {@link Edge}s to the graph.
-	 * 
-	 * @param edges
-	 *            {@link List} with {@link Edge}s.
-	 */
-	public void addEdges(List<Edge> edges) {
-		List<Edge> route = routeController.getRoute();
-		if (onlyGermany) {
-			for (Edge edge : edges) {
-				double lat = 50;
-				double lon = 10;
-				if (edge.getStart() != null) {
-					lat = edge.getStart().getLatitude();
-					lon = edge.getStart().getLongitude();
-				}
 
-				// Only Germany
-				if ((6 < lon && lon < 14) && (45 < lat && lat < 55)) {
-					route.add(edge);
-				}
-			}
-		} else {
-			route.addAll(edges);
-		}
-		routeController.setRoute(route);
-	}
 
 	/**
 	 * Sets the given timestep in the {@link DefaultRoutePainter} and repaints
@@ -162,47 +131,12 @@ public class MyMap extends JXMapViewer {
 		repaint();
 	}
 
-	public void importGrapHopperPoints(PointList points) {
-		List<Edge> route = routeController.getRoute();
-		GeoPosition last = new GeoPosition(points.getLatitude(0), points.getLongitude(0));
-		waypoints.add(new CapacityWaypoint(last.getLatitude(), last.getLongitude(), 0));
-		for (int i = 1; i < points.size(); i++) {
-			GeoPosition dest = new GeoPosition(points.getLatitude(i), points.getLongitude(i));
-			route.add(new Edge(last, dest));
-			last = dest;
-		}
-		waypoints.add(new CapacityWaypoint(last.getLatitude(), last.getLongitude(), 0));
-		waypointPainter.setWaypoints(waypoints);
-		routeController.setRoute(route);
-	}
 
-	/**
-	 * Updates the old {@link Edge} with a new {@link Edge}. Used to update a
-	 * normal {@link Edge} with a {@link HighResEdge}.
-	 * 
-	 * @param oldEdge
-	 * @param newEdge
-	 * @return <code>true</code> if oldEdge consists in the saved
-	 *         {@link Edge}s</br>
-	 *         <code>false</code> otherwise
-	 */
-	public boolean updateEdge(Edge oldEdge, Edge newEdge) {
-		List<Edge> route = routeController.getRoute();
-		if (newEdge != null) {
-			int index = route.indexOf(oldEdge);
-			if (index != -1) {
-				route.set(index, newEdge);
-				routeController.setRoute(route);
-				return true;
-			}
-		} else {
-			// if newEdge = Emtpy -> remove old edge instead null update
-			route.remove(oldEdge);
-			routeController.setRoute(route);
-		}
-		return false;
-	}
 
+	public GeoPosition getCoordsForMouse(MouseEvent event) {
+		return convertPointToGeoPosition(new Point(event.getX(), event.getY()));
+	}
+	
 	/**
 	 * This method is called automatically when the mouse is over the component.
 	 * Based on the location of the event, we detect if we are over one of the
@@ -211,8 +145,7 @@ public class MyMap extends JXMapViewer {
 	 */
 	@Override
 	public String getToolTipText(MouseEvent event) {
-		GeoPosition position = controller.getMapViewer()
-				.convertPointToGeoPosition(new Point(event.getX(), event.getY()));
+		GeoPosition position = getCoordsForMouse(event);
 		String text = String.format("Latitude: %f\nLongitude: %f", position.getLatitude(), position.getLongitude());
 
 		return "<html><p width=\"250\">" + text + "</p></html>";
@@ -272,27 +205,43 @@ public class MyMap extends JXMapViewer {
 		// waypoint-painter
 		List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
 //		painters.add(routePainter);
-		painters.add(routeController.getRoutePainter(this.getZoom()));
+		painters.add(getRoutePainter(this.getZoom()));
 		painters.add(waypointPainter);
 
 		CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>(painters);
 		setOverlayPainter(painter);
 	}
 
+	public IRoutePainter getRoutePainter(int zoomlevel) {
+		switch (zoomlevel) {
+		case 1:
+		default:
+			return defaultPainter;
+		}
+	}
+
+
+	/**
+	 * @param waypoints
+	 */
+	public void setWaypoints(Set<Waypoint> waypoints) {
+		this.waypoints = waypoints;
+		waypointPainter.setWaypoints(waypoints);
+		
+	}
+
 	/**
 	 * @return
 	 */
 	public List<Edge> getRoute() {
-		// TODO Refactor, move in RouteController
-		return routeController.getRoute();
+		return controller.getRouteController().getRoute();
 	}
-
+	
 	/**
-	 * @param savedEdges
+	 * @return
 	 */
-	public void setRoute(List<Edge> savedEdges) {
-		// TODO Refactor, move in RouteController
-		
+	public List<Edge> getRouteToPaint() {
+		return controller.getRouteController().getRouteToPaint();
 	}
 
 }

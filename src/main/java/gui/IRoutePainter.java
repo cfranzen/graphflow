@@ -21,7 +21,7 @@ public interface IRoutePainter extends Painter<JXMapViewer> {
 	 * @param route
 	 *            the route to set
 	 */
-	void setRoute(List<Edge> route);
+//	void setRoute(List<Edge> route);
 
 	void setTimeStep(int time);
 

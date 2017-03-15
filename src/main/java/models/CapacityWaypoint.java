@@ -10,7 +10,7 @@ import org.jxmapviewer.beans.AbstractBean;
 import org.jxmapviewer.viewer.GeoPosition;
 import org.jxmapviewer.viewer.Waypoint;
 
-import main.Controller;
+import main.MainController;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
@@ -95,7 +95,7 @@ public class CapacityWaypoint extends AbstractBean implements Waypoint {
 	}
 
 	public void setMapPosiFromGeo(GeoPosition geo) {
-		Point2D p = Controller.getInstance().getMapViewer().convertGeoPositionToPoint(geo);
+		Point2D p = MainController.getInstance().getMapViewer().convertGeoPositionToPoint(geo);
 		setMapPosi(p.getX(), p.getY());
 	}
 

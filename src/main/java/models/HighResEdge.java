@@ -45,9 +45,6 @@ public class HighResEdge extends Edge {
 		for (Double[] point : geoJson) {
 			addGhPosition(point);
 		}
-
-		// points.addAll(geoJson);
-
 	}
 
 	@Override

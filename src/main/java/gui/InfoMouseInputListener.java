@@ -4,7 +4,9 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.event.MouseInputAdapter;
 
-import main.Controller;
+import org.jxmapviewer.viewer.GeoPosition;
+
+import main.MainController;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
@@ -12,7 +14,7 @@ import main.Controller;
  */
 public class InfoMouseInputListener extends MouseInputAdapter {
 
-	private Controller controller;
+	private MainController controller;
 
 	private boolean showTooltip = false;
 
@@ -20,7 +22,7 @@ public class InfoMouseInputListener extends MouseInputAdapter {
 	 * @param viewer
 	 *            the jxmapviewer
 	 */
-	public InfoMouseInputListener(Controller controller) {
+	public InfoMouseInputListener(MainController controller) {
 		this.controller = controller;
 	}
 
@@ -33,6 +35,7 @@ public class InfoMouseInputListener extends MouseInputAdapter {
 	public void mouseClicked(MouseEvent e) {
 		if (e.getButton() == MouseEvent.BUTTON3) {
 			showTooltip = !showTooltip;
+			System.out.println(controller.getMapViewer().getCoordsForMouse(e).toString());
 		}
 		super.mouseClicked(e);
 	}

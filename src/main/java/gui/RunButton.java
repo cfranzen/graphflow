@@ -5,7 +5,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 
-import main.Controller;
+import main.MainController;
 
 /**
  * Starts the running of the graph.
@@ -23,7 +23,7 @@ public class RunButton extends JButton {
 	 * Creates a new {@link RunButton} object which increases the represented
 	 * time in the graph.
 	 */
-	public RunButton(Controller controller) {
+	public RunButton(MainController controller) {
 		setText(STOPPED);
 		addActionListener(new ActionListener() {
 
