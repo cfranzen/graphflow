@@ -1,9 +1,11 @@
 package main;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.jxmapviewer.viewer.GeoPosition;
 import org.jxmapviewer.viewer.Waypoint;
@@ -27,7 +29,7 @@ public class RouteController {
 	private List<Edge> route = new ArrayList<>();
 	private List<Edge> seaRoute = new ArrayList<>();
 	
-	private List<Edge> paintRoute;
+	private List<Edge> paintRoute = Collections.emptyList();
 	
 	private RouteController() { 
 		//noop
@@ -53,6 +55,13 @@ public class RouteController {
 		updatePaintRoute();
 	}
 
+	/**
+	 * @param route the route to set
+	 */
+	public void setSeaRoute(List<Edge> seaRoute) {
+		this.seaRoute = seaRoute;
+		updatePaintRoute();
+	}
 
 	/**
 	 * Updates the old {@link Edge} with a new {@link Edge}. Used to update a

@@ -44,6 +44,7 @@ import models.HighResEdge;
 import models.MapRoute;
 import models.MapRoute.MapPoint;
 import models.ModelLoader;
+import sea.SeaController;
 
 /**
  * Main class from the program
@@ -81,6 +82,7 @@ public class MainController {
 	private JFrame frame;
 
 	private RouteController routeController = RouteController.getInstance();
+	private SeaController seaController = SeaController.getInstance();
 
 	//XXX for debug
 	public static boolean onlyGermany = false;
@@ -128,13 +130,20 @@ public class MainController {
 	 * Main method.
 	 */
 	public void run() {
-		// Processing input to own classes
-		input = ModelLoader.loadFile(cliInput.modelFilePath, cliInput.solutionFilePath);
 
 		initGui();
+		
+		// Processing input to own classes
+		input = ModelLoader.loadFile(cliInput.modelFilePath, cliInput.solutionFilePath);
+		mapViewer.addPositions(input.nodes);
+		routeController.addEdges(input.edges);
+
+		// Load sea data
+		
+		
 		optimize();
 		
-
+		
 	}
 
 	/**
@@ -201,8 +210,6 @@ public class MainController {
 
 		// Add input to viewer
 		mapViewer = new MyMap(this);
-		mapViewer.addPositions(input.nodes);
-		routeController.addEdges(input.edges);
 
 		JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());
@@ -567,10 +574,23 @@ public class MainController {
 		logger.info("End init GH - " + (System.currentTimeMillis() - time + " ms"));
 	}
 
+	// TODO refactor
+	public void updateSeaNodes() {
+		routeController.setSeaRoute(seaController.createEdges());
+		mapViewer.setTime(0);
+	}
+	
 	/**
 	 * @return
 	 */
 	public RouteController getRouteController() {
 		return routeController;
+	}
+
+	/**
+	 * @return
+	 */
+	public SeaController getSeaController() {
+		return seaController;
 	}
 }
