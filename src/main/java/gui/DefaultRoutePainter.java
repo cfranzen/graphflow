@@ -2,6 +2,7 @@ package gui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -88,24 +89,93 @@ public class DefaultRoutePainter implements IRoutePainter {
 					continue;
 				}
 
-				// convert geo-coordinate to world bitmap pixel
-				Point2D startPt2D = map.getTileFactory().geoToPixel(last, map.getZoom());
-				Point2D endPt2D = map.getTileFactory().geoToPixel(point, map.getZoom());
-				last = point;
+				Point[] stEnPoints = null;
+				if (checkEquatorEdge(point, last)) {
+					stEnPoints = drawEquatorEdge(g, map, point, last);
 
-				Point startPt = new Point((int) startPt2D.getX(), (int) startPt2D.getY());
-				Point endPt = new Point((int) endPt2D.getX(), (int) endPt2D.getY());
+				} else {
+					stEnPoints = drawNormalLine(g, map, point, last);
 
-				g.drawLine((int) startPt.getX(), (int) startPt.getY(), (int) endPt.getX(), (int) endPt.getY());
+				}
+				Point startPt = stEnPoints[0];
+				Point endPt = stEnPoints[1];
 
-				// Contact Points - not finished
+				// XXX for debug
 				if (i == 9 && j == 0) {
 					System.out.println("stop");
 				}
+				// Contact Points - not finished
 				showContactPoints(g, map, edge, j);
 				showPointDescription(g, map, i, edge, j, startPt, endPt);
 			}
 		}
+	}
+
+	/**
+	 * @return 
+	 * 
+	 */
+	private Point[] drawEquatorEdge(Graphics2D g, MyMap map, GeoPosition point, GeoPosition last) {
+		// draw first part
+		GeoPosition pos1 = last;
+		GeoPosition pos2 = point;
+
+		if (last.getLongitude() > 90) {
+			pos1 = last;
+			pos2 = point;
+			
+		} else {
+			pos1 = point;
+			pos2 = last;
+		}
+		
+		Point2D startPt2D = map.getTileFactory().geoToPixel(pos1, map.getZoom());
+		GeoPosition pointPos = new GeoPosition(pos2.getLatitude(), (180 + (pos2.getLongitude() + 180) ));
+		Point2D endPt2D = map.getTileFactory().geoToPixel(pointPos, map.getZoom());
+
+		Point start = new Point((int) startPt2D.getX(), (int) startPt2D.getY());
+		Point end = new Point((int) endPt2D.getX(), (int) endPt2D.getY());
+		
+		g.drawLine((int) start.getX(), (int) start.getY(), (int) end.getX(), (int) end.getY());
+		
+		
+		// draw second part
+		startPt2D = map.getTileFactory().geoToPixel(pos2, map.getZoom());
+		pointPos = new GeoPosition(pos1.getLatitude(), (-180 + (pos1.getLongitude() - 180) ));
+		endPt2D = map.getTileFactory().geoToPixel(pointPos, map.getZoom());
+
+		start = new Point((int) startPt2D.getX(), (int) startPt2D.getY());
+		end = new Point((int) endPt2D.getX(), (int) endPt2D.getY());
+		
+		g.drawLine((int) start.getX(), (int) start.getY(), (int) end.getX(), (int) end.getY());
+	
+		return new Point[] { start, end };
+	}
+
+	/**
+	 * @return
+	 */
+	private boolean checkEquatorEdge(GeoPosition point, GeoPosition last) {
+		return ((last.getLongitude() > 90) && (point.getLongitude() < -30) 
+				|| (last.getLongitude() < -30) && (point.getLongitude() > 90));
+
+	}
+
+	/**
+	 * 
+	 */
+	private Point[] drawNormalLine(Graphics2D g, MyMap map, GeoPosition point, GeoPosition last) {
+		// convert geo-coordinate to world bitmap pixel
+		Point2D startPt2D = map.getTileFactory().geoToPixel(last, map.getZoom());
+		Point2D endPt2D = map.getTileFactory().geoToPixel(point, map.getZoom());
+		last = point;
+
+		Point startPt = new Point((int) startPt2D.getX(), (int) startPt2D.getY());
+		Point endPt = new Point((int) endPt2D.getX(), (int) endPt2D.getY());
+
+		g.drawLine((int) startPt.getX(), (int) startPt.getY(), (int) endPt.getX(), (int) endPt.getY());
+
+		return new Point[] { startPt, endPt };
 	}
 
 	private void modifyGraphics(Graphics2D g, Edge edge, int j) {
@@ -147,6 +217,11 @@ public class DefaultRoutePainter implements IRoutePainter {
 			g.setColor(Color.RED);
 			g.drawString(index + " - " + j, (int) startPt.getX() + i, (int) startPt.getY());
 			g.drawString(index, (int) endPt.getX() + i, (int) endPt.getY());
+		}
+		if (edge.getInfo() != null) {
+			g.setColor(Color.RED);
+			g.setFont(new Font("default", Font.BOLD, 16));
+			g.drawString(edge.getInfo(), (int) endPt.getX(), (int) endPt.getY() + 15);
 		}
 	}
 

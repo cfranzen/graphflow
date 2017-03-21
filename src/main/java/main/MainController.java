@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -84,9 +85,9 @@ public class MainController {
 	private RouteController routeController = RouteController.getInstance();
 	private SeaController seaController = SeaController.getInstance();
 
-	//XXX for debug
+	// XXX for debug
 	public static boolean onlyGermany = false;
-	
+
 	/**
 	 * used to search for contact points with other edges, distance in lat/lon
 	 * not pixel
@@ -132,18 +133,29 @@ public class MainController {
 	public void run() {
 
 		initGui();
-		
-		// Processing input to own classes
-		input = ModelLoader.loadFile(cliInput.modelFilePath, cliInput.solutionFilePath);
-		mapViewer.addPositions(input.nodes);
-		routeController.addEdges(input.edges);
 
+		// Processing input to own classes
+		loadSolution();
+		//
 		// Load sea data
+		seaController.loadSeaNodes(cliInput.seaNodes);
+		updateSeaNodes();
 		
+		// feed Graphopper with sea nodes
 		
-		optimize();
-		
-		
+
+		// optimize();
+
+	}
+
+	private void loadSolution() {
+		File f = new File(cliInput.modelFilePath);
+		if (f.exists() && !f.isDirectory()) {
+			input = ModelLoader.loadFile(cliInput.modelFilePath, cliInput.solutionFilePath);
+			mapViewer.addPositions(input.nodes);
+			routeController.addEdges(input.edges);
+		}
+
 	}
 
 	/**
@@ -236,9 +248,9 @@ public class MainController {
 
 		reducePointCount();
 
-		if (true) return; // XXX Skip for debug
-		
-		
+		if (true)
+			return; // XXX Skip for debug
+
 		// own thread so that the gui thread is not blocked
 		Thread t = new Thread(new Runnable() {
 
@@ -249,7 +261,6 @@ public class MainController {
 		});
 		t.start();
 
-		
 	}
 
 	private void reducePointCount() {
@@ -296,18 +307,18 @@ public class MainController {
 
 		logger.info("Split partial edges into multiple");
 
-//		List<Edge> refEdges = null;
-//		//XXX
-//		RecursiveTask<List<Edge>> task = new RecursiveTask<List<Edge>>() {
-//			
-//			
-//			@Override
-//			protected List<Edge> compute() {
-//				// TODO Auto-generated method stub
-//				return null;
-//			}
-//		};
-//		
+		// List<Edge> refEdges = null;
+		// //XXX
+		// RecursiveTask<List<Edge>> task = new RecursiveTask<List<Edge>>() {
+		//
+		//
+		// @Override
+		// protected List<Edge> compute() {
+		// // TODO Auto-generated method stub
+		// return null;
+		// }
+		// };
+		//
 		for (int i = 0; i < savedEdges.size(); i++) {
 			List<MapPoint> points = ((MapRoute) savedEdges.get(i)).getPoints();
 			GeoPosition last = points.get(0).getPosition();
@@ -341,9 +352,8 @@ public class MainController {
 
 		/*
 		 * Find nearest contact point. TODO connect to thickest part instead of
-		 * nearest. Maybe get Edge from point. 
-		 * </br>Every edge has to be connected to either an other edge or a
-		 * waypoint.
+		 * nearest. Maybe get Edge from point. </br>Every edge has to be
+		 * connected to either an other edge or a waypoint.
 		 */
 		logger.debug("Connect waypoints/edges to edges");
 		List<GeoPosition> waypoints = mapViewer.getWaypoints();
@@ -544,8 +554,8 @@ public class MainController {
 		PointList points = path.getPoints();
 
 		// XXX Instructions contain GPX Data for saving see Method:
-//		path.getInstructions().createGPX()
-		
+		// path.getInstructions().createGPX()
+
 		HighResEdge highResEdge = new HighResEdge(edge);
 
 		highResEdge.addGhPositions(points.toGeoJson());
@@ -579,7 +589,7 @@ public class MainController {
 		routeController.setSeaRoute(seaController.createEdges());
 		mapViewer.setTime(0);
 	}
-	
+
 	/**
 	 * @return
 	 */

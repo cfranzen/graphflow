@@ -21,4 +21,7 @@ public class cliInput{
 	
 	@Option(name = "-ghFolder", usage = "graphhopper folder with config file")
 	public String ghFolder;
+	
+	@Option(name = "-seaNodes", usage = "file path to the seanodes file")
+	public String seaNodes;
 }

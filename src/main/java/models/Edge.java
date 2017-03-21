@@ -3,6 +3,7 @@ package models;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jxmapviewer.viewer.GeoPosition;
 
 import com.syncrotess.pathfinder.model.entity.Node;
@@ -25,6 +26,7 @@ public class Edge {
 	private int[] capacites = new int[0];
 	private int[] workload = new int[0];
 	private EdgeType type = EdgeType.TRUCK;
+	private String info;
 
 	/**
 	 * Creates an {@link Edge} with the given {@link GeoPosition}s.
@@ -179,4 +181,26 @@ public class Edge {
 				new GeoPosition(dest.getLatitude(), dest.getLongitude()));
 	}
 
+	/**
+	 * @return the info
+	 */
+	public String getInfo() {
+		return info;
+	}
+
+	/**
+	 * @param info the info to set
+	 */
+	public void setInfo(String info) {
+		this.info = info;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this);
+	}
+	
 }
