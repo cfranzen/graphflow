@@ -13,6 +13,8 @@ import java.util.List;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.viewer.GeoPosition;
 
+import com.graphhopper.util.DistanceCalc3D;
+
 import main.MainController;
 import models.Edge;
 import models.EdgeType;
@@ -75,6 +77,12 @@ public class DefaultRoutePainter implements IRoutePainter {
 		showSearchRadius(g, map);
 		List<Edge> route = map.getRouteToPaint();
 		for (Edge edge : route) {
+			
+			// XXX debug, do not draw sea solution edges
+//			if (edge.getType().equals(EdgeType.VESSEL)) {
+//				continue;	
+//			}
+			
 			i++;
 			List<GeoPosition> points = edge.getPositions();
 			GeoPosition last = null;
@@ -88,6 +96,8 @@ public class DefaultRoutePainter implements IRoutePainter {
 					showContactPoints(g, map, edge, j);
 					continue;
 				}
+				
+				
 
 				Point[] stEnPoints = null;
 				if (checkEquatorEdge(point, last)) {
@@ -97,6 +107,7 @@ public class DefaultRoutePainter implements IRoutePainter {
 					stEnPoints = drawNormalLine(g, map, point, last);
 
 				}
+				last = point; // Important, else every edge consists of lines from edge start to every step
 				Point startPt = stEnPoints[0];
 				Point endPt = stEnPoints[1];
 
@@ -116,21 +127,21 @@ public class DefaultRoutePainter implements IRoutePainter {
 	 * 
 	 */
 	private Point[] drawEquatorEdge(Graphics2D g, MyMap map, GeoPosition point, GeoPosition last) {
-		// draw first part
+		// init vars
 		GeoPosition pos1 = last;
 		GeoPosition pos2 = point;
 
 		if (last.getLongitude() > 90) {
 			pos1 = last;
 			pos2 = point;
-			
 		} else {
 			pos1 = point;
 			pos2 = last;
 		}
 		
+		// draw first part
 		Point2D startPt2D = map.getTileFactory().geoToPixel(pos1, map.getZoom());
-		GeoPosition pointPos = new GeoPosition(pos2.getLatitude(), (180 + (pos2.getLongitude() + 180) ));
+		GeoPosition pointPos = new GeoPosition(pos2.getLatitude(), (360 + pos2.getLongitude()));
 		Point2D endPt2D = map.getTileFactory().geoToPixel(pointPos, map.getZoom());
 
 		Point start = new Point((int) startPt2D.getX(), (int) startPt2D.getY());
@@ -141,7 +152,7 @@ public class DefaultRoutePainter implements IRoutePainter {
 		
 		// draw second part
 		startPt2D = map.getTileFactory().geoToPixel(pos2, map.getZoom());
-		pointPos = new GeoPosition(pos1.getLatitude(), (-180 + (pos1.getLongitude() - 180) ));
+		pointPos = new GeoPosition(pos1.getLatitude(), (-360 + pos1.getLongitude()));
 		endPt2D = map.getTileFactory().geoToPixel(pointPos, map.getZoom());
 
 		start = new Point((int) startPt2D.getX(), (int) startPt2D.getY());
@@ -168,7 +179,7 @@ public class DefaultRoutePainter implements IRoutePainter {
 		// convert geo-coordinate to world bitmap pixel
 		Point2D startPt2D = map.getTileFactory().geoToPixel(last, map.getZoom());
 		Point2D endPt2D = map.getTileFactory().geoToPixel(point, map.getZoom());
-		last = point;
+
 
 		Point startPt = new Point((int) startPt2D.getX(), (int) startPt2D.getY());
 		Point endPt = new Point((int) endPt2D.getX(), (int) endPt2D.getY());
@@ -218,6 +229,7 @@ public class DefaultRoutePainter implements IRoutePainter {
 			g.drawString(index + " - " + j, (int) startPt.getX() + i, (int) startPt.getY());
 			g.drawString(index, (int) endPt.getX() + i, (int) endPt.getY());
 		}
+		// Edge info is always drawn at the start point of the edge
 		if (edge.getInfo() != null) {
 			g.setColor(Color.RED);
 			g.setFont(new Font("default", Font.BOLD, 16));

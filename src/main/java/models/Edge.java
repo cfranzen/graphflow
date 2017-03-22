@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jxmapviewer.viewer.GeoPosition;
 
+import com.graphhopper.util.DistanceCalc3D;
 import com.syncrotess.pathfinder.model.entity.Node;
 import com.syncrotess.pathfinder.model.entity.Service;
 import com.syncrotess.pathfinder.model.entity.ServiceType;
@@ -21,13 +22,17 @@ import com.syncrotess.pathfinder.model.entity.ServiceType;
  */
 public class Edge {
 
+	private static final DistanceCalc3D calulator = new DistanceCalc3D();
+
 	protected GeoPosition start;
 	protected GeoPosition dest;
 	private int[] capacites = new int[0];
 	private int[] workload = new int[0];
 	private EdgeType type = EdgeType.TRUCK;
 	private String info;
+	private double distance;
 
+	
 	/**
 	 * Creates an {@link Edge} with the given {@link GeoPosition}s.
 	 * 
@@ -38,6 +43,7 @@ public class Edge {
 		super();
 		this.start = start;
 		this.dest = dest;
+		calcDistance();
 	}
 	
 	/**
@@ -54,6 +60,7 @@ public class Edge {
 		this.capacites = capacites;
 		this.workload = workload;
 		this.type = type;
+		calcDistance();
 	}
 
 	public Edge(Edge e) {
@@ -63,6 +70,7 @@ public class Edge {
 		this.capacites = e.capacites;
 		this.workload = e.workload;
 		this.type = e.type;
+		calcDistance();
 	}
 
 	/**
@@ -75,7 +83,7 @@ public class Edge {
 		Node end = edge.getEndNode();
 		new Edge(new GeoPosition(start.getLatitude(), start.getLongitude()),
 				new GeoPosition(end.getLatitude(), end.getLongitude()));
-
+		calcDistance();
 	}
 
 	/**
@@ -201,6 +209,17 @@ public class Edge {
 	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
+	}
+
+	/**
+	 * @return
+	 */
+	public double getDistance() {
+		return distance;
+	}
+	
+	private void calcDistance() {
+		distance = calulator.calcDist(start.getLatitude(), start.getLongitude(), dest.getLatitude(), dest.getLongitude());
 	}
 	
 }

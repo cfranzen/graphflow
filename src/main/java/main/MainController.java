@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
@@ -84,7 +85,7 @@ public class MainController {
 
 	private RouteController routeController = RouteController.getInstance();
 	private SeaController seaController = SeaController.getInstance();
-
+	
 	// XXX for debug
 	public static boolean onlyGermany = false;
 
@@ -136,15 +137,15 @@ public class MainController {
 
 		// Processing input to own classes
 		loadSolution();
-		//
+
 		// Load sea data
 		seaController.loadSeaNodes(cliInput.seaNodes);
-		updateSeaNodes();
+	
+		// feed graph with sea nodes
+//		updateSeaNodes();
 		
-		// feed Graphopper with sea nodes
 		
-
-		// optimize();
+		optimize();
 
 	}
 
@@ -249,7 +250,7 @@ public class MainController {
 		reducePointCount();
 
 		if (true)
-			return; // XXX Skip for debug
+			return; // XXX Skipped for debug
 
 		// own thread so that the gui thread is not blocked
 		Thread t = new Thread(new Runnable() {
@@ -314,7 +315,7 @@ public class MainController {
 		//
 		// @Override
 		// protected List<Edge> compute() {
-		// // TODO Auto-generated method stub
+		// 
 		// return null;
 		// }
 		// };
@@ -512,26 +513,32 @@ public class MainController {
 
 				@Override
 				public Edge getRawResult() {
-					// TODO Auto-generated method stub
+					// noop
 					return null;
 				}
 
 				@Override
 				protected void setRawResult(Edge value) {
-					// TODO Auto-generated method stub
-
+					// noop
 				}
 
 				@Override
 				protected boolean exec() {
+					HighResEdge highResEdge;
 					if (edge.getType().equals(EdgeType.VESSEL)) {
 						logger.info("do not map sea edge, start: " + edge.getStart());
+						DijkstraAlgorithm dijkstraAlgorithm;
+						dijkstraAlgorithm = new DijkstraAlgorithm(seaController.getEdges());	
+						dijkstraAlgorithm.execute(edge.getStart());
+						List<GeoPosition> steps = dijkstraAlgorithm.getPath(edge.getDest());
+						highResEdge = new HighResEdge(edge);
+						highResEdge.addPositions(steps);
 					} else {
-						HighResEdge highResEdge = getHighRes(edge);
+						highResEdge = getHighRes(edge);
 						logger.info("map edge to street DONE");
-						if (highResEdge != null) {
-							routeController.updateEdge(mapViewer, edge, highResEdge);
-						}
+					}
+					if (highResEdge != null) {
+						routeController.updateEdge(mapViewer, edge, highResEdge);
 					}
 					return true;
 				}
@@ -553,7 +560,7 @@ public class MainController {
 		PathWrapper path = response.getBest();
 		PointList points = path.getPoints();
 
-		// XXX Instructions contain GPX Data for saving see Method:
+		// XXX Instructions contain GPX Data, for saving the optimized graph see Method:
 		// path.getInstructions().createGPX()
 
 		HighResEdge highResEdge = new HighResEdge(edge);
@@ -577,16 +584,17 @@ public class MainController {
 			args.put("graph.location", cliInput.ghFolder);
 			graphHopper.init(args);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			logger.error("Could not read graphopper files");
+			logger.error(e.getMessage());
 			e.printStackTrace();
 		}
 		graphHopper.importOrLoad();
 		logger.info("End init GH - " + (System.currentTimeMillis() - time + " ms"));
 	}
 
-	// TODO refactor
+	// TODO refactor, for easy sea node adding
 	public void updateSeaNodes() {
-		routeController.setSeaRoute(seaController.createEdges());
+		routeController.setSeaRoute(seaController.getEdges());
 		mapViewer.setTime(0);
 	}
 

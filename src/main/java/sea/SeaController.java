@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,6 +44,7 @@ public class SeaController {
 	private static SeaController instance;
 
 	private List<SeaNode> points = new ArrayList<>();
+	private List<Edge> edges = new ArrayList<>();
 	
 	private int idCounter = 0;
 	
@@ -88,6 +90,7 @@ public class SeaController {
 			points.get((int) (node.id-1)).edges.add(node.id);
 		}
 		logger.info("Added node: " + node.toString());
+		edges = createEdges();
 	}
 	
 	public SeaNode createPointFromPos(GeoPosition pos) {
@@ -100,17 +103,20 @@ public class SeaController {
 		return point;
 	}
 	
-	public List<Edge> createEdges() {
+	
+	public List<Edge> getEdges() {
+		return edges;
+	}
+	
+	private List<Edge> createEdges() {
 		List<Edge> result = new ArrayList<>();
 		for (SeaNode seaNode : points) {
 			for (Long pointref : seaNode.edges) {
-				if (pointref < seaNode.id) {
 					Edge edge = new Edge(seaNode.pos, getPosById(pointref));
 					edge.setInfo(pointref + "");
-					edge.setType(ServiceType.VESSEL_TRANSPORT);
+					edge.setType(ServiceType.UNKOWN);
 					result.add(edge);
 //					logger.info(edge.toString());
-				}
 			}
 		}
 		return result;
@@ -149,6 +155,8 @@ public class SeaController {
 		points = addEdgesFromFile(path);
 		idCounter = points.size(); // Works only if size = latest id
 		logger.info("Set IDCounter to: " + idCounter);
+		edges = createEdges();
+		logger.info(edges.toString());
 	}
 
 	public void initGraphhopperSea(String ghConfigFileFolder) {
@@ -166,7 +174,7 @@ public class SeaController {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		graphHopper.importOrLoad();
+		
 		
 //		graphHopper.getGraphHopperStorage().set
 		
