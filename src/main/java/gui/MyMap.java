@@ -52,6 +52,7 @@ public class MyMap extends JXMapViewer {
 	
 	// TODO Refactor
 	private IRoutePainter defaultPainter = new DefaultRoutePainter();
+	private IRoutePainter seaRoutePainter = new SeaRoutePainter();
 
 
 	/**
@@ -195,6 +196,7 @@ public class MyMap extends JXMapViewer {
 	 */
 	private void initPainters() {
 		// Create a waypoint painter that takes all the waypoints
+		// TODO Refactor, do not use jmapviewers waypoint class
 		waypointPainter = new WaypointPainter<Waypoint>();
 		waypointPainter.setRenderer(new CapacityWaypointRenderer());
 		waypointPainter.setWaypoints(waypoints);
@@ -206,6 +208,7 @@ public class MyMap extends JXMapViewer {
 		List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
 //		painters.add(routePainter);
 		painters.add(getRoutePainter(this.getZoom()));
+		painters.add(seaRoutePainter);
 		painters.add(waypointPainter);
 
 		CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>(painters);
@@ -228,20 +231,6 @@ public class MyMap extends JXMapViewer {
 		this.waypoints = waypoints;
 		waypointPainter.setWaypoints(waypoints);
 		
-	}
-
-	/**
-	 * @return
-	 */
-	public List<Edge> getRoute() {
-		return controller.getRouteController().getRoute();
-	}
-	
-	/**
-	 * @return
-	 */
-	public List<Edge> getRouteToPaint() {
-		return controller.getRouteController().getRouteToPaint();
 	}
 
 }

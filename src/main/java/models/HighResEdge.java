@@ -1,8 +1,6 @@
-/**
- * 
- */
 package models;
 
+import java.awt.geom.Path2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +33,7 @@ public class HighResEdge extends Edge {
 	public HighResEdge(Edge edge) {
 		super(edge);
 	}
-
+	
 	/**
 	 * @param geoJson
 	 *            is LON,LAT or LON,LAT,ELE

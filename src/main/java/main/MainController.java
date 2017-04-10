@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
@@ -86,8 +85,7 @@ public class MainController {
 	private RouteController routeController = RouteController.getInstance();
 	private SeaController seaController = SeaController.getInstance();
 	
-	// XXX for debug
-	public static boolean onlyGermany = false;
+	
 
 	/**
 	 * used to search for contact points with other edges, distance in lat/lon
@@ -104,6 +102,10 @@ public class MainController {
 	 * in lat/lon not pixel
 	 */
 	public final static double combinePointsDistance = 0.005;
+
+	// XXX for debug
+	public static boolean onlyGermany = false;
+	public static  boolean debugInfos = true;
 
 	/**
 	 * Returns the {@link MainController} instance, if the instance is
@@ -135,15 +137,14 @@ public class MainController {
 
 		initGui();
 
+		// Load sea data
+		seaController.loadSeaNodes(cliInput.seaNodes);
+		
+		mapViewer.setZoom(16);
+		
 		// Processing input to own classes
 		loadSolution();
 
-		// Load sea data
-		seaController.loadSeaNodes(cliInput.seaNodes);
-	
-		// feed graph with sea nodes
-//		updateSeaNodes();
-		
 		
 		optimize();
 
@@ -249,8 +250,8 @@ public class MainController {
 
 		reducePointCount();
 
-		if (true)
-			return; // XXX Skipped for debug
+		if (true) return; // XXX
+
 
 		// own thread so that the gui thread is not blocked
 		Thread t = new Thread(new Runnable() {
@@ -269,8 +270,9 @@ public class MainController {
 		sumAllPoints();
 		List<Edge> edges = routeController.getRoute();
 		for (Edge edge : edges) {
-			routeController.updateEdge(mapViewer, edge, reduceEdgePoints(edge));
+			routeController.updateEdge(edge, reduceEdgePoints(edge));
 		}
+		repaint();
 		sumAllPoints();
 	}
 
@@ -506,7 +508,7 @@ public class MainController {
 	}
 
 	private void mapEdgesToStreets() {
-		for (Edge edge : routeController.getRoute()) {
+		for (Edge edge : routeController.getRouteToPaint()) {
 			pool.invoke(new ForkJoinTask<Edge>() {
 
 				private static final long serialVersionUID = 1475668164109020735L;
@@ -526,20 +528,28 @@ public class MainController {
 				protected boolean exec() {
 					HighResEdge highResEdge;
 					if (edge.getType().equals(EdgeType.VESSEL)) {
-						logger.info("do not map sea edge, start: " + edge.getStart());
+						
 						DijkstraAlgorithm dijkstraAlgorithm;
 						dijkstraAlgorithm = new DijkstraAlgorithm(seaController.getEdges());	
 						dijkstraAlgorithm.execute(edge.getStart());
 						List<GeoPosition> steps = dijkstraAlgorithm.getPath(edge.getDest());
 						highResEdge = new HighResEdge(edge);
 						highResEdge.addPositions(steps);
+						logger.info("map edge to sea route DONE - " + steps.size());
+						if (highResEdge != null) {
+							routeController.updateSeaEdge(edge, highResEdge);
+						}
 					} else {
+						if (debugInfos) return true; // XXX
+
+						
 						highResEdge = getHighRes(edge);
 						logger.info("map edge to street DONE");
+						if (highResEdge != null) {
+							routeController.updateEdge(edge, highResEdge);
+						}
 					}
-					if (highResEdge != null) {
-						routeController.updateEdge(mapViewer, edge, highResEdge);
-					}
+					repaint();
 					return true;
 				}
 			});
@@ -592,12 +602,6 @@ public class MainController {
 		logger.info("End init GH - " + (System.currentTimeMillis() - time + " ms"));
 	}
 
-	// TODO refactor, for easy sea node adding
-	public void updateSeaNodes() {
-		routeController.setSeaRoute(seaController.getEdges());
-		mapViewer.setTime(0);
-	}
-
 	/**
 	 * @return
 	 */
@@ -610,5 +614,12 @@ public class MainController {
 	 */
 	public SeaController getSeaController() {
 		return seaController;
+	}
+
+	/**
+	 * 
+	 */
+	public void repaint() {
+		mapViewer.repaint();
 	}
 }

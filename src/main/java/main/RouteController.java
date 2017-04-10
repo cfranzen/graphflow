@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.jxmapviewer.viewer.GeoPosition;
 import org.jxmapviewer.viewer.Waypoint;
@@ -15,6 +14,7 @@ import com.graphhopper.util.PointList;
 import gui.MyMap;
 import models.CapacityWaypoint;
 import models.Edge;
+import models.EdgeType;
 import models.HighResEdge;
 
 /**
@@ -41,6 +41,15 @@ public class RouteController {
 	 */
 	public List<Edge> getRoute() {
 		return route;
+	}
+	
+	/**
+	 * {@link List} with {@link HighResEdge} after mapping
+	 * 
+	 * @return the route
+	 */
+	public List<Edge> getSeaRoute() {
+		return seaRoute;
 	}
 
 	public List<Edge> getRouteToPaint() {
@@ -74,24 +83,51 @@ public class RouteController {
 	 *         {@link Edge}s</br>
 	 *         <code>false</code> otherwise
 	 */
-	public boolean updateEdge(MyMap map, Edge oldEdge, Edge newEdge) {
+	public boolean updateEdge(Edge oldEdge, Edge newEdge) {
 		List<Edge> route = getRoute();
 		if (newEdge != null) {
 			int index = route.indexOf(oldEdge);
 			if (index != -1) {
 				route.set(index, newEdge);
 				setRoute(route);
-				map.repaint();
 				return true;
 			}
 		} else {
 			// if newEdge = Emtpy -> remove old edge instead null update
 			route.remove(oldEdge);
 			setRoute(route);
-			map.repaint();
 		}
 		return false;
 	}
+	
+	/**
+	 * Updates the old {@link Edge} with a new {@link Edge}. Used to update a
+	 * normal {@link Edge} with a {@link HighResEdge}.
+	 * 
+	 * @param map 
+	 * @param oldEdge
+	 * @param newEdge
+	 * @return <code>true</code> if oldEdge consists in the saved
+	 *         {@link Edge}s</br>
+	 *         <code>false</code> otherwise
+	 */
+	public boolean updateSeaEdge(Edge oldEdge, Edge newEdge) {
+		List<Edge> route = getSeaRoute();
+		if (newEdge != null) {
+			int index = route.indexOf(oldEdge);
+			if (index != -1) {
+				route.set(index, newEdge);
+				setSeaRoute(route);
+				return true;
+			}
+		} else {
+			// if newEdge = Emtpy -> remove old edge instead null update
+			route.remove(oldEdge);
+			setSeaRoute(route);
+		}
+		return false;
+	}
+	
 	
 	/**
 	 * Adds the given {@link Edge}s to the graph.
@@ -115,7 +151,15 @@ public class RouteController {
 				}
 			}
 		} else {
-			route.addAll(edges);
+			for (Edge edge : edges) {
+				if (edge.getType().equals(EdgeType.VESSEL)) {
+					seaRoute.add(edge);
+				} else {
+					route.add(edge);
+				}
+			}
+			
+//			route.addAll(edges);
 		}
 		setRoute(route);
 	}
@@ -149,8 +193,8 @@ public class RouteController {
 	private void updatePaintRoute() {
 		paintRoute = new ArrayList<>(route.size() + seaRoute.size());
 		
-		paintRoute.addAll(route);
 		paintRoute.addAll(seaRoute);
+		paintRoute.addAll(route);
 	}
 	
 

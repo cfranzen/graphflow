@@ -70,6 +70,7 @@ public class Edge {
 		this.capacites = e.capacites;
 		this.workload = e.workload;
 		this.type = e.type;
+		this.info = e.info;
 		calcDistance();
 	}
 

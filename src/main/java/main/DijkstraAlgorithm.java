@@ -138,7 +138,7 @@ public class DijkstraAlgorithm {
 	 * @param target
 	 * @return
 	 */
-	private GeoPosition findNearestGraphNode(GeoPosition target) {
+	public GeoPosition findNearestGraphNode(GeoPosition target) {
 		GeoPosition minNode = null;
 		double minDist = Double.MAX_VALUE;
 		for (GeoPosition geoPosition : allNodes) {

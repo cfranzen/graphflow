@@ -1,6 +1,3 @@
-/**
- * 
- */
 package sea;
 
 import java.io.File;
@@ -9,7 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,11 +16,6 @@ import org.jxmapviewer.viewer.GeoPosition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.graphhopper.GraphHopper;
-import com.graphhopper.reader.osm.GraphHopperOSM;
-import com.graphhopper.routing.util.CarFlagEncoder;
-import com.graphhopper.routing.util.EncodingManager;
-import com.graphhopper.util.CmdArgs;
 import com.syncrotess.pathfinder.model.entity.ServiceType;
 
 import models.Edge;
@@ -44,7 +35,7 @@ public class SeaController {
 	private static SeaController instance;
 
 	private List<SeaNode> points = new ArrayList<>();
-	private List<Edge> edges = new ArrayList<>();
+	private List<Edge> edges = new ArrayList<>(); // represents the ways on the sea
 	
 	private int idCounter = 0;
 	
@@ -108,28 +99,29 @@ public class SeaController {
 		return edges;
 	}
 	
-	private List<Edge> createEdges() {
+	public List<Edge> createEdges() {
 		List<Edge> result = new ArrayList<>();
 		for (SeaNode seaNode : points) {
 			for (Long pointref : seaNode.edges) {
-					Edge edge = new Edge(seaNode.pos, getPosById(pointref));
-					edge.setInfo(pointref + "");
-					edge.setType(ServiceType.UNKOWN);
-					result.add(edge);
-//					logger.info(edge.toString());
+				SeaNode des = getPosById(pointref);
+				Edge edge = new Edge(seaNode.pos, des.pos);
+				edge.setInfo(pointref + "");
+				edge.setType(ServiceType.UNKOWN);
+				
+				result.add(edge);
 			}
 		}
 		return result;
 		
 	}
 	
-	private GeoPosition getPosById(long id) {
+	private SeaNode getPosById(long id) {
 		SeaNode result = points.stream()
 		        .filter(node -> node.id == id)
 		        .findAny()
 		        .orElse(null);
 		if (result != null) {
-			return result.pos;
+			return result;
 		} 
 		return null;
 	}
@@ -157,27 +149,6 @@ public class SeaController {
 		logger.info("Set IDCounter to: " + idCounter);
 		edges = createEdges();
 		logger.info(edges.toString());
-	}
-
-	public void initGraphhopperSea(String ghConfigFileFolder) {
-		GraphHopper graphHopper = new GraphHopperOSM().forDesktop();
-		
-		CarFlagEncoder encoder = new CarFlagEncoder();
-		graphHopper.setEncodingManager(new EncodingManager(encoder));
-		graphHopper.getCHFactoryDecorator().setEnabled(false);
-
-		try {
-			CmdArgs args = CmdArgs.readFromConfig(ghConfigFileFolder + "config.properties", "graphhopper.config");
-//			args.put("datareader.file", cliInput.osmFilePath);
-//			args.put("graph.location", cliInput.ghFolder);
-			graphHopper.init(args);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		
-//		graphHopper.getGraphHopperStorage().set
-		
 	}
 
 	public class SeaNode {
