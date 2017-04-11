@@ -120,16 +120,19 @@ public class SeaRoutePainter implements IRoutePainter {
 												// to Edge change to "route"
 			HighResEdge edge = (HighResEdge) route.get(i);
 
+			GeoPosition lastPos = null;
+			Point2D lastCircleP = null;
 			// Add Start- and Endpoint
 			if (edge.getPositions().size() > 3) { // min. 3 points needed for
 													// quad function
 
 				// Start
+				lastPos = edge.getPosition(0);
+				lastCircleP = getCirclePoint(convertGeo(edge.getStart()), convertGeo(lastPos));
 				PointPath path = new PointPath();
 				path.moveTo(convertGeo(edge.getStart()));
-				path.quadTo(convertGeo(edge.getPosition(0)),
-						getCirclePoint(convertGeo(edge.getPosition(1)), convertGeo(edge.getPosition(0))));
-
+				path.lineTo(lastCircleP);
+				
 				SeaEdge seaEdge = new SeaEdge(edge.getStart(), edge.getPosition(1));
 				seaEdge.shape = path.getPath();
 				drawEdges.add(seaEdge);
@@ -137,21 +140,21 @@ public class SeaRoutePainter implements IRoutePainter {
 				// End
 				path = new PointPath();
 				path.moveTo(convertGeo(edge.getDest()));
-				path.quadTo(convertGeo(edge.getPosition(-1)),
-						getCirclePoint(convertGeo(edge.getPosition(-2)), convertGeo(edge.getPosition(-1))));
+				path.lineTo(getCirclePoint(edge.getDest(), edge.getPosition(-1)));
 
 				SeaEdge seaEdge2 = new SeaEdge(edge.getStart(), edge.getPositions().get(0));
 				seaEdge2.shape = path.getPath();
 				drawEdges.add(seaEdge2);
+			} else { 
+				lastCircleP = convertGeo(edge.getStart());
 			}
 
-			GeoPosition lastPos = null;
-			Point2D lastCircleP = null;
-			for (GeoPosition pos : edge.getPositions()) {
+//			for (GeoPosition pos : edge.getPositions()) {
+			for (int j = 1; j < edge.getPositions().size(); j++) {
+				GeoPosition pos = edge.getPosition(j);
+				
 				if (lastPos == null) {
-					lastPos = pos;
-					lastCircleP = convertGeo(pos);
-					continue;
+					lastPos = edge.getPosition(0);
 				}
 
 				Point2D circlePIn = getCirclePoint(pos, lastPos);
