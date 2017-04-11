@@ -9,8 +9,9 @@ import java.awt.Rectangle;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.viewer.GeoPosition;
@@ -38,6 +39,9 @@ public class SeaRoutePainter implements IRoutePainter {
 
 	private Graphics2D g;
 	private MyMap map;
+	private int currentTimeStep;
+	
+	private List<SeaEdge> drawEdges = new ArrayList<>();
 
 	/**
 	 * Initalizes the circleDiameter/zoomlevel list.
@@ -45,6 +49,7 @@ public class SeaRoutePainter implements IRoutePainter {
 	public SeaRoutePainter(MyMap map) {
 		this.map = map;
 
+		// Init circle diameter array
 		GeoPosition pos = new GeoPosition(0, 0);
 		GeoPosition pcopy = new GeoPosition(pos.getLatitude() + POINT_DISTANCE_GEO,
 				pos.getLongitude() + POINT_DISTANCE_GEO);
@@ -63,8 +68,7 @@ public class SeaRoutePainter implements IRoutePainter {
 	 */
 	@Override
 	public void setTimeStep(int time) {
-		// TODO Auto-generated method stub
-
+		currentTimeStep = time;
 	}
 
 	/*
@@ -78,7 +82,6 @@ public class SeaRoutePainter implements IRoutePainter {
 		this.g = g;
 		this.map = (MyMap) map;
 
-		
 		// convert from viewport to world bitmap
 		Rectangle rect = map.getViewportBounds();
 		g.translate(-rect.x, -rect.y);
@@ -86,20 +89,88 @@ public class SeaRoutePainter implements IRoutePainter {
 		g.setStroke(new BasicStroke(3));
 		g.setColor(Color.PINK);
 
-		List<SeaEdge> lines = calcSeaLines();
+		// XXX does not need to run every frame
+		calcSeaLines();
+		logger.info("Sea-Edge count: " + drawEdges.size());
+		optimzeSeaLines() ;
+		logger.info("Sea-Edge count: " + drawEdges.size());
 
 		g.setColor(Color.GREEN);
-		for (SeaEdge seaEdge : lines) {
-			// Calc load & capacity
-			if (seaEdge.shape != null) {
-				g.draw(seaEdge.shape);
+		for (SeaEdge seaEdge : drawEdges) {
+			// TODO Calc load & capacity
+			if (seaEdge.getPath() != null) {
+				g.setStroke(new BasicStroke(seaEdge.getCapacity(currentTimeStep)/500));
+				g.setColor(DefaultRoutePainter.calculateColor(seaEdge.getWorkload(currentTimeStep), seaEdge.getCapacity(currentTimeStep)));
+				g.draw(seaEdge.getPath());
 			}
 		}
 
 		if (MainController.debugInfos) {
-			// drawPossibleSeaEdges();
+//			 drawPossibleSeaEdges();
 			drawDebugNodeInfos();
 		}
+
+	}
+
+	/**
+	 * 
+	 */
+	private void optimzeSeaLines() {
+		List<SeaEdge> result = new ArrayList<>();
+		if (!drawEdges.isEmpty()) {
+			result.add(drawEdges.get(0)); // First edge cannot be compared with
+											// empty list
+			for (int i = 1; i < drawEdges.size(); i++) {
+				SeaEdge edge = drawEdges.get(i);
+				boolean flag = false;
+				for (int j = 0; j < result.size(); j++) {
+					SeaEdge cEdge = result.get(j);
+					if (edge.equals(cEdge)) {
+						cEdge.edgeIds.addAll(edge.edgeIds);
+						flag = true;
+					}
+				}
+				if (!flag) {
+					result.add(edge);
+				}
+			}
+			
+			
+			List<Edge> route =  MainController.getInstance().getRouteController().getSeaRoute();
+			for (SeaEdge seaEdge : result) {
+				long[] cap = new long[100];
+				long[] work = new long[100];
+				
+				seaEdge.setCapacites(cap);
+				seaEdge.setWorkload(work);
+				
+				for (int  id : seaEdge.edgeIds) {
+					for (Edge edge : route) {
+						if (edge.id == id) {
+							seaEdge.addCapacities(edge.getCapacites());
+							seaEdge.addWorkloads(edge.getWorkloads());
+						}
+					}
+				}
+			}
+			
+			drawEdges = result;
+		}
+	}
+
+	/**
+	 * @param edge
+	 * @param start
+	 * @param dest
+	 * @param path
+	 */
+	private void addDrawEdge(Edge edge, GeoPosition start, GeoPosition dest, PointPath path) {
+		SeaEdge seaEdge = new SeaEdge(start, dest);
+		seaEdge.setPath(path.getPath());
+//		seaEdge.setCapacites(edge.getCapacites());
+//		seaEdge.setWorkload(edge.getWorkloads());
+		seaEdge.edgeIds.add(edge.id);
+		drawEdges.add(seaEdge);
 
 	}
 
@@ -110,14 +181,15 @@ public class SeaRoutePainter implements IRoutePainter {
 	 * @return {@link List} of {@link SeaEdge} with calculated {@link Path2D}s,
 	 *         or an empty list if the sea data consists of the wrong type.
 	 */
-	private List<SeaEdge> calcSeaLines() {
+	private void calcSeaLines() {
+		drawEdges.clear();
+		
 		List<Edge> route = MainController.getInstance().getRouteController().getSeaRoute();
-		List<SeaEdge> drawEdges = new ArrayList<>();
 
 		for (int i = 0; i < route.size(); i++) {
 			if (route.get(i) instanceof HighResEdge == false)
-				return Collections.emptyList(); // TODO when refactoring SeaEdge
-												// to Edge change to "route"
+				return; // TODO when refactoring SeaEdge
+						// to Edge change to "route"
 			HighResEdge edge = (HighResEdge) route.get(i);
 
 			GeoPosition lastPos = null;
@@ -125,37 +197,33 @@ public class SeaRoutePainter implements IRoutePainter {
 			// Add Start- and Endpoint
 			if (edge.getPositions().size() > 3) { // min. 3 points needed for
 													// quad function
-
 				// Start
 				lastPos = edge.getPosition(0);
 				lastCircleP = getCirclePoint(convertGeo(edge.getStart()), convertGeo(lastPos));
 				PointPath path = new PointPath();
 				path.moveTo(convertGeo(edge.getStart()));
 				path.lineTo(lastCircleP);
-				
-				SeaEdge seaEdge = new SeaEdge(edge.getStart(), edge.getPosition(1));
-				seaEdge.shape = path.getPath();
-				drawEdges.add(seaEdge);
+				addDrawEdge(edge, edge.getStart(), lastPos, path);
 
 				// End
+				Point2D circleP = getCirclePoint(edge.getDest(), edge.getPosition(-1));
 				path = new PointPath();
 				path.moveTo(convertGeo(edge.getDest()));
-				path.lineTo(getCirclePoint(edge.getDest(), edge.getPosition(-1)));
+				path.lineTo(circleP);
+				addDrawEdge(edge, edge.getDest(), convertPoint(circleP), path);
 
-				SeaEdge seaEdge2 = new SeaEdge(edge.getStart(), edge.getPositions().get(0));
-				seaEdge2.shape = path.getPath();
-				drawEdges.add(seaEdge2);
-			} else { 
+				path = new PointPath();
+				path.moveTo(circleP);
+				path.quadTo(convertGeo(edge.getPosition(-1)),
+						getCirclePoint(convertGeo(edge.getPosition(-2)), convertGeo(edge.getPosition(-1))));
+				addDrawEdge(edge, convertPoint(circleP), edge.getPosition(-1), path);
+			} else {
 				lastCircleP = convertGeo(edge.getStart());
+				lastPos = edge.getPosition(0);
 			}
 
-//			for (GeoPosition pos : edge.getPositions()) {
 			for (int j = 1; j < edge.getPositions().size(); j++) {
 				GeoPosition pos = edge.getPosition(j);
-				
-				if (lastPos == null) {
-					lastPos = edge.getPosition(0);
-				}
 
 				Point2D circlePIn = getCirclePoint(pos, lastPos);
 				Point2D circlePOut = getCirclePoint(lastPos, pos);
@@ -182,31 +250,27 @@ public class SeaRoutePainter implements IRoutePainter {
 
 					lastPos = pos;
 					lastCircleP = convertGeo(pos);
+					addDrawEdge(edge, pos1, mirrorPoint, path);
 				} else {
 					path.moveTo(lastCircleP);
 					path.quadTo(convertGeo(lastPos), circlePIn);
-					path.lineTo(circlePOut);
+					addDrawEdge(edge, convertPoint(lastCircleP), convertPoint(circlePIn), path);
 
+					path = new PointPath();
+					path.moveTo(circlePIn);
+					path.lineTo(circlePOut);
+					addDrawEdge(edge,  convertPoint(circlePIn),  convertPoint(circlePOut), path);
+					
 					lastPos = pos;
 					lastCircleP = circlePOut;
 				}
 
-				g.fillOval((int) lastCircleP.getX(), (int) lastCircleP.getY(), 10, 10);
-
-				SeaEdge seaEdge = new SeaEdge(lastPos, pos);
-				seaEdge.shape = path.getPath();
-				drawEdges.add(seaEdge);
-
 			}
-
 		}
-
-		return drawEdges;
 	}
 
 	/**
-	 * Draws all possible sea ways on the saved map instance
-	 * For debugging
+	 * Draws all possible sea ways on the saved map instance For debugging
 	 */
 	@SuppressWarnings("unused")
 	private void drawPossibleSeaEdges() {

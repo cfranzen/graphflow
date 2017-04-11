@@ -111,7 +111,7 @@ public class ModelLoader {
 					new GeoPosition(end.getLatitude(), end.getLongitude()));
 
 			// Workloads
-			int[] workloads = new int[timesteps];
+			long[] workloads = new long[timesteps];
 			Set<SolutionItem> items = solution.getItemsForService(service);
 			for (SolutionItem solutionItem : items) {
 				workloads[solutionItem.getTime()] += solutionItem.getVolume();
@@ -119,7 +119,7 @@ public class ModelLoader {
 			edge.setWorkload(workloads);
 
 			// Capacities
-			int[] capacites = new int[timesteps];
+			long[] capacites = new long[timesteps];
 			for (int i = 0; i < timesteps; i++) {
 				capacites[i] = service.getCapacity(i);
 			}

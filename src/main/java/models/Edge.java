@@ -24,13 +24,15 @@ public class Edge {
 
 	private static final DistanceCalc3D calulator = new DistanceCalc3D();
 
+	public int id;
 	protected GeoPosition start;
 	protected GeoPosition dest;
-	private int[] capacites = new int[0];
-	private int[] workload = new int[0];
+	private long[] capacites = new long[0];
+	private long[] workloads = new long[0];
 	private EdgeType type = EdgeType.TRUCK;
 	private String info;
 	private double distance;
+	
 
 	
 	/**
@@ -53,22 +55,23 @@ public class Edge {
 	 * @param workload
 	 * @param type
 	 */
-	public Edge(GeoPosition start, GeoPosition dest, int[] capacites, int[] workload, EdgeType type) {
+	public Edge(GeoPosition start, GeoPosition dest, long[] capacites, long[] workload, EdgeType type) {
 		super();
 		this.start = start;
 		this.dest = dest;
 		this.capacites = capacites;
-		this.workload = workload;
+		this.workloads = workload;
 		this.type = type;
 		calcDistance();
 	}
 
 	public Edge(Edge e) {
 		super();
+		this.id = e.id;
 		this.start = e.start;
 		this.dest = e.dest;
 		this.capacites = e.capacites;
-		this.workload = e.workload;
+		this.workloads = e.workloads;
 		this.type = e.type;
 		this.info = e.info;
 		calcDistance();
@@ -98,7 +101,7 @@ public class Edge {
 	 * @param capacites
 	 *            the capacites to set
 	 */
-	public void setCapacites(int[] capacites) {
+	public void setCapacites(long[] capacites) {
 		this.capacites = capacites;
 	}
 
@@ -106,8 +109,8 @@ public class Edge {
 	 * @param workload
 	 *            the workload to set
 	 */
-	public void setWorkload(int[] workload) {
-		this.workload = workload;
+	public void setWorkload(long[] workload) {
+		this.workloads = workload;
 	}
 
 	/**
@@ -128,25 +131,50 @@ public class Edge {
 	 * @param currentTimeStep
 	 * @return the workload for the given time step.
 	 */
-	public int getWorkload(int currentTimeStep) {
-		if (workload.length > currentTimeStep) {
-			return workload[currentTimeStep];
+	public long getWorkload(int currentTimeStep) {
+		if (workloads.length > currentTimeStep) {
+			return workloads[currentTimeStep];
 		} else {
 			return 0;
 		}
 	}
 
+	public long[] getWorkloads() {
+		return workloads;
+	}
+	
+	public void addWorkloads(long[] ls) {
+		for (int i = 0; i < ls.length; i++) {
+			this.workloads[i] += ls[i];
+		}
+	}
+
+	
 	/**
 	 * @param currentTimeStep
 	 * @return the capacity for the given time step.
 	 */
-	public int getCapacity(int currentTimeStep) {
+	public long getCapacity(int currentTimeStep) {
 		if (capacites.length > currentTimeStep) {
 			return capacites[currentTimeStep];
 		} else {
 			return 0;
 		}
 	}
+	
+	public long[] getCapacites() {
+		return capacites;
+	}
+
+	/**
+	 * @param ls
+	 */
+	public void addCapacities(long[] ls) {
+		for (int i = 0; i < ls.length; i++) {
+			this.capacites[i] += ls[i];
+		}
+	}
+
 
 	/**
 	 * @return the type of the edge
@@ -222,5 +250,5 @@ public class Edge {
 	private void calcDistance() {
 		distance = calulator.calcDist(start.getLatitude(), start.getLongitude(), dest.getLatitude(), dest.getLongitude());
 	}
-	
+
 }

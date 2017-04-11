@@ -116,8 +116,8 @@ public class DefaultRoutePainter implements IRoutePainter {
 	}
 
 	private void modifyGraphicsForStep(Graphics2D g, Edge edge, int j) {
-		int currentWorkload = 0;
-		int currentCapacity = 0;
+		long currentWorkload = 0;
+		long currentCapacity = 0;
 		if (MapRoute.class.isInstance(edge)) {
 			MapRoute mapEdge = (MapRoute) edge;
 			currentWorkload = mapEdge.getWorkloadForPoint(currentTimeStep, j);
@@ -217,7 +217,7 @@ public class DefaultRoutePainter implements IRoutePainter {
 		}
 	}
 
-	private Color calculateColor(int workload, int capacity) {
+	static Color calculateColor(long workload, long capacity) {
 		Color color1 = Color.GREEN;
 		Color color2 = Color.RED;
 		float ratio = (float) workload / (float) capacity;

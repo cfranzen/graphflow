@@ -45,6 +45,7 @@ import models.HighResEdge;
 import models.MapRoute;
 import models.MapRoute.MapPoint;
 import models.ModelLoader;
+import painter.SeaRoutePainter;
 import sea.SeaController;
 
 /**
@@ -103,7 +104,7 @@ public class MainController {
 
 	// XXX for debug
 	public static boolean onlyGermany = false;
-	public static boolean debugInfos = true;
+	public static boolean debugInfos = false;
 
 	/**
 	 * Returns the {@link MainController} instance, if the instance is
@@ -168,6 +169,18 @@ public class MainController {
 		}
 		mapViewer.setTime(currentTime);
 	}
+	
+	/**
+	 * 
+	 */
+	protected void reduceTime() {
+		currentTime--;
+		if (currentTime <= 0) {
+			currentTime = input.timesteps;
+		}
+		mapViewer.setTime(currentTime);
+		
+	}
 
 	/**
 	 * Returns the map component
@@ -207,17 +220,30 @@ public class MainController {
 		JButton btn = new RunButton(this);
 		btn.setSize(150, 50);
 		layeredPane.add(btn, new Integer(20));
-		JButton resetBtn = new JButton();
-		resetBtn.setText("RESET");
-		resetBtn.setSize(10, 50);
-		resetBtn.addActionListener(new ActionListener() {
+		
+		JButton plusBtn = new JButton();
+		plusBtn.setText("+");
+		plusBtn.setSize(80, 25);
+		plusBtn.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				run();
+				MainController.getInstance().incTime();
 			}
 		});
-		layeredPane.add(resetBtn, new Integer(30));
+		layeredPane.add(plusBtn, new Integer(30));
+		JButton minusBtn = new JButton();
+		minusBtn.setText("-");
+		minusBtn.setSize(40, 25);
+		minusBtn.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				MainController.getInstance().reduceTime();
+			}
+		});
+		
+		layeredPane.add(minusBtn, new Integer(40));
 
 		// Add input to viewer
 		mapViewer = new MyMap(this);

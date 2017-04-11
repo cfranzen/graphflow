@@ -55,7 +55,7 @@ public class MyMap extends JXMapViewer {
 
 	// TODO Refactor
 	private IRoutePainter defaultPainter = new DefaultRoutePainter();
-	private IRoutePainter seaRoutePainter;
+	public IRoutePainter seaRoutePainter; //XXX
 
 	/**
 	 * Default Constructor, initializes the tile factory.
@@ -129,6 +129,7 @@ public class MyMap extends JXMapViewer {
 	 */
 	public void setTime(int time) {
 		routePainter.setTimeStep(time);
+		seaRoutePainter.setTimeStep(time);
 		repaint();
 	}
 

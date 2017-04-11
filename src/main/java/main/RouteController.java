@@ -28,21 +28,20 @@ public class RouteController {
 	private static RouteController instance;
 	private List<Edge> route = new ArrayList<>();
 	private List<Edge> seaRoute = new ArrayList<>();
-	
+
 	private List<Edge> paintRoute = Collections.emptyList();
-	
-	private RouteController() { 
-		//noop
+
+	private RouteController() {
+		// noop
 	}
-	
-	
+
 	/**
 	 * @return the route
 	 */
 	public List<Edge> getRoute() {
 		return route;
 	}
-	
+
 	/**
 	 * {@link List} with {@link HighResEdge} after mapping
 	 * 
@@ -57,7 +56,8 @@ public class RouteController {
 	}
 
 	/**
-	 * @param route the route to set
+	 * @param route
+	 *            the route to set
 	 */
 	public void setRoute(List<Edge> route) {
 		this.route = route;
@@ -65,7 +65,8 @@ public class RouteController {
 	}
 
 	/**
-	 * @param route the route to set
+	 * @param route
+	 *            the route to set
 	 */
 	public void setSeaRoute(List<Edge> seaRoute) {
 		this.seaRoute = seaRoute;
@@ -76,7 +77,7 @@ public class RouteController {
 	 * Updates the old {@link Edge} with a new {@link Edge}. Used to update a
 	 * normal {@link Edge} with a {@link HighResEdge}.
 	 * 
-	 * @param map 
+	 * @param map
 	 * @param oldEdge
 	 * @param newEdge
 	 * @return <code>true</code> if oldEdge consists in the saved
@@ -99,12 +100,12 @@ public class RouteController {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Updates the old {@link Edge} with a new {@link Edge}. Used to update a
 	 * normal {@link Edge} with a {@link HighResEdge}.
 	 * 
-	 * @param map 
+	 * @param map
 	 * @param oldEdge
 	 * @param newEdge
 	 * @return <code>true</code> if oldEdge consists in the saved
@@ -127,8 +128,7 @@ public class RouteController {
 		}
 		return false;
 	}
-	
-	
+
 	/**
 	 * Adds the given {@link Edge}s to the graph.
 	 * 
@@ -137,7 +137,10 @@ public class RouteController {
 	 */
 	public void addEdges(List<Edge> edges) {
 		if (MainController.onlyGermany) {
-			for (Edge edge : edges) {
+			// for (Edge edge : edges) {
+			for (int i = 0; i < edges.size(); i++) {
+				Edge edge = edges.get(i);
+				edge.id = i;
 				double lat = 50;
 				double lon = 10;
 				if (edge.getStart() != null) {
@@ -151,19 +154,21 @@ public class RouteController {
 				}
 			}
 		} else {
-			for (Edge edge : edges) {
+			// for (Edge edge : edges) {
+			for (int i = 0; i < edges.size(); i++) {
+				Edge edge = edges.get(i);
+				edge.id = i;
 				if (edge.getType().equals(EdgeType.VESSEL)) {
 					seaRoute.add(edge);
 				} else {
 					route.add(edge);
 				}
 			}
-			
-//			route.addAll(edges);
+
 		}
 		setRoute(route);
 	}
-	
+
 	public void importGrapHopperPoints(PointList points, MyMap map) {
 		List<Edge> route = getRoute();
 		Set<Waypoint> waypoints = new HashSet<>();
@@ -176,7 +181,7 @@ public class RouteController {
 		}
 		waypoints.add(new CapacityWaypoint(last.getLatitude(), last.getLongitude(), 0));
 		map.setWaypoints(waypoints);
-		
+
 		setRoute(route);
 	}
 
@@ -189,13 +194,12 @@ public class RouteController {
 		}
 		return instance;
 	}
-	
+
 	private void updatePaintRoute() {
 		paintRoute = new ArrayList<>(route.size() + seaRoute.size());
-		
+
 		paintRoute.addAll(seaRoute);
 		paintRoute.addAll(route);
 	}
-	
 
 }
