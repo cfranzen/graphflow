@@ -29,11 +29,15 @@ import org.jxmapviewer.viewer.WaypointPainter;
 
 import main.MainController;
 import models.CapacityWaypoint;
-import models.Edge;
+import painter.CapacityWaypointRenderer;
+import painter.DefaultRoutePainter;
+import painter.IRoutePainter;
+import painter.SeaRoutePainter;
 
 /**
  * 
- * Facade for the {@link JXMapViewer}-framework. The used map component is also controller and gui component.
+ * Facade for the {@link JXMapViewer}-framework. The used map component is also
+ * controller and gui component.
  * 
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
@@ -43,17 +47,15 @@ public class MyMap extends JXMapViewer {
 	private static final long serialVersionUID = -6620174270673711401L;
 
 	private MainController controller;
-	
-	
+
 	private Set<Waypoint> waypoints = new HashSet<>();;
 	private WaypointPainter<Waypoint> waypointPainter;
-	
+
 	private IRoutePainter routePainter = new DefaultRoutePainter();
-	
+
 	// TODO Refactor
 	private IRoutePainter defaultPainter = new DefaultRoutePainter();
-	private IRoutePainter seaRoutePainter = new SeaRoutePainter();
-
+	private IRoutePainter seaRoutePainter;
 
 	/**
 	 * Default Constructor, initializes the tile factory.
@@ -69,12 +71,12 @@ public class MyMap extends JXMapViewer {
 		setAddressLocation(new GeoPosition(50.11, 8.68)); // Frankfurt
 		setZoom(3);
 
+		this.seaRoutePainter = new SeaRoutePainter(this);
 		initPainters();
-		// Point2D pixelPoint = getTileFactory().geoToPixel(geoPos, getZoom());
 
+		
 		setMinimumSize(new Dimension(250, 250));
 		setPreferredSize(new Dimension(1400, 400));
-
 	}
 
 	/**
@@ -118,8 +120,6 @@ public class MyMap extends JXMapViewer {
 		waypointPainter.setWaypoints(waypoints);
 	}
 
-
-
 	/**
 	 * Sets the given timestep in the {@link DefaultRoutePainter} and repaints
 	 * the gui.
@@ -132,12 +132,10 @@ public class MyMap extends JXMapViewer {
 		repaint();
 	}
 
-
-
 	public GeoPosition getCoordsForMouse(MouseEvent event) {
 		return convertPointToGeoPosition(new Point(event.getX(), event.getY()));
 	}
-	
+
 	/**
 	 * This method is called automatically when the mouse is over the component.
 	 * Based on the location of the event, we detect if we are over one of the
@@ -195,18 +193,16 @@ public class MyMap extends JXMapViewer {
 	 * of the graph.
 	 */
 	private void initPainters() {
+
 		// Create a waypoint painter that takes all the waypoints
 		// TODO Refactor, do not use jmapviewers waypoint class
 		waypointPainter = new WaypointPainter<Waypoint>();
 		waypointPainter.setRenderer(new CapacityWaypointRenderer());
 		waypointPainter.setWaypoints(waypoints);
 
-		
-		
 		// Create a compound painter that uses both the route-painter and the
 		// waypoint-painter
 		List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
-//		painters.add(routePainter);
 		painters.add(getRoutePainter(this.getZoom()));
 		painters.add(seaRoutePainter);
 		painters.add(waypointPainter);
@@ -223,14 +219,13 @@ public class MyMap extends JXMapViewer {
 		}
 	}
 
-
 	/**
 	 * @param waypoints
 	 */
 	public void setWaypoints(Set<Waypoint> waypoints) {
 		this.waypoints = waypoints;
 		waypointPainter.setWaypoints(waypoints);
-		
+
 	}
 
 }

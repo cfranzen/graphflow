@@ -1,7 +1,7 @@
 /**
  * 
  */
-package gui;
+package painter;
 
 import java.awt.Color;
 import java.awt.Graphics2D;

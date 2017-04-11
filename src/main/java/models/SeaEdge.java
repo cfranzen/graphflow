@@ -11,6 +11,8 @@ import org.jxmapviewer.viewer.GeoPosition;
  */
 public class SeaEdge extends Edge {
 
+	public Path2D shape;
+
 	/**
 	 * @param start
 	 * @param dest
@@ -26,16 +28,14 @@ public class SeaEdge extends Edge {
 		super(edge);
 	}
 
-	public Path2D shape;
-
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
 	}
-	
-	
-	
+
 }

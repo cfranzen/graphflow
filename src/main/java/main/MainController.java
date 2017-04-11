@@ -84,8 +84,6 @@ public class MainController {
 
 	private RouteController routeController = RouteController.getInstance();
 	private SeaController seaController = SeaController.getInstance();
-	
-	
 
 	/**
 	 * used to search for contact points with other edges, distance in lat/lon
@@ -105,7 +103,7 @@ public class MainController {
 
 	// XXX for debug
 	public static boolean onlyGermany = false;
-	public static  boolean debugInfos = true;
+	public static boolean debugInfos = true;
 
 	/**
 	 * Returns the {@link MainController} instance, if the instance is
@@ -139,13 +137,12 @@ public class MainController {
 
 		// Load sea data
 		seaController.loadSeaNodes(cliInput.seaNodes);
-		
+
 		mapViewer.setZoom(16);
-		
+
 		// Processing input to own classes
 		loadSolution();
 
-		
 		optimize();
 
 	}
@@ -250,10 +247,11 @@ public class MainController {
 
 		reducePointCount();
 
-		if (true) return; // XXX
-
+		if (true)
+			return; // XXX
 
 		// own thread so that the gui thread is not blocked
+		@SuppressWarnings("unused")
 		Thread t = new Thread(new Runnable() {
 
 			@Override
@@ -317,7 +315,7 @@ public class MainController {
 		//
 		// @Override
 		// protected List<Edge> compute() {
-		// 
+		//
 		// return null;
 		// }
 		// };
@@ -528,9 +526,9 @@ public class MainController {
 				protected boolean exec() {
 					HighResEdge highResEdge;
 					if (edge.getType().equals(EdgeType.VESSEL)) {
-						
+
 						DijkstraAlgorithm dijkstraAlgorithm;
-						dijkstraAlgorithm = new DijkstraAlgorithm(seaController.getEdges());	
+						dijkstraAlgorithm = new DijkstraAlgorithm(seaController.getEdges());
 						dijkstraAlgorithm.execute(edge.getStart());
 						List<GeoPosition> steps = dijkstraAlgorithm.getPath(edge.getDest());
 						highResEdge = new HighResEdge(edge);
@@ -540,9 +538,9 @@ public class MainController {
 							routeController.updateSeaEdge(edge, highResEdge);
 						}
 					} else {
-						if (debugInfos) return true; // XXX
+						if (debugInfos)
+							return true; // XXX
 
-						
 						highResEdge = getHighRes(edge);
 						logger.info("map edge to street DONE");
 						if (highResEdge != null) {
@@ -570,7 +568,8 @@ public class MainController {
 		PathWrapper path = response.getBest();
 		PointList points = path.getPoints();
 
-		// XXX Instructions contain GPX Data, for saving the optimized graph see Method:
+		// XXX Instructions contain GPX Data, for saving the optimized graph see
+		// Method:
 		// path.getInstructions().createGPX()
 
 		HighResEdge highResEdge = new HighResEdge(edge);

@@ -1,4 +1,4 @@
-package gui;
+package painter;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -12,6 +12,7 @@ import java.util.List;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.viewer.GeoPosition;
 
+import gui.MyMap;
 import main.MainController;
 import models.Edge;
 import models.EdgeType;
