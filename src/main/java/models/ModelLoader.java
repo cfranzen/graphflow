@@ -125,13 +125,20 @@ public class ModelLoader {
 			}
 			edge.setCapacites(capacites);
 
-			// Other
-			edge.setType(service.getServiceType());
-			long[] serviceTime = new long[timesteps];
+			// Service Time
+			int[] serviceTime = new int[timesteps];
+			int maxServiceTime = 0;
 			for (int i = 0; i < timesteps; i++) {
 				serviceTime[i] = service.getServiceTime(i);
+				if (serviceTime[i] > maxServiceTime) {
+					maxServiceTime = serviceTime[i];
+				}
 			}
 			edge.setServiceTime(serviceTime);
+			edge.setMaxServiceTime(maxServiceTime);
+			
+			// Other
+			edge.setType(service.getServiceType());
 
 			allEdges.add(edge);
 		}

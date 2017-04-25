@@ -33,7 +33,7 @@ import models.CapacityWaypoint;
 import models.Constants;
 import painter.CapacityWaypointRenderer;
 import painter.DefaultRoutePainter;
-import painter.SimpleFlowRoutePainter;
+import painter.EntityFlowPainter;
 import painter.IRoutePainter;
 import painter.SeaRoutePainter;
 
@@ -54,7 +54,7 @@ public class MyMap extends JXMapViewer {
 	private Set<Waypoint> waypoints = new HashSet<>();;
 	private WaypointPainter<Waypoint> waypointPainter;
 
-	private IRoutePainter landRoutePainter = new SimpleFlowRoutePainter();
+	private IRoutePainter landRoutePainter;
 	public IRoutePainter seaRoutePainter; //XXX
 
 	/**
@@ -195,8 +195,9 @@ public class MyMap extends JXMapViewer {
 	private void initPainters(RouteController routeController) {
 		
 		seaRoutePainter = new SeaRoutePainter(this);
+//		landRoutePainter = new SimpleFlowRoutePainter();
+		landRoutePainter = new EntityFlowPainter();
 		seaRoutePainter.setRoute(routeController.getSeaRoute());
-		landRoutePainter = new SimpleFlowRoutePainter();
 		landRoutePainter.setRoute(routeController.getRoute());
 
 		// Create a waypoint painter that takes all the waypoints

@@ -171,6 +171,10 @@ public class MainController {
 		if (currentTime >= input.timesteps * Constants.PAINT_STEPS) {
 			currentTime = 0;
 		}
+		if (currentTime % Constants.PAINT_STEPS == 0) {
+			System.out.println("Timestep: " + currentTime / Constants.PAINT_STEPS);
+		}
+
 		mapViewer.setTime(currentTime);
 	}
 
@@ -182,6 +186,7 @@ public class MainController {
 		if (currentTime <= 0) {
 			currentTime = input.timesteps;
 		}
+		System.out.println("Timestep: " + currentTime / Constants.PAINT_STEPS);
 		mapViewer.setTime(currentTime);
 
 	}
