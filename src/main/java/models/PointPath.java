@@ -1,4 +1,4 @@
-package painter;
+package models;
 
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
