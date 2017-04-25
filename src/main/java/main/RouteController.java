@@ -13,6 +13,7 @@ import com.graphhopper.util.PointList;
 
 import gui.MyMap;
 import models.CapacityWaypoint;
+import models.Constants;
 import models.Edge;
 import models.EdgeType;
 import models.HighResEdge;
@@ -136,7 +137,7 @@ public class RouteController {
 	 *            {@link List} with {@link Edge}s.
 	 */
 	public void addEdges(List<Edge> edges) {
-		if (MainController.onlyGermany) {
+		if (Constants.onlyGermany) {
 			// for (Edge edge : edges) {
 			for (int i = 0; i < edges.size(); i++) {
 				Edge edge = edges.get(i);

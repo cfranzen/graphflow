@@ -14,6 +14,7 @@ import org.jxmapviewer.viewer.GeoPosition;
 
 import gui.MyMap;
 import main.MainController;
+import models.Constants;
 import models.Edge;
 import models.EdgeType;
 import models.MapRoute;
@@ -144,7 +145,7 @@ public class DefaultRoutePainter implements IRoutePainter {
 
 	private void showPointDescriptionForStep(Graphics2D g, JXMapViewer map, int i, Edge edge, int j, Point2D startPt,
 			Point2D endPt) {
-		if (MainController.debugInfos && (map.getZoom() < debugZoomLevel)) {
+		if (Constants.debugInfos && (map.getZoom() < debugZoomLevel)) {
 			String index = i + "";
 
 			final int circleRadius = 10;
@@ -164,7 +165,7 @@ public class DefaultRoutePainter implements IRoutePainter {
 	}
 
 	private void showContactPoints(Graphics2D g, JXMapViewer map, Edge edge, int j) {
-		if (MainController.debugInfos) {
+		if (Constants.debugInfos) {
 			if (MapRoute.class.isInstance(edge)) {
 
 				// GeoPosition contactPoint = ((MapEdge)
@@ -193,7 +194,7 @@ public class DefaultRoutePainter implements IRoutePainter {
 	}
 
 	private void showSearchRadius(Graphics2D g, MyMap map, List<Edge> route) {
-		if (map.getZoom() < debugZoomLevel && MainController.debugInfos) {
+		if (map.getZoom() < debugZoomLevel && Constants.debugInfos) {
 			// for (Edge edge : route) {
 			for (int i = 0; i < route.size(); i++) {
 				Edge edge = route.get(i);

@@ -29,6 +29,7 @@ import org.jxmapviewer.viewer.WaypointPainter;
 
 import main.MainController;
 import models.CapacityWaypoint;
+import models.Constants;
 import painter.CapacityWaypointRenderer;
 import painter.DefaultRoutePainter;
 import painter.IRoutePainter;
@@ -98,7 +99,7 @@ public class MyMap extends JXMapViewer {
 	 */
 	public void addPositions(List<GeoPosition> nodes) {
 		List<GeoPosition> zoomNodes = new ArrayList<>();
-		if (MainController.onlyGermany) {
+		if (Constants.onlyGermany) {
 			for (GeoPosition geoPos : nodes) {
 				double lat = geoPos.getLatitude();
 				double lon = geoPos.getLongitude();

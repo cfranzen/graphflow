@@ -39,6 +39,7 @@ import com.graphhopper.util.shapes.GHPoint;
 
 import gui.MyMap;
 import gui.RunButton;
+import models.Constants;
 import models.Edge;
 import models.EdgeType;
 import models.HighResEdge;
@@ -101,10 +102,6 @@ public class MainController {
 	 * in lat/lon not pixel
 	 */
 	public final static double combinePointsDistance = 0.005;
-
-	// XXX for debug
-	public static boolean onlyGermany = false;
-	public static boolean debugInfos = false;
 
 	/**
 	 * Returns the {@link MainController} instance, if the instance is
@@ -169,7 +166,7 @@ public class MainController {
 		}
 		mapViewer.setTime(currentTime);
 	}
-	
+
 	/**
 	 * 
 	 */
@@ -179,7 +176,7 @@ public class MainController {
 			currentTime = input.timesteps;
 		}
 		mapViewer.setTime(currentTime);
-		
+
 	}
 
 	/**
@@ -220,7 +217,7 @@ public class MainController {
 		JButton btn = new RunButton(this);
 		btn.setSize(150, 50);
 		layeredPane.add(btn, new Integer(20));
-		
+
 		JButton plusBtn = new JButton();
 		plusBtn.setText("+");
 		plusBtn.setSize(80, 25);
@@ -242,7 +239,7 @@ public class MainController {
 				MainController.getInstance().reduceTime();
 			}
 		});
-		
+
 		layeredPane.add(minusBtn, new Integer(40));
 
 		// Add input to viewer
@@ -301,38 +298,65 @@ public class MainController {
 	}
 
 	private void optimizeEdges() {
+		sumAllPoints();
 		logger.info("optimize");
 
-		// combine near points from multiple edges into one
-		// uses multiple edges at once -> linear
+		combineEdges();
+
+		List<Edge> savedEdges = splitEdges();
+
+		/*
+		 * Find nearest contact point. TODO connect to thickest part instead of
+		 * nearest. Maybe get Edge from point. </br>Every edge has to be
+		 * connected to either an other edge or a waypoint.
+		 */
+		connectEndpoints(savedEdges);
+		routeController.setRoute(savedEdges);
 		sumAllPoints();
-		List<Edge> edges = routeController.getRoute();
-		List<Edge> savedEdges = new ArrayList<>();
-		for (int i = 0; i < edges.size(); i++) {
-			MapRoute mapEdge = new MapRoute();
-			for (GeoPosition point : edges.get(i).getPositions()) {
-				if (!hasAnyNearPoint(point, savedEdges)) {
-					mapEdge.addNewPoint(point, edges);
+		logger.info("optimize-end");
+	}
+
+	private void connectEndpoints(List<Edge> savedEdges) {
+		logger.debug("Connect waypoints/edges to edges");
+		List<GeoPosition> waypoints = mapViewer.getWaypoints();
+		for (int j = 0; j < savedEdges.size(); j++) {
+			Edge edge = savedEdges.get(j);
+			List<MapPoint> points = ((MapRoute) edge).getPoints();
+			MapPoint mpFirst = points.get(0);
+			MapPoint mpLast = points.get(points.size() - 1);
+
+			boolean flagFirst = false;
+			boolean flagLast = false;
+			for (GeoPosition waypoint : waypoints) {
+				if (isNear(mpFirst.getPosition(), waypoint, combinePointsDistance)) {
+					flagFirst = true;
+					break;
 				}
 			}
-			if (mapEdge.getPositions().size() > 1) {
-				savedEdges.add(mapEdge);
+			for (GeoPosition waypoint : waypoints) {
+				if (isNear(mpLast.getPosition(), waypoint, combinePointsDistance)) {
+					flagLast = true;
+					break;
+				}
+			}
+			if (!flagFirst) {
+				getContactForPoint(savedEdges, j, mpFirst);
+			}
+			if (!flagLast) {
+				getContactForPoint(savedEdges, j, mpLast);
 			}
 		}
+	}
 
-		// updateView
-		routeController.setRoute(savedEdges);
-
+	private List<Edge> splitEdges() {
 		/*
 		 * Split partial Edges.
 		 * 
 		 * TODO Acces to saved Edges should be synchronized so that this step
 		 * can be parallelized.
 		 */
-
-		savedEdges = Collections.synchronizedList(savedEdges);
-
 		logger.info("Split partial edges into multiple");
+		List<Edge> savedEdges = Collections.synchronizedList(routeController.getRoute());
 
 		// List<Edge> refEdges = null;
 		// //XXX
@@ -376,45 +400,29 @@ public class MainController {
 				last = current;
 			}
 		}
+		return savedEdges;
+	}
 
-		/*
-		 * Find nearest contact point. TODO connect to thickest part instead of
-		 * nearest. Maybe get Edge from point. </br>Every edge has to be
-		 * connected to either an other edge or a waypoint.
-		 */
-		logger.debug("Connect waypoints/edges to edges");
-		List<GeoPosition> waypoints = mapViewer.getWaypoints();
-		for (int j = 0; j < savedEdges.size(); j++) {
-			Edge edge = savedEdges.get(j);
-			List<MapPoint> points = ((MapRoute) edge).getPoints();
-			MapPoint mpFirst = points.get(0);
-			MapPoint mpLast = points.get(points.size() - 1);
-
-			boolean flagFirst = false;
-			boolean flagLast = false;
-			for (GeoPosition waypoint : waypoints) {
-				if (isNear(mpFirst.getPosition(), waypoint, combinePointsDistance)) {
-					flagFirst = true;
-					break;
+	private void combineEdges() {
+		// combine near points from multiple edges into one
+		// uses multiple edges at once -> linear
+		sumAllPoints();
+		List<Edge> edges = routeController.getRoute();
+		List<Edge> savedEdges = new ArrayList<>();
+		for (int i = 0; i < edges.size(); i++) {
+			MapRoute mapEdge = new MapRoute();
+			for (GeoPosition point : edges.get(i).getPositions()) {
+				if (!hasAnyNearPoint(point, savedEdges)) {
+					mapEdge.addNewPoint(point, edges);
 				}
 			}
-			for (GeoPosition waypoint : waypoints) {
-				if (isNear(mpLast.getPosition(), waypoint, combinePointsDistance)) {
-					flagLast = true;
-					break;
-				}
-			}
-			if (!flagFirst) {
-				getContactForPoint(savedEdges, j, mpFirst);
-			}
-			if (!flagLast) {
-				getContactForPoint(savedEdges, j, mpLast);
+			if (mapEdge.getPositions().size() > 1) {
+				savedEdges.add(mapEdge);
 			}
 		}
-		sumAllPoints();
+
+		// updateView
 		routeController.setRoute(savedEdges);
-		sumAllPoints();
-		logger.info("optimize-end");
 	}
 
 	private void getContactForPoint(List<Edge> savedEdges, int j, MapPoint mp) {
@@ -564,7 +572,7 @@ public class MainController {
 							routeController.updateSeaEdge(edge, highResEdge);
 						}
 					} else {
-						if (debugInfos)
+						if (Constants.debugInfos)
 							return true; // XXX
 
 						highResEdge = getHighRes(edge);

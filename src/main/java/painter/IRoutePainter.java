@@ -1,15 +1,9 @@
-/**
- * 
- */
 package painter;
 
 import java.awt.Graphics2D;
-import java.util.List;
 
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.painter.Painter;
-
-import models.Edge;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
