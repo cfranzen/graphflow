@@ -29,9 +29,11 @@ public class Edge {
 	protected GeoPosition dest;
 	private long[] capacites = new long[0];
 	private long[] workloads = new long[0];
+	private long[] serviceTime = new long[0];
 	private EdgeType type = EdgeType.TRUCK;
 	private String info;
-	private double distance;
+	private double geoDistance;
+
 	
 
 	
@@ -135,7 +137,7 @@ public class Edge {
 		if (workloads.length > currentTimeStep) {
 			return workloads[currentTimeStep];
 		} else {
-			return 0;
+			return workloads[0];
 		}
 	}
 
@@ -158,7 +160,7 @@ public class Edge {
 		if (capacites.length > currentTimeStep) {
 			return capacites[currentTimeStep];
 		} else {
-			return 0;
+			return capacites[0];
 		}
 	}
 	
@@ -243,12 +245,26 @@ public class Edge {
 	/**
 	 * @return
 	 */
-	public double getDistance() {
-		return distance;
+	public double getGeoDistance() {
+		return geoDistance;
 	}
 	
 	private void calcDistance() {
-		distance = calulator.calcDist(start.getLatitude(), start.getLongitude(), dest.getLatitude(), dest.getLongitude());
+		geoDistance = calulator.calcDist(start.getLatitude(), start.getLongitude(), dest.getLatitude(), dest.getLongitude());
+	}
+
+	/**
+	 * @param serviceTime
+	 */
+	public long[] getServiceTime() {
+		return serviceTime;
+	}
+
+	/**
+	 * @param serviceTime
+	 */
+	public void setServiceTime(long[] serviceTime) {
+		this.serviceTime = serviceTime;
 	}
 
 }

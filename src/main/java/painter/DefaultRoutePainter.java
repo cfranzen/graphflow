@@ -4,8 +4,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 import java.util.List;
 
@@ -27,9 +25,6 @@ import models.MapRoute;
  */
 public class DefaultRoutePainter implements IRoutePainter {
 
-	public final static int debugZoomLevel = 6;
-
-	private boolean antiAlias = true;
 	private int currentTimeStep = 0;
 
 	/*
@@ -42,44 +37,24 @@ public class DefaultRoutePainter implements IRoutePainter {
 		currentTimeStep = time;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see gui.IRoutePainter#paint(java.awt.Graphics2D,
-	 * org.jxmapviewer.JXMapViewer, int, int)
-	 */
-	@Override
-	public void paint(Graphics2D g, JXMapViewer map, int w, int h) {
-		g = (Graphics2D) g.create();
-		
-		// convert from viewport to world bitmap
-		Rectangle rect = map.getViewportBounds();
-		g.translate(-rect.x, -rect.y);
-
-		if (antiAlias) {
-			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		}
-		drawRoute(g, (MyMap) map);
-		g.dispose();
-	}
-
 	/**
 	 * @param g
 	 *            the graphics object
 	 * @param map
 	 *            the map
 	 */
-	private void drawRoute(Graphics2D g, MyMap map) {
+	@Override
+	public void drawRoute(Graphics2D g, MyMap map) {
 		int i = 0;
 		List<Edge> route = MainController.getInstance().getRouteController().getRoute();
 		showSearchRadius(g, map, route);
 		for (Edge edge : route) {
-			
+
 			// XXX debug, do not draw sea solution edges
 			if (edge.getType().equals(EdgeType.VESSEL)) {
-				System.out.println("ERROR wrong edge");	
+				System.out.println("ERROR wrong edge");
 			}
-			
+
 			i++;
 			List<GeoPosition> points = edge.getPositions();
 			GeoPosition last = null;
@@ -93,11 +68,10 @@ public class DefaultRoutePainter implements IRoutePainter {
 					showContactPoints(g, map, edge, j);
 					continue;
 				}
-				
-				
 
 				Point2D[] stEnPoints = drawNormalLine(g, map, last, point);
-				last = point; // Important, else every edge consists of lines from edge start to every step
+				last = point; // Important, else every edge consists of lines
+								// from edge start to every step
 
 				// Contact Points - not finished
 				showContactPoints(g, map, edge, j);
@@ -119,34 +93,48 @@ public class DefaultRoutePainter implements IRoutePainter {
 	private void modifyGraphicsForStep(Graphics2D g, Edge edge, int j) {
 		long currentWorkload = 0;
 		long currentCapacity = 0;
+		long nextWorkload = 0;
+		long nextCapacity = 0;
+
+		int entityStepCurrent = currentTimeStep / Constants.PAINT_STEPS;
+		int entityStepNext = entityStepCurrent + 1;
+
 		if (MapRoute.class.isInstance(edge)) {
 			MapRoute mapEdge = (MapRoute) edge;
 			currentWorkload = mapEdge.getWorkloadForPoint(currentTimeStep, j);
 			currentCapacity = mapEdge.getCapacityForPoint(currentTimeStep, j);
-		} else {
-			currentWorkload = edge.getWorkload(currentTimeStep);
-			currentCapacity = edge.getCapacity(currentTimeStep);
-		}
-		
 
-		if (currentCapacity == 0) {
+			nextWorkload = mapEdge.getWorkloadForPoint(currentTimeStep, j + 1);
+			nextCapacity = mapEdge.getCapacityForPoint(currentTimeStep, j + 1);
+		} else {
+			currentWorkload = edge.getWorkload(entityStepCurrent);
+			currentCapacity = edge.getCapacity(entityStepCurrent);
+
+			nextWorkload = edge.getWorkload(entityStepNext);
+			nextCapacity = edge.getCapacity(entityStepNext);
+		}
+
+		double stepFactor = currentTimeStep % Constants.PAINT_STEPS / (double) Constants.PAINT_STEPS;
+
+		long valCapacity = (long) (nextCapacity * stepFactor + currentCapacity * (1 - stepFactor));
+		long valWorkload = (long) (nextWorkload * stepFactor + currentWorkload * (1 - stepFactor));
+
+		System.out.println(String.format("STEP: %f - %d, CUR: %d, N: %d, VAL: %d", stepFactor, currentTimeStep,
+				currentCapacity, nextCapacity, valCapacity));
+
+		if (valCapacity == 0) {
 			g.setColor(Color.GRAY);
 			g.setStroke(new BasicStroke(1.2f));
 		} else {
-			Color lineColor = calculateColor(currentWorkload, currentCapacity);
+			Color lineColor = calculateColor(valWorkload, valCapacity);
 			g.setColor(lineColor);
-			if (edge.getType().equals(EdgeType.VESSEL)) {
-				g.setStroke(new BasicStroke(currentCapacity / 500));
-				g.setColor(Color.PINK);
-			} else {
-				g.setStroke(new BasicStroke((float) (currentCapacity / 100)));
-			}
+			g.setStroke(new BasicStroke((float) (valCapacity / 75)));
 		}
 	}
 
 	private void showPointDescriptionForStep(Graphics2D g, JXMapViewer map, int i, Edge edge, int j, Point2D startPt,
 			Point2D endPt) {
-		if (Constants.debugInfos && (map.getZoom() < debugZoomLevel)) {
+		if (Constants.debugInfos && (map.getZoom() < Constants.DEBUG_ZOOM)) {
 			String index = i + "";
 
 			final int circleRadius = 10;
@@ -181,7 +169,7 @@ public class DefaultRoutePainter implements IRoutePainter {
 					Point2D startPt2D = map.getTileFactory().geoToPixel(point, map.getZoom());
 					Point2D contactPointP = map.getTileFactory().geoToPixel(contactPoint, map.getZoom());
 
-					if (map.getZoom() < debugZoomLevel) {
+					if (map.getZoom() < Constants.DEBUG_ZOOM) {
 						g.setColor(Color.BLUE);
 						final int circleRadius = 10;
 						g.fillOval((int) contactPointP.getX(), (int) contactPointP.getY(), circleRadius, circleRadius);
@@ -195,7 +183,7 @@ public class DefaultRoutePainter implements IRoutePainter {
 	}
 
 	private void showSearchRadius(Graphics2D g, MyMap map, List<Edge> route) {
-		if (map.getZoom() < debugZoomLevel && Constants.debugInfos) {
+		if (map.getZoom() < Constants.DEBUG_ZOOM && Constants.debugInfos) {
 			// for (Edge edge : route) {
 			for (int i = 0; i < route.size(); i++) {
 				Edge edge = route.get(i);

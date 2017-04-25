@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 
 import main.MainController;
+import models.Constants;
 
 /**
  * Starts the running of the graph.
@@ -44,7 +45,7 @@ public class RunButton extends JButton {
 						while (flag) {
 							controller.incTime();
 							try {
-								Thread.sleep(1000);
+								Thread.sleep(Constants.TIME_STEP_DELAY);
 							} catch (InterruptedException e) {
 								e.printStackTrace();
 							}

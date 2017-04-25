@@ -39,7 +39,7 @@ public class SeaRoutePainter implements IRoutePainter {
 	private Graphics2D g;
 	private MyMap map;
 	private int currentTimeStep;
-	
+
 	private List<SeaEdge> drawEdges = new ArrayList<>();
 
 	/**
@@ -70,43 +70,37 @@ public class SeaRoutePainter implements IRoutePainter {
 		currentTimeStep = time;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see gui.IRoutePainter#paint(java.awt.Graphics2D,
-	 * org.jxmapviewer.JXMapViewer, int, int)
+	/**
+	 * @param g
+	 *            the graphics object
+	 * @param map
+	 *            the map
 	 */
 	@Override
-	public void paint(Graphics2D g, JXMapViewer map, int w, int h) {
+	public void drawRoute(Graphics2D g, MyMap map) {
 		this.g = g;
 		this.map = (MyMap) map;
 
-		// convert from viewport to world bitmap
-		Rectangle rect = map.getViewportBounds();
-		g.translate(-rect.x, -rect.y);
-
-		g.setStroke(new BasicStroke(3));
-		g.setColor(Color.PINK);
-
 		// XXX does not need to run every frame
 		calcSeaLines();
-//		logger.info("Sea-Edge count: " + drawEdges.size());
-		optimzeSeaLines() ;
-//		logger.info("Sea-Edge count: " + drawEdges.size());
+		// logger.info("Sea-Edge count: " + drawEdges.size());
+		optimzeSeaLines();
+		// logger.info("Sea-Edge count: " + drawEdges.size());
 
 		g.setColor(Color.GREEN);
 		for (SeaEdge seaEdge : drawEdges) {
 			// TODO Calc load & capacity
 			if (seaEdge.getPath() != null) {
-				g.setStroke(new BasicStroke(seaEdge.getCapacity(currentTimeStep)/500));
-				g.setColor(DefaultRoutePainter.calculateColor(seaEdge.getWorkload(currentTimeStep), seaEdge.getCapacity(currentTimeStep)));
+				g.setStroke(new BasicStroke(seaEdge.getCapacity(currentTimeStep) / 500));
+				g.setColor(DefaultRoutePainter.calculateColor(seaEdge.getWorkload(currentTimeStep),
+						seaEdge.getCapacity(currentTimeStep)));
 				g.draw(seaEdge.getPath());
 			}
 		}
 
 		if (Constants.debugInfos) {
-//			 drawPossibleSeaEdges();
-//			drawDebugNodeInfos();
+			// drawPossibleSeaEdges();
+			// drawDebugNodeInfos();
 		}
 
 	}
@@ -133,17 +127,16 @@ public class SeaRoutePainter implements IRoutePainter {
 					result.add(edge);
 				}
 			}
-			
-			
-			List<Edge> route =  MainController.getInstance().getRouteController().getSeaRoute();
+
+			List<Edge> route = MainController.getInstance().getRouteController().getSeaRoute();
 			for (SeaEdge seaEdge : result) {
 				long[] cap = new long[100];
 				long[] work = new long[100];
-				
+
 				seaEdge.setCapacites(cap);
 				seaEdge.setWorkload(work);
-				
-				for (int  id : seaEdge.edgeIds) {
+
+				for (int id : seaEdge.edgeIds) {
 					for (Edge edge : route) {
 						if (edge.id == id) {
 							seaEdge.addCapacities(edge.getCapacites());
@@ -152,7 +145,7 @@ public class SeaRoutePainter implements IRoutePainter {
 					}
 				}
 			}
-			
+
 			drawEdges = result;
 		}
 	}
@@ -166,8 +159,8 @@ public class SeaRoutePainter implements IRoutePainter {
 	private void addDrawEdge(Edge edge, GeoPosition start, GeoPosition dest, PointPath path) {
 		SeaEdge seaEdge = new SeaEdge(start, dest);
 		seaEdge.setPath(path.getPath());
-//		seaEdge.setCapacites(edge.getCapacites());
-//		seaEdge.setWorkload(edge.getWorkloads());
+		// seaEdge.setCapacites(edge.getCapacites());
+		// seaEdge.setWorkload(edge.getWorkloads());
 		seaEdge.edgeIds.add(edge.id);
 		drawEdges.add(seaEdge);
 
@@ -182,7 +175,7 @@ public class SeaRoutePainter implements IRoutePainter {
 	 */
 	private void calcSeaLines() {
 		drawEdges.clear();
-		
+
 		List<Edge> route = MainController.getInstance().getRouteController().getSeaRoute();
 
 		for (int i = 0; i < route.size(); i++) {
@@ -258,8 +251,8 @@ public class SeaRoutePainter implements IRoutePainter {
 					path = new PointPath();
 					path.moveTo(circlePIn);
 					path.lineTo(circlePOut);
-					addDrawEdge(edge,  convertPoint(circlePIn),  convertPoint(circlePOut), path);
-					
+					addDrawEdge(edge, convertPoint(circlePIn), convertPoint(circlePOut), path);
+
 					lastPos = pos;
 					lastCircleP = circlePOut;
 				}

@@ -67,7 +67,7 @@ public class DijkstraAlgorithm {
 	private double getDistance(GeoPosition node, GeoPosition target) {
 		for (Edge edge : edges) {
 			if (edge.getStart().equals(node) && edge.getDest().equals(target)) {
-				return edge.getDistance();
+				return edge.getGeoDistance();
 			}
 		}
 		throw new RuntimeException("Should not happen");

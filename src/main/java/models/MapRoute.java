@@ -38,6 +38,10 @@ public class MapRoute extends Edge {
 	 * @return
 	 */
 	public int getCapacityForPoint(int currentTimeStep, int index) {
+		if (index >= points.size()) {
+			index = 0;
+		}
+		
 		Map<Edge, GeoPosition> map = points.get(index).edgeMap;
 		int capacity = 0;
 		for (Entry<Edge, GeoPosition> edge : map.entrySet()) {
@@ -52,6 +56,10 @@ public class MapRoute extends Edge {
 	 * @return
 	 */
 	public int getWorkloadForPoint(int currentTimeStep, int index) {
+		if (index >= points.size()) {
+			index = 0;
+		}
+		
 		Map<Edge, GeoPosition> map = points.get(index).edgeMap;
 		
 		int workload = 0;

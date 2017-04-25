@@ -39,6 +39,7 @@ import com.graphhopper.util.shapes.GHPoint;
 
 import gui.MyMap;
 import gui.RunButton;
+import models.Constants;
 import models.Edge;
 import models.EdgeType;
 import models.HighResEdge;
@@ -159,7 +160,7 @@ public class MainController {
 	 */
 	public void incTime() {
 		currentTime++;
-		if (currentTime >= input.timesteps) {
+		if (currentTime >= input.timesteps * Constants.PAINT_STEPS) {
 			currentTime = 0;
 		}
 		mapViewer.setTime(currentTime);
@@ -268,7 +269,7 @@ public class MainController {
 
 		reducePointCount();
 
-		if (true)
+		if (true||!Constants.onlyGermany)
 			return; // XXX
 
 		// own thread so that the gui thread is not blocked

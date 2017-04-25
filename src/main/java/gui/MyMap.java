@@ -32,6 +32,7 @@ import models.CapacityWaypoint;
 import models.Constants;
 import painter.CapacityWaypointRenderer;
 import painter.DefaultRoutePainter;
+import painter.SimpleFlowRoutePainter;
 import painter.IRoutePainter;
 import painter.SeaRoutePainter;
 
@@ -52,10 +53,10 @@ public class MyMap extends JXMapViewer {
 	private Set<Waypoint> waypoints = new HashSet<>();;
 	private WaypointPainter<Waypoint> waypointPainter;
 
-//	private IRoutePainter routePainter = new DefaultRoutePainter();
+	private IRoutePainter landRoutePainter = new SimpleFlowRoutePainter();
 
 	// TODO Refactor
-	private IRoutePainter defaultPainter = new DefaultRoutePainter();
+//	private IRoutePainter defaultPainter = new DefaultRoutePainter();
 	public IRoutePainter seaRoutePainter; //XXX
 
 	/**
@@ -129,7 +130,7 @@ public class MyMap extends JXMapViewer {
 	 *            to set
 	 */
 	public void setTime(int time) {
-		defaultPainter.setTimeStep(time);
+		landRoutePainter.setTimeStep(time);
 		seaRoutePainter.setTimeStep(time);
 		repaint();
 	}
@@ -191,7 +192,7 @@ public class MyMap extends JXMapViewer {
 	}
 
 	/**
-	 * Initializes the {@link DefaultRoutePainter} and {@link WaypointPainter}
+	 * Initializes the {@link IRoutePainter}-Objects
 	 * of the graph.
 	 */
 	private void initPainters() {
@@ -217,7 +218,7 @@ public class MyMap extends JXMapViewer {
 		switch (zoomlevel) {
 		case 1:
 		default:
-			return defaultPainter;
+			return landRoutePainter;
 		}
 	}
 
