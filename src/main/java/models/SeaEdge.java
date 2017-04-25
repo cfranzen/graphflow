@@ -8,6 +8,8 @@ import java.util.HashSet;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jxmapviewer.viewer.GeoPosition;
 
+import painter.GeoPath;
+
 /**
  * For painting
  * 
@@ -16,7 +18,7 @@ import org.jxmapviewer.viewer.GeoPosition;
  */
 public class SeaEdge extends Edge {
 
-	private Path2D path;
+	private GeoPath path;
 	public Stroke stroke;
 	public Color color;
 	public HashSet<Integer> edgeIds = new HashSet<>();
@@ -24,7 +26,7 @@ public class SeaEdge extends Edge {
 	/**
 	 * 
 	 */
-	public SeaEdge(Path2D path) {
+	public SeaEdge(GeoPath path) {
 		this.path = path;
 	}
 
@@ -56,14 +58,14 @@ public class SeaEdge extends Edge {
 	/**
 	 * @return the path
 	 */
-	public Path2D getPath() {
+	public GeoPath getPath() {
 		return path;
 	}
 
 	/**
 	 * @param path
 	 */
-	public void setPath(Path2D path) {
+	public void setPath(GeoPath path) {
 		this.path = path;
 	}
 

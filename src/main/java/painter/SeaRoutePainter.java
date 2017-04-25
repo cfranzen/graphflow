@@ -9,9 +9,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.viewer.GeoPosition;
@@ -20,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import gui.MyMap;
 import main.MainController;
+import models.Constants;
 import models.Edge;
 import models.HighResEdge;
 import models.SeaEdge;
@@ -32,10 +31,7 @@ public class SeaRoutePainter implements IRoutePainter {
 
 	private static final Logger logger = LoggerFactory.getLogger(SeaRoutePainter.class);
 
-	private static final double POINT_DISTANCE_GEO = 2.75;;
-	private static final int MAX_ZOOM_LEVEL = 17;
-
-	private int[] circleDiameter = new int[18];
+	private int[] circleDiameter = new int[Constants.MAX_ZOOM_LEVEL + 1];
 
 	private Graphics2D g;
 	private MyMap map;
@@ -51,10 +47,10 @@ public class SeaRoutePainter implements IRoutePainter {
 
 		// Init circle diameter array
 		GeoPosition pos = new GeoPosition(0, 0);
-		GeoPosition pcopy = new GeoPosition(pos.getLatitude() + POINT_DISTANCE_GEO,
-				pos.getLongitude() + POINT_DISTANCE_GEO);
+		GeoPosition pcopy = new GeoPosition(pos.getLatitude() + Constants.POINT_DISTANCE_GEO,
+				pos.getLongitude() + Constants.POINT_DISTANCE_GEO);
 
-		for (int i = 1; i <= MAX_ZOOM_LEVEL; i++) {
+		for (int i = 1; i <= Constants.MAX_ZOOM_LEVEL; i++) {
 			Point2D p = map.getTileFactory().geoToPixel(pos, i);
 			circleDiameter[i] = (int) Math.abs(map.getTileFactory().geoToPixel(pcopy, i).getX() - p.getX());
 		}
@@ -101,11 +97,11 @@ public class SeaRoutePainter implements IRoutePainter {
 			if (seaEdge.getPath() != null) {
 				g.setStroke(new BasicStroke(seaEdge.getCapacity(currentTimeStep)/500));
 				g.setColor(DefaultRoutePainter.calculateColor(seaEdge.getWorkload(currentTimeStep), seaEdge.getCapacity(currentTimeStep)));
-				g.draw(seaEdge.getPath());
+				g.draw(seaEdge.getPath().getPath(map.getZoom()).getPath());
 			}
 		}
 
-		if (MainController.debugInfos) {
+		if (Constants.debugInfos) {
 //			 drawPossibleSeaEdges();
 			drawDebugNodeInfos();
 		}
@@ -138,7 +134,7 @@ public class SeaRoutePainter implements IRoutePainter {
 			
 			List<Edge> route =  MainController.getInstance().getRouteController().getSeaRoute();
 			for (SeaEdge seaEdge : result) {
-				long[] cap = new long[100];
+				long[] cap = new long[100];// TODO Magic Number
 				long[] work = new long[100];
 				
 				seaEdge.setCapacites(cap);
@@ -166,7 +162,7 @@ public class SeaRoutePainter implements IRoutePainter {
 	 */
 	private void addDrawEdge(Edge edge, GeoPosition start, GeoPosition dest, PointPath path) {
 		SeaEdge seaEdge = new SeaEdge(start, dest);
-		seaEdge.setPath(path.getPath());
+		seaEdge.setPath(new GeoPath(path));
 //		seaEdge.setCapacites(edge.getCapacites());
 //		seaEdge.setWorkload(edge.getWorkloads());
 		seaEdge.edgeIds.add(edge.id);
@@ -174,6 +170,21 @@ public class SeaRoutePainter implements IRoutePainter {
 
 	}
 
+
+	/**
+	 * @param edge
+	 * @param path
+	 */
+	private void addDrawEdge(Edge edge, GeoPath path) {
+		SeaEdge seaEdge = new SeaEdge(edge.getStart(), edge.getDest());
+		seaEdge.setPath(path);
+//		seaEdge.setCapacites(edge.getCapacites());
+//		seaEdge.setWorkload(edge.getWorkloads());
+		seaEdge.edgeIds.add(edge.id);
+		drawEdges.add(seaEdge);
+
+	}
+	
 	/**
 	 * Calculates {@link Path2D}-Object for all used sea ways and returns them
 	 * in a {@link List} of {@link SeaEdge}.
@@ -187,6 +198,9 @@ public class SeaRoutePainter implements IRoutePainter {
 		List<Edge> route = MainController.getInstance().getRouteController().getSeaRoute();
 
 		for (int i = 0; i < route.size(); i++) {
+			
+			GeoPath fullEdgePath = new GeoPath();
+			
 			if (route.get(i) instanceof HighResEdge == false)
 				return; // TODO when refactoring SeaEdge
 						// to Edge change to "route"
@@ -203,20 +217,20 @@ public class SeaRoutePainter implements IRoutePainter {
 				PointPath path = new PointPath();
 				path.moveTo(convertGeo(edge.getStart()));
 				path.lineTo(lastCircleP);
-				addDrawEdge(edge, edge.getStart(), lastPos, path);
+//				addDrawEdge(edge, edge.getStart(), lastPos, path);
 
 				// End
 				Point2D circleP = getCirclePoint(edge.getDest(), edge.getPosition(-1));
 				path = new PointPath();
 				path.moveTo(convertGeo(edge.getDest()));
 				path.lineTo(circleP);
-				addDrawEdge(edge, edge.getDest(), convertPoint(circleP), path);
+//				addDrawEdge(edge, edge.getDest(), convertPoint(circleP), path);
 
 				path = new PointPath();
 				path.moveTo(circleP);
 				path.quadTo(convertGeo(edge.getPosition(-1)),
 						getCirclePoint(convertGeo(edge.getPosition(-2)), convertGeo(edge.getPosition(-1))));
-				addDrawEdge(edge, convertPoint(circleP), edge.getPosition(-1), path);
+//				addDrawEdge(edge, convertPoint(circleP), edge.getPosition(-1), path);
 			} else {
 				lastCircleP = convertGeo(edge.getStart());
 				lastPos = edge.getPosition(0);
@@ -229,6 +243,9 @@ public class SeaRoutePainter implements IRoutePainter {
 				Point2D circlePOut = getCirclePoint(lastPos, pos);
 				PointPath path = new PointPath();
 				if (checkEquatorEdge(pos, lastPos)) {
+					
+					if (true) continue; // XXX
+					
 					// init vars for orientation
 					GeoPosition pos1 = pos;
 					GeoPosition pos2 = lastPos;
@@ -250,22 +267,28 @@ public class SeaRoutePainter implements IRoutePainter {
 
 					lastPos = pos;
 					lastCircleP = convertGeo(pos);
-					addDrawEdge(edge, pos1, mirrorPoint, path);
+//					addDrawEdge(edge, pos1, mirrorPoint, path);
 				} else {
 					path.moveTo(lastCircleP);
 					path.quadTo(convertGeo(lastPos), circlePIn);
 					addDrawEdge(edge, convertPoint(lastCircleP), convertPoint(circlePIn), path);
+					
+					fullEdgePath.addCurve(convertPoint(lastCircleP), convertPoint(circlePIn), lastPos);
 
 					path = new PointPath();
 					path.moveTo(circlePIn);
 					path.lineTo(circlePOut);
 					addDrawEdge(edge,  convertPoint(circlePIn),  convertPoint(circlePOut), path);
+					fullEdgePath.addLine(convertPoint(circlePIn), convertPoint(circlePOut));
 					
 					lastPos = pos;
 					lastCircleP = circlePOut;
 				}
 
 			}
+			fullEdgePath.calcPixelPaths(map.getTileFactory());
+			addDrawEdge(edge, fullEdgePath);
+			
 		}
 	}
 
