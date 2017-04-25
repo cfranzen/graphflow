@@ -9,9 +9,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.viewer.GeoPosition;
@@ -20,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import gui.MyMap;
 import main.MainController;
+import models.Constants;
 import models.Edge;
 import models.HighResEdge;
 import models.SeaEdge;
@@ -105,7 +104,7 @@ public class SeaRoutePainter implements IRoutePainter {
 			}
 		}
 
-		if (MainController.debugInfos) {
+		if (Constants.debugInfos) {
 //			 drawPossibleSeaEdges();
 			drawDebugNodeInfos();
 		}
