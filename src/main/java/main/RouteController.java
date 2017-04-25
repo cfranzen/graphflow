@@ -29,9 +29,8 @@ public class RouteController {
 	private static RouteController instance;
 	private List<Edge> route = new ArrayList<>();
 	private List<Edge> seaRoute = new ArrayList<>();
-
 	private List<Edge> paintRoute = Collections.emptyList();
-
+	
 	private RouteController() {
 		// noop
 	}
@@ -98,7 +97,7 @@ public class RouteController {
 			// if newEdge = Emtpy -> remove old edge instead null update
 			route.remove(oldEdge);
 			setRoute(route);
-		}
+		} 
 		return false;
 	}
 
@@ -187,6 +186,8 @@ public class RouteController {
 	}
 
 	/**
+	 * Returns always the same instance of a {@link RouteController}
+	 * 
 	 * @return
 	 */
 	public static RouteController getInstance() {
@@ -195,7 +196,7 @@ public class RouteController {
 		}
 		return instance;
 	}
-
+	
 	private void updatePaintRoute() {
 		paintRoute = new ArrayList<>(route.size() + seaRoute.size());
 

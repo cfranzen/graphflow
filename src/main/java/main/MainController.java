@@ -242,7 +242,7 @@ public class MainController {
 		layeredPane.add(minusBtn, new Integer(40));
 
 		// Add input to viewer
-		mapViewer = new MyMap(this);
+		mapViewer = new MyMap(this, routeController);
 
 		JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());

@@ -28,6 +28,7 @@ import org.jxmapviewer.viewer.Waypoint;
 import org.jxmapviewer.viewer.WaypointPainter;
 
 import main.MainController;
+import main.RouteController;
 import models.CapacityWaypoint;
 import models.Constants;
 import painter.CapacityWaypointRenderer;
@@ -59,7 +60,7 @@ public class MyMap extends JXMapViewer {
 	/**
 	 * Default Constructor, initializes the tile factory.
 	 */
-	public MyMap(MainController controller) {
+	public MyMap(MainController controller, RouteController routeController) {
 		super();
 		this.controller = controller;
 
@@ -70,8 +71,7 @@ public class MyMap extends JXMapViewer {
 		setAddressLocation(new GeoPosition(50.11, 8.68)); // Frankfurt
 		setZoom(3);
 
-		this.seaRoutePainter = new SeaRoutePainter(this);
-		initPainters();
+		initPainters(routeController);
 
 		
 		setMinimumSize(new Dimension(250, 250));
@@ -192,7 +192,12 @@ public class MyMap extends JXMapViewer {
 	 * Initializes the {@link IRoutePainter}-Objects
 	 * of the graph.
 	 */
-	private void initPainters() {
+	private void initPainters(RouteController routeController) {
+		
+		seaRoutePainter = new SeaRoutePainter(this);
+		seaRoutePainter.setRoute(routeController.getSeaRoute());
+		landRoutePainter = new SimpleFlowRoutePainter();
+		landRoutePainter.setRoute(routeController.getRoute());
 
 		// Create a waypoint painter that takes all the waypoints
 		// TODO Refactor, do not use jmapviewers waypoint class

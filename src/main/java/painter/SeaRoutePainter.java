@@ -47,7 +47,7 @@ public class SeaRoutePainter implements IRoutePainter {
 	 */
 	public SeaRoutePainter(MyMap map) {
 		this.map = map;
-
+		
 		// Init circle diameter array
 		GeoPosition pos = new GeoPosition(0, 0);
 		GeoPosition pcopy = new GeoPosition(pos.getLatitude() + POINT_DISTANCE_GEO,
