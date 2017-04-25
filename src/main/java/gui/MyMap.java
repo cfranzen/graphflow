@@ -54,9 +54,6 @@ public class MyMap extends JXMapViewer {
 	private WaypointPainter<Waypoint> waypointPainter;
 
 	private IRoutePainter landRoutePainter = new SimpleFlowRoutePainter();
-
-	// TODO Refactor
-//	private IRoutePainter defaultPainter = new DefaultRoutePainter();
 	public IRoutePainter seaRoutePainter; //XXX
 
 	/**

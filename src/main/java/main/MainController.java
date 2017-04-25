@@ -269,7 +269,7 @@ public class MainController {
 
 		reducePointCount();
 
-		if (true||!Constants.onlyGermany)
+		if (true | !Constants.onlyGermany)
 			return; // XXX
 
 		// own thread so that the gui thread is not blocked
@@ -629,13 +629,6 @@ public class MainController {
 		}
 		graphHopper.importOrLoad();
 		logger.info("End init GH - " + (System.currentTimeMillis() - time + " ms"));
-	}
-
-	/**
-	 * @return
-	 */
-	public RouteController getRouteController() {
-		return routeController;
 	}
 
 	/**

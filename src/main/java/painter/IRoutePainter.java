@@ -3,11 +3,13 @@ package painter;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.util.List;
 
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.painter.Painter;
 
 import gui.MyMap;
+import models.Edge;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
@@ -21,7 +23,7 @@ public interface IRoutePainter extends Painter<JXMapViewer> {
 	 * @param route
 	 *            the route to set
 	 */
-//	void setRoute(List<Edge> route);
+	void setRoute(List<Edge> route);
 
 	void setTimeStep(int time);
 

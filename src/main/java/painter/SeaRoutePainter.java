@@ -5,13 +5,11 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.viewer.GeoPosition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +40,7 @@ public class SeaRoutePainter implements IRoutePainter {
 	private int currentTimeStep;
 
 	private List<SeaEdge> drawEdges = new ArrayList<>();
+	private List<Edge> route;
 
 	/**
 	 * Initalizes the circleDiameter/zoomlevel list.
@@ -71,6 +70,15 @@ public class SeaRoutePainter implements IRoutePainter {
 		currentTimeStep = time;
 	}
 
+	/* (non-Javadoc)
+	 * @see painter.IRoutePainter#setRoute(java.util.List)
+	 */
+	@Override
+	public void setRoute(List<Edge> route) {
+		this.route = route;
+		
+	}
+	
 	/**
 	 * @param g
 	 *            the graphics object
@@ -129,7 +137,6 @@ public class SeaRoutePainter implements IRoutePainter {
 				}
 			}
 
-			List<Edge> route = MainController.getInstance().getRouteController().getSeaRoute();
 			for (SeaEdge seaEdge : result) {
 				long[] cap = new long[100];
 				long[] work = new long[100];
@@ -176,8 +183,6 @@ public class SeaRoutePainter implements IRoutePainter {
 	 */
 	private void calcSeaLines() {
 		drawEdges.clear();
-
-		List<Edge> route = MainController.getInstance().getRouteController().getSeaRoute();
 
 		for (int i = 0; i < route.size(); i++) {
 			if (route.get(i) instanceof HighResEdge == false)
@@ -440,5 +445,6 @@ public class SeaRoutePainter implements IRoutePainter {
 		pointPos = new GeoPosition(pos1.getLatitude(), (-360 + pos1.getLongitude()));
 		return DefaultRoutePainter.drawNormalLine(g, map, pos2, pointPos);
 	}
+
 
 }
