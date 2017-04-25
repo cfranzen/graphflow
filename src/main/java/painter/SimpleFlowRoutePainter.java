@@ -3,10 +3,8 @@ package painter;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.geom.Point2D;
 import java.util.List;
 
-import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.viewer.GeoPosition;
 
 import gui.MyMap;
@@ -23,8 +21,6 @@ import models.Edge;
 public class SimpleFlowRoutePainter implements IRoutePainter {
 
 	private int timeStep = 0;
-	private Graphics2D g;
-	private MyMap map;
 
 	/*
 	 * (non-Javadoc)
@@ -43,9 +39,6 @@ public class SimpleFlowRoutePainter implements IRoutePainter {
 	 */
 	@Override
 	public void drawRoute(Graphics2D g, MyMap map) {
-		this.g = g;
-		this.map = map;
-
 		List<Edge> route = MainController.getInstance().getRouteController().getRoute();
 		for (Edge edge : route) {
 			int entityStepCurrent = timeStep / Constants.PAINT_STEPS;
@@ -59,8 +52,9 @@ public class SimpleFlowRoutePainter implements IRoutePainter {
 			double stepFactor = timeStep % Constants.PAINT_STEPS / (double) Constants.PAINT_STEPS;
 			drawRoutePart(g, map, nextWorkload, nextCapacity, points, 0, points.size() * stepFactor);
 
-			drawRoutePart(g, map, currentWorkload, currentCapacity, points, (int) (points.size() * stepFactor), points.size());
-			
+			drawRoutePart(g, map, currentWorkload, currentCapacity, points, (int) (points.size() * stepFactor),
+					points.size());
+
 		}
 
 	}
@@ -73,7 +67,8 @@ public class SimpleFlowRoutePainter implements IRoutePainter {
 		} else {
 			Color lineColor = DefaultRoutePainter.calculateColor(workload, capacity);
 			g.setColor(lineColor);
-			g.setStroke(new BasicStroke((float) (capacity / 75)));// TODO Gradient
+			g.setStroke(new BasicStroke((float) (capacity / 75)));// TODO
+																	// Gradient
 		}
 		GeoPosition last = null;
 		for (int i = fromIndex; i < toIndex; i++) {
