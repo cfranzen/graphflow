@@ -39,14 +39,12 @@ import com.graphhopper.util.shapes.GHPoint;
 
 import gui.MyMap;
 import gui.RunButton;
-import models.Constants;
 import models.Edge;
 import models.EdgeType;
 import models.HighResEdge;
 import models.MapRoute;
 import models.MapRoute.MapPoint;
 import models.ModelLoader;
-import painter.SeaRoutePainter;
 import sea.SeaController;
 
 /**
@@ -572,9 +570,6 @@ public class MainController {
 							routeController.updateSeaEdge(edge, highResEdge);
 						}
 					} else {
-						if (Constants.debugInfos)
-							return true; // XXX
-
 						highResEdge = getHighRes(edge);
 						logger.info("map edge to street DONE");
 						if (highResEdge != null) {

@@ -52,7 +52,7 @@ public class MyMap extends JXMapViewer {
 	private Set<Waypoint> waypoints = new HashSet<>();;
 	private WaypointPainter<Waypoint> waypointPainter;
 
-	private IRoutePainter routePainter = new DefaultRoutePainter();
+//	private IRoutePainter routePainter = new DefaultRoutePainter();
 
 	// TODO Refactor
 	private IRoutePainter defaultPainter = new DefaultRoutePainter();
@@ -129,7 +129,7 @@ public class MyMap extends JXMapViewer {
 	 *            to set
 	 */
 	public void setTime(int time) {
-		routePainter.setTimeStep(time);
+		defaultPainter.setTimeStep(time);
 		seaRoutePainter.setTimeStep(time);
 		repaint();
 	}

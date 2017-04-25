@@ -51,7 +51,7 @@ public class DefaultRoutePainter implements IRoutePainter {
 	@Override
 	public void paint(Graphics2D g, JXMapViewer map, int w, int h) {
 		g = (Graphics2D) g.create();
-
+		
 		// convert from viewport to world bitmap
 		Rectangle rect = map.getViewportBounds();
 		g.translate(-rect.x, -rect.y);
@@ -127,6 +127,7 @@ public class DefaultRoutePainter implements IRoutePainter {
 			currentWorkload = edge.getWorkload(currentTimeStep);
 			currentCapacity = edge.getCapacity(currentTimeStep);
 		}
+		
 
 		if (currentCapacity == 0) {
 			g.setColor(Color.GRAY);

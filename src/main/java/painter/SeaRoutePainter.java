@@ -90,9 +90,9 @@ public class SeaRoutePainter implements IRoutePainter {
 
 		// XXX does not need to run every frame
 		calcSeaLines();
-		logger.info("Sea-Edge count: " + drawEdges.size());
+//		logger.info("Sea-Edge count: " + drawEdges.size());
 		optimzeSeaLines() ;
-		logger.info("Sea-Edge count: " + drawEdges.size());
+//		logger.info("Sea-Edge count: " + drawEdges.size());
 
 		g.setColor(Color.GREEN);
 		for (SeaEdge seaEdge : drawEdges) {
@@ -106,7 +106,7 @@ public class SeaRoutePainter implements IRoutePainter {
 
 		if (Constants.debugInfos) {
 //			 drawPossibleSeaEdges();
-			drawDebugNodeInfos();
+//			drawDebugNodeInfos();
 		}
 
 	}
@@ -395,6 +395,7 @@ public class SeaRoutePainter implements IRoutePainter {
 		return Math.sqrt((x * x) + (y * y));
 	}
 
+	@SuppressWarnings("unused")
 	private void drawDebugNodeInfos() {
 		g.setColor(Color.red);
 		g.setFont(new Font("default", Font.BOLD, 16));
