@@ -3,7 +3,7 @@ package models;
 public class Constants {
 
 	// XXX for debug
-	public static boolean onlyGermany = true;
+	public static boolean onlyGermany = false;
 	public static boolean debugInfos = true;
 
 	public static final int MAX_ZOOM_LEVEL = 17;

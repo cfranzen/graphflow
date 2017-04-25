@@ -90,6 +90,8 @@ public class SeaRoutePainter implements IRoutePainter {
 		this.g = g;
 		this.map = (MyMap) map;
 
+		int currentTimeStep = this.currentTimeStep / Constants.PAINT_STEPS;
+		
 		// XXX does not need to run every frame
 		calcSeaLines();
 		// logger.info("Sea-Edge count: " + drawEdges.size());

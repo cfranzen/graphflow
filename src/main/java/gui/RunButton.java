@@ -43,7 +43,7 @@ public class RunButton extends JButton {
 					@Override
 					public void run() {
 						while (flag) {
-							controller.incTime();
+							controller.incPaintTime();
 							try {
 								Thread.sleep(Constants.TIME_STEP_DELAY);
 							} catch (InterruptedException e) {

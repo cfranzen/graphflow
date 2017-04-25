@@ -158,8 +158,16 @@ public class MainController {
 	 * Increases the current time step each time its called. If the maximum time
 	 * step from the model is reached it resets the step to zero.
 	 */
+	public void incPaintTime() {
+		incTime(1);
+	}
+
 	public void incTime() {
-		currentTime++;
+		incTime(Constants.PAINT_STEPS);
+	}
+
+	private void incTime(int steps) {
+		currentTime += steps;
 		if (currentTime >= input.timesteps * Constants.PAINT_STEPS) {
 			currentTime = 0;
 		}
@@ -170,7 +178,7 @@ public class MainController {
 	 * 
 	 */
 	protected void reduceTime() {
-		currentTime--;
+		currentTime -= Constants.PAINT_STEPS;
 		if (currentTime <= 0) {
 			currentTime = input.timesteps;
 		}
