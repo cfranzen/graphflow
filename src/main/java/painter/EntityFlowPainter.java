@@ -3,7 +3,6 @@ package painter;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.List;
 
@@ -49,7 +48,7 @@ public class EntityFlowPainter implements IRoutePainter {
 			int pointsPerStep = (int) (points.size() / serviceTimeSteps);
 			int from = 0;
 			int to = pointsPerStep;
-			
+
 			for (int i = 0; i < serviceTimeSteps + 2; i++) {
 
 				double stepFactor = timeStep % Constants.PAINT_STEPS / (double) Constants.PAINT_STEPS;
@@ -69,7 +68,7 @@ public class EntityFlowPainter implements IRoutePainter {
 				}
 
 				if (edge instanceof MapRoute) {
-					mapRoutePainter(g, map, edge, entityStepCurrent, i, pointsPerStep);
+					mapRoutePainter(g, map, (MapRoute)edge, entityStepCurrent, i, pointsPerStep);
 				} else {
 					long workload = edge.getWorkload(entityStepCurrent - i);
 					long workloadBefore = edge.getWorkload(entityStepCurrent - i - 1);
@@ -88,24 +87,44 @@ public class EntityFlowPainter implements IRoutePainter {
 	/**
 	 * 
 	 */
-	private void mapRoutePainter(Graphics2D g, MyMap map, Edge edge, int currentTimeStep, int serviceTimeStep,
+	private void mapRoutePainter(Graphics2D g, MyMap map, MapRoute edge, int currentTimeStep, int serviceTimeStep,
 			int pointsPerStep) {
 		double stepFactor = timeStep % Constants.PAINT_STEPS / (double) Constants.PAINT_STEPS;
 		int from = (int) (pointsPerStep * serviceTimeStep);
 		int to = (int) (from + (pointsPerStep * stepFactor) + 1);
 
-		MapRoute mapEdge = ((MapRoute) edge);
+		drawMapRoutePart(g, map, edge, from, to, currentTimeStep - serviceTimeStep);
+		drawMapRoutePart(g, map, edge, to, edge.getPositions().size(), currentTimeStep - serviceTimeStep - 1);
+	}
 
-		long workload = mapEdge.getWorkloadForPoint(currentTimeStep - serviceTimeStep, to);
-		long workloadBefore = mapEdge.getWorkloadForPoint(currentTimeStep - serviceTimeStep - 1, to + 1);
-		long capacity = mapEdge.getCapacityForPoint(currentTimeStep - serviceTimeStep, to);
-		long capacityBefore = mapEdge.getCapacityForPoint(currentTimeStep - serviceTimeStep - 1, to + 1);
+	/**
+	 * @param g
+	 * @param map
+	 * @param points
+	 * @param from
+	 * @param to
+	 */
+	private void drawMapRoutePart(Graphics2D g, MyMap map, MapRoute edge, int from, int to, int currentTimeStep) {
+		GeoPosition last = null;
+		for (int i = from; i < to && i < edge.getPositions().size(); i++) {
+			long capacity =  edge.getCapacityForPoint(currentTimeStep, i);
+			long workload = edge.getWorkloadForPoint(currentTimeStep, i);
+			if (workload == 0) {
+				continue;
+			}
+			
+			Color lineColor = DefaultRoutePainter.calculateColor(workload, capacity);
+			g.setColor(lineColor);
+			g.setStroke(new BasicStroke(4f));
+			GeoPosition point = edge.getPositions().get(i);
+			if (last == null) {
+				last = point;
+				continue;
+			}
+			DefaultRoutePainter.drawNormalLine(g, map, last, point);
+			last = point;
+		}
 
-		List<GeoPosition> points = edge.getPositions();
-		
-		 drawRoutePart(g, map, workload, capacity, points, from, to);
-		 drawRoutePart(g, map, workloadBefore, capacityBefore, points, to,
-		 points.size());
 	}
 
 	public void drawRoutePart(Graphics2D g, MyMap map, long workload, long capacity, List<GeoPosition> points,
@@ -122,7 +141,6 @@ public class EntityFlowPainter implements IRoutePainter {
 			// Gradient
 		}
 		GeoPosition last = null;
-
 		for (int i = fromIndex; i < toIndex && i < points.size(); i++) {
 			GeoPosition point = points.get(i);
 			if (last == null) {

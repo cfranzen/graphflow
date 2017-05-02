@@ -73,7 +73,7 @@ public class DefaultRoutePainter implements IRoutePainter {
 
 			for (int j = 0; j < points.size(); j++) {
 				GeoPosition point = points.get(j);
-				modifyGraphicsForStep(g, edge, j);
+				modifyGraphicsForStep(g, edge, j, currentTimeStep);
 
 				if (last == null) {
 					last = point;
@@ -102,7 +102,7 @@ public class DefaultRoutePainter implements IRoutePainter {
 		return new Point2D[] { startPt2D, endPt2D };
 	}
 
-	private void modifyGraphicsForStep(Graphics2D g, Edge edge, int j) {
+	private static void modifyGraphicsForStep(Graphics2D g, Edge edge, int j, int currentTimeStep) {
 		long currentWorkload = 0;
 		long currentCapacity = 0;
 		long nextWorkload = 0;
@@ -131,8 +131,8 @@ public class DefaultRoutePainter implements IRoutePainter {
 		long valCapacity = (long) (nextCapacity * stepFactor + currentCapacity * (1 - stepFactor));
 		long valWorkload = (long) (nextWorkload * stepFactor + currentWorkload * (1 - stepFactor));
 
-		System.out.println(String.format("STEP: %f - %d, CUR: %d, N: %d, VAL: %d", stepFactor, currentTimeStep,
-				currentCapacity, nextCapacity, valCapacity));
+//		System.out.println(String.format("STEP: %f - %d, CUR: %d, N: %d, VAL: %d", stepFactor, currentTimeStep,
+//				currentCapacity, nextCapacity, valCapacity));
 
 		if (valCapacity == 0) {
 			g.setColor(Color.GRAY);
