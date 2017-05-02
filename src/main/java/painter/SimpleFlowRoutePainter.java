@@ -8,6 +8,7 @@ import java.util.List;
 import org.jxmapviewer.viewer.GeoPosition;
 
 import gui.MyMap;
+import main.RouteController;
 import models.Constants;
 import models.Edge;
 
@@ -20,7 +21,7 @@ import models.Edge;
 public class SimpleFlowRoutePainter implements IRoutePainter {
 
 	private int timeStep = 0;
-	private List<Edge> route;
+	private RouteController routeController;
 
 	/*
 	 * (non-Javadoc)
@@ -39,6 +40,7 @@ public class SimpleFlowRoutePainter implements IRoutePainter {
 	 */
 	@Override
 	public void drawRoute(Graphics2D g, MyMap map) {
+		List<Edge> route = routeController.getRoute();
 		for (Edge edge : route) {
 			int entityStepCurrent = timeStep / Constants.PAINT_STEPS;
 			int entityStepNext = entityStepCurrent + 1;
@@ -88,8 +90,8 @@ public class SimpleFlowRoutePainter implements IRoutePainter {
 	 * @see painter.IRoutePainter#setRoute(java.util.List)
 	 */
 	@Override
-	public void setRoute(List<Edge> route) {
-		this.route = route;
+	public void setRouteController(RouteController routeController) {
+		this.routeController = routeController;
 	}
 
 }

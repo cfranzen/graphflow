@@ -273,7 +273,7 @@ public class Edge {
 	/**
 	 * @param serviceTime
 	 */
-	public int getServiceTime(int timeStep) {
+	public double getServiceTime(int timeStep) {
 		return serviceTime[timeStep];
 	}
 	
@@ -287,7 +287,7 @@ public class Edge {
 	/**
 	 * @return the maxServiceTime
 	 */
-	public long getMaxServiceTime() {
+	public int getMaxServiceTime() {
 		return maxServiceTime;
 	}
 

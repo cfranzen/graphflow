@@ -11,7 +11,6 @@ import org.jxmapviewer.viewer.GeoPosition;
  */
 public class HighResEdge extends Edge {
 
-	// private List<Double[]> points = new ArrayList<>();
 	private List<GeoPosition> points = new ArrayList<>();
 
 	public HighResEdge() {

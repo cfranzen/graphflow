@@ -12,6 +12,7 @@ import org.jxmapviewer.viewer.GeoPosition;
 
 import gui.MyMap;
 import main.MainController;
+import main.RouteController;
 import models.Constants;
 import models.Edge;
 import models.EdgeType;
@@ -26,7 +27,7 @@ import models.MapRoute;
 public class DefaultRoutePainter implements IRoutePainter {
 
 	private int currentTimeStep = 0;
-	private List<Edge> route;
+	private RouteController routeController;
 
 	/*
 	 * (non-Javadoc)
@@ -44,10 +45,10 @@ public class DefaultRoutePainter implements IRoutePainter {
 	 * @see painter.IRoutePainter#setRoute(java.util.List)
 	 */
 	@Override
-	public void setRoute(List<Edge> route) {
-		this.route = route;
+	public void setRouteController(RouteController routeController) {
+		this.routeController = routeController;
 	}
-	
+
 	/**
 	 * @param g
 	 *            the graphics object
@@ -57,6 +58,7 @@ public class DefaultRoutePainter implements IRoutePainter {
 	@Override
 	public void drawRoute(Graphics2D g, MyMap map) {
 		int i = 0;
+		List<Edge> route = routeController.getRoute();
 		showSearchRadius(g, map, route);
 		for (Edge edge : route) {
 
@@ -226,6 +228,5 @@ public class DefaultRoutePainter implements IRoutePainter {
 		int blue = (int) (color2.getBlue() * ratio + color1.getBlue() * (1 - ratio));
 		return new Color(red, green, blue);
 	}
-
 
 }

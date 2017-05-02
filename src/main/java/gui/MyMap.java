@@ -69,11 +69,10 @@ public class MyMap extends JXMapViewer {
 
 		// Default values
 		setAddressLocation(new GeoPosition(50.11, 8.68)); // Frankfurt
-		setZoom(3);
+		setZoom(13);
 
 		initPainters(routeController);
 
-		
 		setMinimumSize(new Dimension(250, 250));
 		setPreferredSize(new Dimension(1400, 400));
 	}
@@ -115,7 +114,7 @@ public class MyMap extends JXMapViewer {
 			}
 		}
 		// TODO schöner machen
-		zoomToBestFit(new HashSet<>(zoomNodes), 0.7);
+//		zoomToBestFit(new HashSet<>(zoomNodes), 0.7);
 		waypointPainter.setWaypoints(waypoints);
 	}
 
@@ -197,8 +196,8 @@ public class MyMap extends JXMapViewer {
 		seaRoutePainter = new SeaRoutePainter(this);
 //		landRoutePainter = new SimpleFlowRoutePainter();
 		landRoutePainter = new EntityFlowPainter();
-		seaRoutePainter.setRoute(routeController.getSeaRoute());
-		landRoutePainter.setRoute(routeController.getRoute());
+		seaRoutePainter.setRouteController(routeController);
+		landRoutePainter.setRouteController(routeController);
 
 		// Create a waypoint painter that takes all the waypoints
 		// TODO Refactor, do not use jmapviewers waypoint class

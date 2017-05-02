@@ -11,5 +11,6 @@ public class Constants {
 	public static final int PAINT_STEPS = 50;
 	public static final int DEBUG_ZOOM = 6;
 	public static final int TIME_STEP_DELAY = 75;
+//	public static final int TIME_STEP_DELAY = 200;
 	
 }

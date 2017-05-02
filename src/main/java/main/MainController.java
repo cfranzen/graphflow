@@ -100,7 +100,7 @@ public class MainController {
 	 * used for combining points and summarizing workload and capacity, distance
 	 * in lat/lon not pixel
 	 */
-	public final static double combinePointsDistance = 0.005;
+	public final static double combinePointsDistance = 0.01;
 
 	/**
 	 * Returns the {@link MainController} instance, if the instance is
@@ -135,11 +135,11 @@ public class MainController {
 		// Load sea data
 		seaController.loadSeaNodes(cliInput.seaNodes);
 
-		mapViewer.setZoom(16);
 
 		// Processing input to own classes
 		loadSolution();
-
+		
+		
 		optimize();
 
 	}
@@ -169,6 +169,9 @@ public class MainController {
 	private void incTime(int steps) {
 		currentTime += steps;
 		if (currentTime >= input.timesteps * Constants.PAINT_STEPS) {
+			currentTime = 0;
+		}
+		if (currentTime > 25 * Constants.PAINT_STEPS) { // XXX DEBUG
 			currentTime = 0;
 		}
 		if (currentTime % Constants.PAINT_STEPS == 0) {
@@ -282,11 +285,10 @@ public class MainController {
 
 		reducePointCount();
 
-		if (true | !Constants.onlyGermany)
+		if (!Constants.onlyGermany)
 			return; // XXX
 
 		// own thread so that the gui thread is not blocked
-		@SuppressWarnings("unused")
 		Thread t = new Thread(new Runnable() {
 
 			@Override
@@ -322,6 +324,7 @@ public class MainController {
 		 * nearest. Maybe get Edge from point. </br>Every edge has to be
 		 * connected to either an other edge or a waypoint.
 		 */
+		logger.info("connect edge end points");
 		connectEndpoints(savedEdges);
 		routeController.setRoute(savedEdges);
 		sumAllPoints();
@@ -340,13 +343,13 @@ public class MainController {
 			boolean flagFirst = false;
 			boolean flagLast = false;
 			for (GeoPosition waypoint : waypoints) {
-				if (isNear(mpFirst.getPosition(), waypoint, combinePointsDistance)) {
+				if (isNear(mpFirst.getPosition(), waypoint, contactSearchDistance)) {
 					flagFirst = true;
 					break;
 				}
 			}
 			for (GeoPosition waypoint : waypoints) {
-				if (isNear(mpLast.getPosition(), waypoint, combinePointsDistance)) {
+				if (isNear(mpLast.getPosition(), waypoint, contactSearchDistance)) {
 					flagLast = true;
 					break;
 				}
@@ -382,6 +385,9 @@ public class MainController {
 		// }
 		// };
 		//
+		
+		
+		// Wenn zwei Punkte viel zu weit auseinander liegen wurde die Kante in der Mitte mit einer anderen zusammengelegt
 		for (int i = 0; i < savedEdges.size(); i++) {
 			List<MapPoint> points = ((MapRoute) savedEdges.get(i)).getPoints();
 			GeoPosition last = points.get(0).getPosition();
@@ -389,29 +395,28 @@ public class MainController {
 			for (int j = 1; j < points.size(); j++) {
 				GeoPosition current = points.get(j).getPosition();
 				if (getDistance(last, current) > contactSearchDistance * 4) {
+					System.out.println(last + " - " + current + " - " + getDistance(last, current));
 					logger.info("Split this edge into two -> " + i + "-" + j);
-					logger.info(last.getLatitude() + " - " + last.getLongitude());
-					logger.info(current.getLatitude() + " - " + current.getLongitude());
+					logger.debug(last.getLatitude() + " - " + last.getLongitude());
+					logger.debug(current.getLatitude() + " - " + current.getLongitude());
 					MapRoute mapEdgeOld = new MapRoute();
 					for (MapRoute.MapPoint mapPoint : points.subList(0, j)) {
 						mapEdgeOld.addPoint(mapPoint);
 					}
-					synchronized (savedEdges) {
-						savedEdges.set(i, mapEdgeOld);
-					}
-
 					MapRoute mapEdgeNew = new MapRoute();
 					for (MapPoint mapPoint : points.subList(j, points.size())) {
 						mapEdgeNew.addPoint(mapPoint);
 					}
 					synchronized (savedEdges) {
+						savedEdges.set(i, mapEdgeOld);
 						savedEdges.add(mapEdgeNew);
-						// TODO new taks for new edge
+						// TODO new taks for new edge for parallel progession
 					}
 				}
 				last = current;
 			}
 		}
+		logger.info("--> splitted in " + savedEdges.size() + " edges");
 		return savedEdges;
 	}
 
@@ -426,13 +431,13 @@ public class MainController {
 			for (GeoPosition point : edges.get(i).getPositions()) {
 				if (!hasAnyNearPoint(point, savedEdges)) {
 					mapEdge.addNewPoint(point, edges);
-				}
+				} // if point is close to an already saved point, do nothing
 			}
-			if (mapEdge.getPositions().size() > 1) {
+			if (mapEdge.getPositions().size() > 2) {
 				savedEdges.add(mapEdge);
 			}
 		}
-
+		logger.info("--> combined to " + savedEdges.size() + " edges");
 		// updateView
 		routeController.setRoute(savedEdges);
 	}
@@ -488,10 +493,9 @@ public class MainController {
 	 *         <code>false</code> otherwise
 	 */
 	private boolean hasAnyNearPoint(GeoPosition refPoint, List<Edge> savedEdges) {
-		double distance = 0.01;
 		for (int i = 0; i < savedEdges.size(); i++) {
 			for (GeoPosition point : savedEdges.get(i).getPositions()) {
-				if (isNear(refPoint, point, distance)) {
+				if (isNear(refPoint, point, combinePointsDistance)) {
 					return true;
 				}
 			}

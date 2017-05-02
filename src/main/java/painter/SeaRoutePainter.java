@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import gui.MyMap;
 import main.MainController;
+import main.RouteController;
 import models.Constants;
 import models.Edge;
 import models.HighResEdge;
@@ -38,16 +39,17 @@ public class SeaRoutePainter implements IRoutePainter {
 	private Graphics2D g;
 	private MyMap map;
 	private int currentTimeStep;
+	private RouteController routeController;
 
 	private List<SeaEdge> drawEdges = new ArrayList<>();
-	private List<Edge> route;
+	// private List<Edge> route;
 
 	/**
 	 * Initalizes the circleDiameter/zoomlevel list.
 	 */
 	public SeaRoutePainter(MyMap map) {
 		this.map = map;
-		
+
 		// Init circle diameter array
 		GeoPosition pos = new GeoPosition(0, 0);
 		GeoPosition pcopy = new GeoPosition(pos.getLatitude() + POINT_DISTANCE_GEO,
@@ -70,15 +72,17 @@ public class SeaRoutePainter implements IRoutePainter {
 		currentTimeStep = time;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see painter.IRoutePainter#setRoute(java.util.List)
 	 */
 	@Override
-	public void setRoute(List<Edge> route) {
-		this.route = route;
-		
+	public void setRouteController(RouteController routeController) {
+		this.routeController = routeController;
+
 	}
-	
+
 	/**
 	 * @param g
 	 *            the graphics object
@@ -89,13 +93,14 @@ public class SeaRoutePainter implements IRoutePainter {
 	public void drawRoute(Graphics2D g, MyMap map) {
 		this.g = g;
 		this.map = (MyMap) map;
+		List<Edge> route = routeController.getSeaRoute();
 
 		int currentTimeStep = this.currentTimeStep / Constants.PAINT_STEPS;
-		
+
 		// XXX does not need to run every frame
-		calcSeaLines();
+		calcSeaLines(route);
 		// logger.info("Sea-Edge count: " + drawEdges.size());
-		optimzeSeaLines();
+		optimzeSeaLines(route);
 		// logger.info("Sea-Edge count: " + drawEdges.size());
 
 		g.setColor(Color.GREEN);
@@ -119,7 +124,7 @@ public class SeaRoutePainter implements IRoutePainter {
 	/**
 	 * 
 	 */
-	private void optimzeSeaLines() {
+	private void optimzeSeaLines(List<Edge> route) {
 		List<SeaEdge> result = new ArrayList<>();
 		if (!drawEdges.isEmpty()) {
 			result.add(drawEdges.get(0)); // First edge cannot be compared with
@@ -183,7 +188,7 @@ public class SeaRoutePainter implements IRoutePainter {
 	 * @return {@link List} of {@link SeaEdge} with calculated {@link Path2D}s,
 	 *         or an empty list if the sea data consists of the wrong type.
 	 */
-	private void calcSeaLines() {
+	private void calcSeaLines(List<Edge> route) {
 		drawEdges.clear();
 
 		for (int i = 0; i < route.size(); i++) {
@@ -447,6 +452,5 @@ public class SeaRoutePainter implements IRoutePainter {
 		pointPos = new GeoPosition(pos1.getLatitude(), (-360 + pos1.getLongitude()));
 		return DefaultRoutePainter.drawNormalLine(g, map, pos2, pointPos);
 	}
-
 
 }
