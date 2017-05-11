@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -55,7 +56,7 @@ public class MyMap extends JXMapViewer {
 	private WaypointPainter<Waypoint> waypointPainter;
 
 	private IRoutePainter landRoutePainter;
-	public IRoutePainter seaRoutePainter; //XXX
+	public IRoutePainter seaRoutePainter; // XXX
 
 	/**
 	 * Default Constructor, initializes the tile factory.
@@ -114,7 +115,7 @@ public class MyMap extends JXMapViewer {
 			}
 		}
 		// TODO schöner machen
-//		zoomToBestFit(new HashSet<>(zoomNodes), 0.7);
+		// zoomToBestFit(new HashSet<>(zoomNodes), 0.7);
 		waypointPainter.setWaypoints(waypoints);
 	}
 
@@ -133,6 +134,14 @@ public class MyMap extends JXMapViewer {
 
 	public GeoPosition getCoordsForMouse(MouseEvent event) {
 		return convertPointToGeoPosition(new Point(event.getX(), event.getY()));
+	}
+
+	public GeoPosition getGeoPos(double x, double y) {
+		return getGeoPos(new Point((int) x, (int) y));
+	}
+
+	public GeoPosition getGeoPos(Point2D point) {
+		return getTileFactory().pixelToGeo(point, getZoom());
 	}
 
 	/**
@@ -188,13 +197,12 @@ public class MyMap extends JXMapViewer {
 	}
 
 	/**
-	 * Initializes the {@link IRoutePainter}-Objects
-	 * of the graph.
+	 * Initializes the {@link IRoutePainter}-Objects of the graph.
 	 */
 	private void initPainters(RouteController routeController) {
-		
+
 		seaRoutePainter = new SeaRoutePainter(this);
-//		landRoutePainter = new SimpleFlowRoutePainter();
+		// landRoutePainter = new SimpleFlowRoutePainter();
 		landRoutePainter = new EntityFlowPainter();
 		seaRoutePainter.setRouteController(routeController);
 		landRoutePainter.setRouteController(routeController);

@@ -93,7 +93,7 @@ public class SeaRoutePainter implements IRoutePainter {
 	public void drawRoute(Graphics2D g, MyMap map) {
 		this.g = g;
 		this.map = (MyMap) map;
-		List<Edge> route = routeController.getSeaRoute();
+		List<Edge> route = routeController.getPaintSeaRoute();
 
 		int currentTimeStep = this.currentTimeStep / Constants.PAINT_STEPS;
 

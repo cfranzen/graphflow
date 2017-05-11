@@ -1,7 +1,6 @@
 package main;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,8 +28,17 @@ public class RouteController {
 	private static RouteController instance;
 	private List<Edge> route = new ArrayList<>();
 	private List<Edge> seaRoute = new ArrayList<>();
-	private List<Edge> paintRoute = Collections.emptyList();
-	
+
+	/**
+	 * Contains the visible route part
+	 */
+	private List<Edge> paintRoute = new ArrayList<>();
+
+	/**
+	 * Contains the visible sea route part
+	 */
+	private List<Edge> paintSeaRoute = new ArrayList<>();
+
 	private RouteController() {
 		// noop
 	}
@@ -51,8 +59,12 @@ public class RouteController {
 		return seaRoute;
 	}
 
-	public List<Edge> getRouteToPaint() {
+	public List<Edge> getPaintRoute() {
 		return paintRoute;
+	}
+	
+	public List<Edge> getPaintSeaRoute() {
+		return paintSeaRoute;
 	}
 
 	/**
@@ -61,7 +73,6 @@ public class RouteController {
 	 */
 	public void setRoute(List<Edge> route) {
 		this.route = route;
-		updatePaintRoute();
 	}
 
 	/**
@@ -70,7 +81,6 @@ public class RouteController {
 	 */
 	public void setSeaRoute(List<Edge> seaRoute) {
 		this.seaRoute = seaRoute;
-		updatePaintRoute();
 	}
 
 	/**
@@ -97,7 +107,7 @@ public class RouteController {
 			// if newEdge = Emtpy -> remove old edge instead null update
 			route.remove(oldEdge);
 			setRoute(route);
-		} 
+		}
 		return false;
 	}
 
@@ -196,12 +206,51 @@ public class RouteController {
 		}
 		return instance;
 	}
-	
-	private void updatePaintRoute() {
-		paintRoute = new ArrayList<>(route.size() + seaRoute.size());
 
-		paintRoute.addAll(seaRoute);
-		paintRoute.addAll(route);
+	/**
+	 * 
+	 * @param viewportStart
+	 *            {@link GeoPosition} at pixel (1,1) of the viewport
+	 * @param viewportEnd
+	 *            {@link GeoPosition} at last bottom-right pixel of the viewport
+	 */
+	public void refreshPaintRoutes(GeoPosition viewportStart, GeoPosition viewportEnd) {
+		// Land routes
+		List<Edge> result = new ArrayList<>();
+		for (Edge edge : route) {
+//			System.out.println(edge.getStart() + " + " + edge.getDest() + "_ " + viewportStart + " - " + viewportEnd);
+			if ((edge.getStart() != null && pointOnScreen(edge.getStart(), viewportStart, viewportEnd))
+					|| (edge.getDest() != null && pointOnScreen(edge.getDest(), viewportStart, viewportEnd))) {
+				result.add(edge);
+			}
+		}
+		System.out.println("PRC: " + result.size());
+		paintRoute = result;
+
+		// Sea routes
+		result = new ArrayList<>();
+		for (Edge edge : seaRoute) {
+
+			if ((edge.getStart() != null && pointOnScreen(edge.getStart(), viewportStart, viewportEnd))
+					|| (edge.getDest() != null && pointOnScreen(edge.getDest(), viewportStart, viewportEnd))) {
+				result.add(edge);
+			}
+		}
+		paintSeaRoute = result;
+
+	}
+
+	/**
+	 * @param pos
+	 * @param viewportStart
+	 * @param viewportEnd
+	 * @return
+	 */
+	private boolean pointOnScreen(GeoPosition pos, GeoPosition viewportStart, GeoPosition viewportEnd) {
+
+		return ((viewportStart.getLatitude() < pos.getLatitude() && pos.getLatitude() < viewportEnd.getLatitude())
+				|| viewportStart.getLongitude() < pos.getLongitude()
+						&& pos.getLongitude() < viewportEnd.getLongitude());
 	}
 
 }

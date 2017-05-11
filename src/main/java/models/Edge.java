@@ -36,9 +36,6 @@ public class Edge {
 	private String info;
 	private double geoDistance;
 
-	
-
-	
 	/**
 	 * Creates an {@link Edge} with the given {@link GeoPosition}s.
 	 * 
@@ -51,7 +48,7 @@ public class Edge {
 		this.dest = dest;
 		calcDistance();
 	}
-	
+
 	/**
 	 * @param start
 	 * @param dest
@@ -100,7 +97,7 @@ public class Edge {
 	 * Default empty constructor
 	 */
 	public Edge() {
-		//NOP
+		// NOP
 	}
 
 	/**
@@ -151,14 +148,13 @@ public class Edge {
 	public long[] getWorkloads() {
 		return workloads;
 	}
-	
+
 	public void addWorkloads(long[] ls) {
 		for (int i = 0; i < ls.length; i++) {
 			this.workloads[i] += ls[i];
 		}
 	}
 
-	
 	/**
 	 * @param currentTimeStep
 	 * @return the capacity for the given time step.
@@ -173,7 +169,7 @@ public class Edge {
 			return capacites[0];
 		}
 	}
-	
+
 	public long[] getCapacites() {
 		return capacites;
 	}
@@ -186,7 +182,6 @@ public class Edge {
 			this.capacites[i] += ls[i];
 		}
 	}
-
 
 	/**
 	 * @return the type of the edge
@@ -225,8 +220,7 @@ public class Edge {
 	 * @return
 	 */
 	public List<GeoPosition> getPositions() {
-		return Arrays.asList(
-				new GeoPosition(start.getLatitude(), start.getLongitude()),
+		return Arrays.asList(new GeoPosition(start.getLatitude(), start.getLongitude()),
 				new GeoPosition(dest.getLatitude(), dest.getLongitude()));
 	}
 
@@ -238,13 +232,16 @@ public class Edge {
 	}
 
 	/**
-	 * @param info the info to set
+	 * @param info
+	 *            the info to set
 	 */
 	public void setInfo(String info) {
 		this.info = info;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -258,9 +255,12 @@ public class Edge {
 	public double getGeoDistance() {
 		return geoDistance;
 	}
-	
+
 	private void calcDistance() {
-		geoDistance = calulator.calcDist(start.getLatitude(), start.getLongitude(), dest.getLatitude(), dest.getLongitude());
+		if (start != null && dest != null) {
+			geoDistance = calulator.calcDist(start.getLatitude(), start.getLongitude(), dest.getLatitude(),
+					dest.getLongitude());
+		}
 	}
 
 	/**
@@ -274,16 +274,20 @@ public class Edge {
 	 * @param serviceTime
 	 */
 	public double getServiceTime(int timeStep) {
-		return serviceTime[timeStep];
+		if (timeStep < serviceTime.length) {
+			return serviceTime[timeStep];
+		} else {
+			return 1;
+		}
 	}
-	
+
 	/**
 	 * @param serviceTime
 	 */
 	public void setServiceTime(int[] serviceTime) {
 		this.serviceTime = serviceTime;
 	}
-	
+
 	/**
 	 * @return the maxServiceTime
 	 */
@@ -292,10 +296,25 @@ public class Edge {
 	}
 
 	/**
-	 * @param maxServiceTime the maxServiceTime to set
+	 * @param maxServiceTime
+	 *            the maxServiceTime to set
 	 */
 	public void setMaxServiceTime(int maxServiceTime) {
 		this.maxServiceTime = maxServiceTime;
+	}
+
+	/**
+	 * @param contactPoint
+	 */
+	public void setStart(GeoPosition contactPoint) {
+		this.start = contactPoint;
+	}
+
+	/**
+	 * @param contactPoint
+	 */
+	public void setDest(GeoPosition contactPoint) {
+		this.dest = contactPoint;
 	}
 
 }

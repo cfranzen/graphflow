@@ -20,6 +20,17 @@ public class MapRoute extends Edge {
 
 	private List<Double> serviceTimes = new ArrayList<>();
 
+	public MapRoute() {
+		// NOOP
+	};
+
+	/**
+	 * @param mapedge
+	 */
+	public MapRoute(MapRoute mapedge) {
+		super(mapedge);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -83,7 +94,7 @@ public class MapRoute extends Edge {
 		if (serviceTimes.size() <= currentTimeStep) {
 			serviceTimes.addAll(Collections.nCopies((currentTimeStep + 1) - serviceTimes.size(), null));
 		}
-		
+
 		if (serviceTimes.get(currentTimeStep) == null) {
 			double serviceTime = 0;
 			for (int index = 0; index < points.size(); index++) {
@@ -91,7 +102,7 @@ public class MapRoute extends Edge {
 				if (time != 0) {
 					serviceTime += time;
 				}
-				
+
 			}
 			serviceTimes.set(currentTimeStep, serviceTime);
 		}
@@ -114,7 +125,7 @@ public class MapRoute extends Edge {
 		int edgeCount = 0;
 		for (Entry<Edge, GeoPosition> edgeEntry : map.entrySet()) {
 			Edge edge = edgeEntry.getKey();
-			
+
 			double time = edge.getServiceTime(currentTimeStep);
 			if (time != 0) {
 				serviceTime += time / edge.getPositions().size();
@@ -205,6 +216,21 @@ public class MapRoute extends Edge {
 			return posi;
 		}
 
+	}
+
+	/**
+	 * 
+	 */
+	public void updateStartEnd() {
+		setStart(points.get(0).posi);
+		setDest(points.get(points.size() - 1).posi);
+	}
+
+	/**
+	 * @param savedPoint
+	 */
+	public void removePoint(GeoPosition savedPoint) {
+		points.remove(savedPoint);
 	}
 
 }
