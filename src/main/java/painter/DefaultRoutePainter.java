@@ -92,7 +92,7 @@ public class DefaultRoutePainter implements IRoutePainter {
 		}
 	}
 
-	static Point2D[] drawNormalLine(Graphics2D g, MyMap map, GeoPosition from, GeoPosition to) {
+	public static Point2D[] drawNormalLine(Graphics2D g, MyMap map, GeoPosition from, GeoPosition to) {
 		// convert geo-coordinate to world bitmap pixel
 		Point2D startPt2D = map.getTileFactory().geoToPixel(from, map.getZoom());
 		Point2D endPt2D = map.getTileFactory().geoToPixel(to, map.getZoom());
@@ -219,7 +219,7 @@ public class DefaultRoutePainter implements IRoutePainter {
 		}
 	}
 
-	static Color calculateColor(long workload, long capacity) {
+	public static Color calculateColor(long workload, long capacity) {
 		Color color1 = Color.GREEN;
 		Color color2 = Color.RED;
 		float ratio = (float) workload / (float) capacity;

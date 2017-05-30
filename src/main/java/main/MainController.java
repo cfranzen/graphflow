@@ -46,6 +46,7 @@ import models.HighResEdge;
 import models.MapRoute;
 import models.MapRoute.MapPoint;
 import models.ModelLoader;
+import newVersion.main.Optimizer;
 import sea.SeaController;
 
 /**
@@ -283,12 +284,15 @@ public class MainController {
 
 		reducePointCount();
 
-		// own thread so that the gui thread is not blocked
+		// own thread so that the main thread is not blocked
 		Thread t = new Thread(new Runnable() {
 
 			@Override
 			public void run() {
-				optimizeEdges();
+				Optimizer optimizer = new Optimizer();
+				optimizer.optimize();
+
+				// optimizeEdges();
 			}
 		});
 		t.start();
@@ -300,7 +304,7 @@ public class MainController {
 	 */
 	private void reducePointCount(int factor) {
 		logger.info("Reduce point resolution per edge; before - after");
-		sumAllPoints();
+		routeController.sumAllPoints();
 		List<Edge> edges = routeController.getRoute();
 		if (edges.get(0) instanceof MapRoute) {
 			for (Edge edge : edges) {
@@ -313,7 +317,7 @@ public class MainController {
 			}
 		}
 		repaint();
-		sumAllPoints();
+		routeController.sumAllPoints();
 
 	}
 
@@ -322,23 +326,21 @@ public class MainController {
 	}
 
 	private void optimizeEdges() {
-		sumAllPoints();
+		routeController.sumAllPoints();
 		logger.info("optimize");
 
 		List<Edge> savedEdges = combineEdges();
-
-		// List<Edge> savedEdges = splitEdges();
-
+		// savedEdges = splitEdges();
+		routeController.setRoute(savedEdges);
+		reducePointCount(3);
 		/*
 		 * Find nearest contact point. TODO connect to thickest part instead of
 		 * nearest. Maybe get Edge from point. </br>Every edge has to be
 		 * connected to either an other edge or a waypoint.
 		 */
-		reducePointCount(3);
 		logger.info("connect edge end points");
-		// connectEndpoints(savedEdges); // TODO optimize is buggy
-		routeController.setRoute(savedEdges);
-		sumAllPoints();
+		connectEndpoints(savedEdges); // TODO optimize is buggy
+		routeController.sumAllPoints();
 		logger.info("optimize-end");
 	}
 
@@ -436,27 +438,40 @@ public class MainController {
 	private List<Edge> combineEdges() {
 		// combine near points from multiple edges into one
 		// uses multiple edges at once -> linear
-		sumAllPoints();
+		routeController.sumAllPoints();
 		List<Edge> edges = routeController.getRoute();
 		List<Edge> savedEdges = new ArrayList<>();
 		for (int i = 0; i < edges.size(); i++) {
 			MapRoute mapEdge = new MapRoute();
+			boolean flagHadContact = false;
 			for (GeoPosition point : edges.get(i).getPositions()) {
 				if (!hasAnyNearPoint(point, savedEdges)) {
+					if (flagHadContact) {
+						addMapEdge(savedEdges, mapEdge);
+						mapEdge = new MapRoute();
+						flagHadContact = false;
+					}
+
 					mapEdge.addNewPoint(point, edges);
-				} // if point is close to an already saved point, do nothing
+				} else {
+					flagHadContact = true;
+				}
 			}
-			if (mapEdge.getPositions().size() > 3) {
-				mapEdge.updateStartEnd();
-				savedEdges.add(mapEdge);
-				logger.info("Added combined edge; Count: " + savedEdges.size());
-			}
+			addMapEdge(savedEdges, mapEdge);
 			logger.info("Edge " + i + " from " + edges.size() + " processed");
 		}
 		logger.info("--> combined to " + savedEdges.size() + " edges");
 		// updateView
 		routeController.setRoute(savedEdges);
 		return savedEdges;
+	}
+
+	private void addMapEdge(List<Edge> savedEdges, MapRoute mapEdge) {
+		if (mapEdge.getPositions().size() > 3) {
+			mapEdge.updateStartEnd();
+			savedEdges.add(mapEdge);
+			logger.info("Added combined edge; Count: " + savedEdges.size());
+		}
 	}
 
 	private void getContactForPoint(List<Edge> savedEdges, int j, MapPoint mp) {
@@ -509,7 +524,7 @@ public class MainController {
 	 * @return <code>true</code> if the point has a near point </br>
 	 *         <code>false</code> otherwise
 	 */
-	private boolean hasAnyNearPoint(GeoPosition refPoint, List<Edge> savedEdges) {
+	public static boolean hasAnyNearPoint(GeoPosition refPoint, List<Edge> savedEdges) {
 		for (int i = 0; i < savedEdges.size(); i++) {
 			for (GeoPosition point : savedEdges.get(i).getPositions()) {
 				if (isNear(refPoint, point, combinePointsDistance)) {
@@ -565,7 +580,7 @@ public class MainController {
 		return edge;
 	}
 
-	private static boolean isNear(GeoPosition refPoint, GeoPosition point, double distance) {
+	public static boolean isNear(GeoPosition refPoint, GeoPosition point, double distance) {
 		if (getDistance(refPoint, point) < distance) {
 			return true;
 		} else {
@@ -577,16 +592,6 @@ public class MainController {
 		double deltaX = Math.abs(refPoint.getLatitude() - point.getLatitude());
 		double deltaY = Math.abs(refPoint.getLongitude() - point.getLongitude());
 		return deltaX + deltaY;
-	}
-
-	private void sumAllPoints() {
-		int i = 0;
-		List<Edge> edges = routeController.getRoute();
-		for (Edge edge : edges) {
-			i += edge.getPositions().size();
-		}
-		logger.info(i + " Points - " + edges.size() + " Edges");
-
 	}
 
 	private void mapEdgesToStreets() {

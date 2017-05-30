@@ -7,6 +7,8 @@ import java.util.Set;
 
 import org.jxmapviewer.viewer.GeoPosition;
 import org.jxmapviewer.viewer.Waypoint;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.graphhopper.util.PointList;
 
@@ -25,6 +27,8 @@ import models.HighResEdge;
  */
 public class RouteController {
 
+	static final Logger logger = LoggerFactory.getLogger(RouteController.class);
+	
 	private static RouteController instance;
 	private List<Edge> route = new ArrayList<>();
 	private List<Edge> seaRoute = new ArrayList<>();
@@ -224,7 +228,7 @@ public class RouteController {
 				result.add(edge);
 			}
 		}
-		System.out.println("PRC: " + result.size());
+//		System.out.println("PRC: " + result.size());
 		paintRoute = result;
 
 		// Sea routes
@@ -251,6 +255,16 @@ public class RouteController {
 		return ((viewportStart.getLatitude() < pos.getLatitude() && pos.getLatitude() < viewportEnd.getLatitude())
 				|| viewportStart.getLongitude() < pos.getLongitude()
 						&& pos.getLongitude() < viewportEnd.getLongitude());
+	}
+
+	public void sumAllPoints() {
+		int i = 0;
+		List<Edge> edges = getRoute();
+		for (Edge edge : edges) {
+			i += edge.getPositions().size();
+		}
+		logger.info(i + " Points - " + edges.size() + " Edges");
+	
 	}
 
 }

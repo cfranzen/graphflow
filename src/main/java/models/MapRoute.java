@@ -11,6 +11,8 @@ import org.jxmapviewer.viewer.GeoPosition;
 import main.MainController;
 
 /**
+ * Represents a visible Edge
+ * 
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */

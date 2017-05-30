@@ -32,9 +32,9 @@ import main.MainController;
 import main.RouteController;
 import models.CapacityWaypoint;
 import models.Constants;
+import newVersion.main.PaintController;
 import painter.CapacityWaypointRenderer;
 import painter.DefaultRoutePainter;
-import painter.EntityFlowPainter;
 import painter.IRoutePainter;
 import painter.SeaRoutePainter;
 
@@ -55,7 +55,7 @@ public class MyMap extends JXMapViewer {
 	private Set<Waypoint> waypoints = new HashSet<>();;
 	private WaypointPainter<Waypoint> waypointPainter;
 
-	private IRoutePainter landRoutePainter;
+	private PaintController landRoutePainter;
 	public IRoutePainter seaRoutePainter; // XXX
 
 	/**
@@ -203,7 +203,8 @@ public class MyMap extends JXMapViewer {
 
 		seaRoutePainter = new SeaRoutePainter(this);
 		// landRoutePainter = new SimpleFlowRoutePainter();
-		landRoutePainter = new EntityFlowPainter();
+		// landRoutePainter = new EntityFlowPainter();
+		landRoutePainter = PaintController.getInstance();
 		seaRoutePainter.setRouteController(routeController);
 		landRoutePainter.setRouteController(routeController);
 
@@ -216,20 +217,12 @@ public class MyMap extends JXMapViewer {
 		// Create a compound painter that uses both the route-painter and the
 		// waypoint-painter
 		List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
-		painters.add(getRoutePainter(this.getZoom()));
+		painters.add(landRoutePainter);
 		painters.add(seaRoutePainter);
 		painters.add(waypointPainter);
 
 		CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>(painters);
 		setOverlayPainter(painter);
-	}
-
-	public IRoutePainter getRoutePainter(int zoomlevel) {
-		switch (zoomlevel) {
-		case 1:
-		default:
-			return landRoutePainter;
-		}
 	}
 
 	/**

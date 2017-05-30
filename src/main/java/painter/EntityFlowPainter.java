@@ -48,10 +48,10 @@ public class EntityFlowPainter implements IRoutePainter {
 		routeController.refreshPaintRoutes(viewportStart, viewportEnd);
 
 		if (Constants.debugInfos) {
-			int size = 0;
-			for (Edge edge : routeController.getPaintRoute()) {
-				size += edge.getPositions().size();
-			}
+//			int size = 0;
+//			for (Edge edge : routeController.getPaintRoute()) {
+//				size += edge.getPositions().size();
+//			}
 			// System.out.println("Edge: " +
 			// routeController.getPaintRoute().size() + " - Points: " + size);
 			g.setColor(Color.MAGENTA);
