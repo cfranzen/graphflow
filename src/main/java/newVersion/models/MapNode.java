@@ -15,7 +15,7 @@ import models.Edge;
 public class MapNode {
 
 	private GeoPosition posi;
-	public List<Edge> edgeMap = new ArrayList<>(); // TODO !! Has to be Unique !!
+	private List<Edge> edgeMap = new ArrayList<>(); // Has to be unique 
 	public GeoPosition contactPoint = null;
 	public Long[][] capWork;
 
@@ -34,7 +34,10 @@ public class MapNode {
 	 * @param edge
 	 */
 	public void addEdge(Edge edge) {
-		edgeMap.add(edge);
+		if (!edgeMap.contains(edge)) {
+			// So we get an unique list
+			edgeMap.add(edge);
+		}
 	}
 
 	public void calcCapacityAndWorkload(int timesteps) {

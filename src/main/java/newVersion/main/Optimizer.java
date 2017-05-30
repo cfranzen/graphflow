@@ -85,7 +85,7 @@ public class Optimizer {
 			}
 		}
 		routeController.setRoute(savedEdges);
-		PaintController.flagNew = true; // TODO Refactor
+		PaintController.useNewPainter = true; // TODO Refactor
 		
 		logger.info("optimize v2-end");
 	}

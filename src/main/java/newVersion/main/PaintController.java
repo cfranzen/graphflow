@@ -22,7 +22,7 @@ public class PaintController implements Painter<JXMapViewer> {
 	private static PaintController instance;
 	private IRoutePainter painter1 = new EntityFlowPainter();
 	private NewEntityFlowPainter painter2 = new NewEntityFlowPainter();
-	public static boolean flagNew = false; // TODO refactor
+	public static boolean useNewPainter = false; // TODO refactor
 	
 	private PaintController() {
 		// NOOP
@@ -41,7 +41,7 @@ public class PaintController implements Painter<JXMapViewer> {
 	 */
 	@Override
 	public void paint(Graphics2D g, JXMapViewer map, int w, int h) {
-		if (flagNew) {
+		if (useNewPainter) {
 			painter2.paint(g, map, w, h);
 		} else {
 			painter1.paint(g, map, w, h);

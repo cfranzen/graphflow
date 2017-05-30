@@ -27,9 +27,9 @@ public class Edge {
 	public int id;
 	protected GeoPosition start;
 	protected GeoPosition dest;
+	protected int[] serviceTimes = new int[0];
 	private long[] capacites = new long[0];
 	private long[] workloads = new long[0];
-	private int[] serviceTime = new int[0];
 	private int maxServiceTime = 0;
 
 	private EdgeType type = EdgeType.TRUCK;
@@ -75,7 +75,7 @@ public class Edge {
 		this.workloads = e.workloads;
 		this.type = e.type;
 		this.info = e.info;
-		this.serviceTime = e.serviceTime;
+		this.serviceTimes = e.serviceTimes;
 		this.maxServiceTime = e.maxServiceTime;
 		calcDistance();
 	}
@@ -264,18 +264,18 @@ public class Edge {
 	}
 
 	/**
-	 * @param serviceTime
+	 * @param serviceTimes
 	 */
 	public int[] getServiceTimes() {
-		return serviceTime;
+		return serviceTimes;
 	}
 
 	/**
-	 * @param serviceTime
+	 * @param serviceTimes
 	 */
 	public double getServiceTime(int timeStep) {
-		if (timeStep < serviceTime.length) {
-			return serviceTime[timeStep];
+		if (timeStep < serviceTimes.length) {
+			return serviceTimes[timeStep];
 		} else {
 			return 1;
 		}
@@ -285,7 +285,7 @@ public class Edge {
 	 * @param serviceTime
 	 */
 	public void setServiceTime(int[] serviceTime) {
-		this.serviceTime = serviceTime;
+		this.serviceTimes = serviceTime;
 	}
 
 	/**

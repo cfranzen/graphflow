@@ -10,7 +10,6 @@ import org.jxmapviewer.viewer.GeoPosition;
 import gui.MyMap;
 import main.RouteController;
 import models.Constants;
-import models.Edge;
 import newVersion.models.MapNode;
 import newVersion.models.NodeEdge;
 import painter.DefaultRoutePainter;
@@ -53,29 +52,41 @@ public class NewEntityFlowPainter implements IRoutePainter {
 	@Override
 	public void drawRoute(Graphics2D g, MyMap map) {
 		calcOnlyVisibleEdges(g, map);
-		int entityStepCurrent = timeStep / Constants.PAINT_STEPS;
-		
-		
+		int timeStepBig = timeStep / Constants.PAINT_STEPS;
+
 		for (int i = 0; i < routeController.getRoute().size(); i++) {
-			
-			
-			NodeEdge edge = (NodeEdge) routeController.getRoute().get(i); // XXX potential problem source
+
+			NodeEdge edge = (NodeEdge) routeController.getRoute().get(i); // XXX
+																			// potential
+																			// problem
+																			// source
+
+			double serviceTime = edge.getServiceTime(timeStepBig);
+			int[] a = edge.getServiceTimes();
+
 			GeoPosition last = edge.getStart();
 			for (MapNode node : edge.getPoints()) {
-				
+
 				GeoPosition current = node.getPosition();
-				drawRoutePart(g, map, last, current, node.capWork[entityStepCurrent][0], node.capWork[entityStepCurrent][1]);
+				drawRoutePart(g, map, last, current, node.capWork[timeStepBig][0], node.capWork[timeStepBig][1]);
 				last = current;
 			}
-			
+
 		}
-		
+
 	}
 
-	private void drawRoutePart(Graphics2D g, MyMap map, GeoPosition from, GeoPosition to, long capacity, long workload) {
-		g.setColor(DefaultRoutePainter.calculateColor(workload, capacity));
-		g.setStroke(new BasicStroke(capacity / 250f));
-		
+	private Color lastCol = Color.GRAY;
+
+	private void drawRoutePart(Graphics2D g, MyMap map, GeoPosition from, GeoPosition to, long capacity,
+			long workload) {
+		// modifying the graphics component is work intensive,
+		Color curCol = DefaultRoutePainter.calculateColor(workload, capacity);
+		if (!curCol.equals(lastCol)) {
+			g.setColor(curCol);
+			g.setStroke(new BasicStroke(capacity / 250f));
+		}
+
 		DefaultRoutePainter.drawNormalLine(g, map, from, to);
 	}
 
