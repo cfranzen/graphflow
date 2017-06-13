@@ -170,7 +170,7 @@ public class MainController {
 		if (currentTime >= input.timesteps * Constants.PAINT_STEPS) {
 			currentTime = 0;
 		}
-		if (currentTime > 25 * Constants.PAINT_STEPS) { // XXX DEBUG
+		if (Constants.debugInfos && currentTime > 25 * Constants.PAINT_STEPS) { // DEBUG, nach 25 kommen viele leere Datensätze in den Testdaten
 			currentTime = 0;
 		}
 		if (currentTime % Constants.PAINT_STEPS == 0) {
@@ -292,7 +292,7 @@ public class MainController {
 				Optimizer optimizer = new Optimizer();
 				optimizer.optimize();
 
-				// optimizeEdges();
+//				 optimizeEdges();
 			}
 		});
 		t.start();

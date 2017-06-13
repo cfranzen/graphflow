@@ -31,6 +31,13 @@ public class FlowEntity {
 		this.edge = edge;
 	}
 
+	/**
+	 * Increases the time step counter and returns <code>true</code> if the
+	 * entity is under his maximum and so alive or <code>false</code> otherwise
+	 * 
+	 * @return <code>true</code> if the entity is still alive<br>
+	 *         <code>false</code> if the entity reached his maximum time to live
+	 */
 	public boolean next() {
 		currentServiceTimeStep++;
 		return currentServiceTimeStep <= maxServiceTimeSteps;

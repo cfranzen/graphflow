@@ -59,6 +59,7 @@ public class NewEntityFlowPainter implements IRoutePainter {
 		calcOnlyVisibleEdges(g, map);
 		int timeStepBig = timeStep / Constants.PAINT_STEPS;
 
+		// Every bigger time step new Entities are starting from the nodes
 		if (timeStep % Constants.PAINT_STEPS == 0) {
 			for (int i = 0; i < routeController.getRoute().size(); i++) {
 	
@@ -73,24 +74,68 @@ public class NewEntityFlowPainter implements IRoutePainter {
 			List<FlowEntity> newEntityList = new ArrayList<>();
 			for (FlowEntity flowEntity : entities) {
 				if (flowEntity.next()) {
-					drawEntity(g, map, timeStepBig, flowEntity.edge);
+
+//					drawWholeEntity(g, map, timeStepBig, flowEntity.edge);
+					
 					newEntityList.add(flowEntity);
 				} else {
-					
 				}
 			}
 			entities = newEntityList;
 		} else {
-			for (FlowEntity flowEntity : entities) {
-				drawEntity(g, map, timeStepBig, flowEntity.edge);
-			}
+		}
+		for (FlowEntity flowEntity : entities) {
+			drawPartEntity(g, map, timeStepBig, flowEntity);
 		}
 
 		
 		
 	}
 
-	private void drawEntity(Graphics2D g, MyMap map, int timeStepBig, NodeEdge edge) {
+	/**
+	 * @param g
+	 * @param map
+	 * @param timeStep2
+	 * @param edge
+	 */
+	private void drawPartEntity(Graphics2D g, MyMap map, int timeStepBig, FlowEntity entity) {
+		/*
+		 * Start: 0 - ts --> Länge nimmt zu
+		 * End: ts - end --> Länge bleibt konstant
+		 * Malen von current -> current - Länge
+		 * Länge: Fester Wert? TODO klären
+		 * 	=> (Anzahl Punkte / entity time steps / Paint steps) * ts small
+		 * 
+		 * ts: 0 - 50 (Constants.PAINT_STEPS)
+		 * 
+		 * 
+		 */
+		
+		final int LENGTH = 10;
+		
+		double pointsPerTimeStep = (double) (entity.edge.getPoints().size()) / entity.maxServiceTimeSteps / Constants.PAINT_STEPS;
+		int max = (int) (pointsPerTimeStep * (timeStep % Constants.PAINT_STEPS) + ((entity.currentServiceTimeStep-1) * (pointsPerTimeStep * Constants.PAINT_STEPS)));
+		int min = (int) Math.round(max - pointsPerTimeStep * LENGTH );
+		
+//		System.out.println("MINMAX: "+ min + " - " + max);
+		
+		min = (min >= entity.edge.getPoints().size())? entity.edge.getPoints().size() - 1 : (min < 0)? 0 : min; 
+		
+		GeoPosition last = entity.edge.getPoints().get(min).getPosition();
+		for (int i = min; i < max && i < entity.edge.getPoints().size(); i++) {
+			MapNode node = entity.edge.getPoints().get(i);
+			GeoPosition current = node.getPosition();
+			
+			drawRoutePart(g, map, last, current, node.capWork[timeStepBig][0], node.capWork[timeStepBig][1]);
+			
+			last = current;
+		}
+		
+		
+		
+	}
+
+	private void drawWholeEntity(Graphics2D g, MyMap map, int timeStepBig, NodeEdge edge) {
 		GeoPosition last = edge.getStart();
 		for (MapNode node : edge.getPoints()) {
 
