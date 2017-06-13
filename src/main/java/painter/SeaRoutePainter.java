@@ -31,9 +31,6 @@ public class SeaRoutePainter implements IRoutePainter {
 
 	private static final Logger logger = LoggerFactory.getLogger(SeaRoutePainter.class);
 
-	private static final double POINT_DISTANCE_GEO = 2.75;;
-	private static final int MAX_ZOOM_LEVEL = 17;
-
 	private int[] circleDiameter = new int[18];
 
 	private Graphics2D g;
@@ -52,10 +49,10 @@ public class SeaRoutePainter implements IRoutePainter {
 
 		// Init circle diameter array
 		GeoPosition pos = new GeoPosition(0, 0);
-		GeoPosition pcopy = new GeoPosition(pos.getLatitude() + POINT_DISTANCE_GEO,
-				pos.getLongitude() + POINT_DISTANCE_GEO);
+		GeoPosition pcopy = new GeoPosition(pos.getLatitude() + Constants.POINT_DISTANCE_GEO,
+				pos.getLongitude() + Constants.POINT_DISTANCE_GEO);
 
-		for (int i = 1; i <= MAX_ZOOM_LEVEL; i++) {
+		for (int i = 1; i <= Constants.MAX_ZOOM_LEVEL; i++) {
 			Point2D p = map.getTileFactory().geoToPixel(pos, i);
 			circleDiameter[i] = (int) Math.abs(map.getTileFactory().geoToPixel(pcopy, i).getX() - p.getX());
 		}
@@ -95,7 +92,7 @@ public class SeaRoutePainter implements IRoutePainter {
 		this.map = (MyMap) map;
 		List<Edge> route = routeController.getPaintSeaRoute();
 
-		int currentTimeStep = this.currentTimeStep / Constants.PAINT_STEPS;
+//		int currentTimeStep = this.currentTimeStep / Constants.PAINT_STEPS;
 
 		// XXX does not need to run every frame
 		calcSeaLines(route);
@@ -103,13 +100,14 @@ public class SeaRoutePainter implements IRoutePainter {
 		optimzeSeaLines(route);
 		// logger.info("Sea-Edge count: " + drawEdges.size());
 
-		g.setColor(Color.GREEN);
 		for (SeaEdge seaEdge : drawEdges) {
 			// TODO Calc load & capacity
 			if (seaEdge.getPath() != null) {
-				g.setStroke(new BasicStroke(seaEdge.getCapacity(currentTimeStep) / 500));
-				g.setColor(DefaultRoutePainter.calculateColor(seaEdge.getWorkload(currentTimeStep),
-						seaEdge.getCapacity(currentTimeStep)));
+//				g.setStroke(new BasicStroke(seaEdge.getCapacity(currentTimeStep) / 500));
+//				g.setColor(DefaultRoutePainter.calculateColor(seaEdge.getWorkload(currentTimeStep),
+//						seaEdge.getCapacity(currentTimeStep)));
+				g.setColor(Color.GRAY);
+				g.setStroke(new BasicStroke(1.2f));
 				g.draw(seaEdge.getPath());
 			}
 		}
@@ -145,7 +143,7 @@ public class SeaRoutePainter implements IRoutePainter {
 			}
 
 			for (SeaEdge seaEdge : result) {
-				long[] cap = new long[100];
+				long[] cap = new long[100]; // FIXME Depends on service time steps
 				long[] work = new long[100];
 
 				seaEdge.setCapacites(cap);

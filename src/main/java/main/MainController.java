@@ -7,7 +7,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -170,7 +169,16 @@ public class MainController {
 		if (currentTime >= input.timesteps * Constants.PAINT_STEPS) {
 			currentTime = 0;
 		}
-		if (Constants.debugInfos && currentTime > 25 * Constants.PAINT_STEPS) { // DEBUG, nach 25 kommen viele leere Datensätze in den Testdaten
+		if (Constants.debugInfos && currentTime > 25 * Constants.PAINT_STEPS) { // DEBUG,
+																				// nach
+																				// 25
+																				// kommen
+																				// viele
+																				// leere
+																				// Datensätze
+																				// in
+																				// den
+																				// Testdaten
 			currentTime = 0;
 		}
 		if (currentTime % Constants.PAINT_STEPS == 0) {
@@ -291,8 +299,6 @@ public class MainController {
 			public void run() {
 				Optimizer optimizer = new Optimizer();
 				optimizer.optimize();
-
-//				 optimizeEdges();
 			}
 		});
 		t.start();
@@ -325,175 +331,6 @@ public class MainController {
 		reducePointCount(1);
 	}
 
-	private void optimizeEdges() {
-		routeController.sumAllPoints();
-		logger.info("optimize");
-
-		List<Edge> savedEdges = combineEdges();
-		// savedEdges = splitEdges();
-		routeController.setRoute(savedEdges);
-		reducePointCount(3);
-		/*
-		 * Find nearest contact point. TODO connect to thickest part instead of
-		 * nearest. Maybe get Edge from point. </br>Every edge has to be
-		 * connected to either an other edge or a waypoint.
-		 */
-		logger.info("connect edge end points");
-		connectEndpoints(savedEdges); // TODO optimize is buggy
-		routeController.sumAllPoints();
-		logger.info("optimize-end");
-	}
-
-	private void connectEndpoints(List<Edge> savedEdges) {
-		logger.debug("Connect waypoints/edges to edges");
-		List<GeoPosition> waypoints = mapViewer.getWaypoints();
-		for (int j = 0; j < savedEdges.size(); j++) {
-			logger.info("Processed " + j + " from " + savedEdges.size());
-			Edge edge = savedEdges.get(j);
-			List<MapPoint> points = ((MapRoute) edge).getPoints();
-			MapPoint mpFirst = points.get(0);
-			MapPoint mpLast = points.get(points.size() - 1);
-
-			boolean flagFirst = false;
-			boolean flagLast = false;
-			for (GeoPosition waypoint : waypoints) {
-				if (isNear(mpFirst.getPosition(), waypoint, contactSearchDistance)) {
-					flagFirst = true;
-					break;
-				}
-			}
-			if (!flagFirst) {
-				getContactForPoint(savedEdges, j, mpFirst);
-				edge.setStart(mpFirst.contactPoint);
-				continue;
-			}
-			for (GeoPosition waypoint : waypoints) {
-				if (isNear(mpLast.getPosition(), waypoint, contactSearchDistance)) {
-					flagLast = true;
-					break;
-				}
-			}
-			if (!flagLast) {
-				getContactForPoint(savedEdges, j, mpLast);
-				edge.setDest(mpFirst.contactPoint);
-			}
-		}
-	}
-
-	private List<Edge> splitEdges() {
-		/*
-		 * Split partial Edges.
-		 * 
-		 * TODO Acces to saved Edges should be synchronized so that this step
-		 * can be parallelized.
-		 */
-		logger.info("Split partial edges into multiple");
-		List<Edge> savedEdges = Collections.synchronizedList(routeController.getRoute());
-
-		// List<Edge> refEdges = null;
-		// //XXX
-		// RecursiveTask<List<Edge>> task = new RecursiveTask<List<Edge>>() {
-		//
-		//
-		// @Override
-		// protected List<Edge> compute() {
-		//
-		// return null;
-		// }
-		// };
-		//
-
-		// Wenn zwei Punkte viel zu weit auseinander liegen wurde die Kante in
-		// der Mitte mit einer anderen zusammengelegt
-		for (int i = 0; i < savedEdges.size(); i++) {
-			List<MapPoint> points = ((MapRoute) savedEdges.get(i)).getPoints();
-			GeoPosition last = points.get(0).getPosition();
-
-			for (int j = 1; j < points.size(); j++) {
-				GeoPosition current = points.get(j).getPosition();
-				if (getDistance(last, current) > 1.2) {
-					logger.info("Split this edge into two -> " + i + "-" + j);
-					logger.info(last + " - " + current + " - " + getDistance(last, current));
-					MapRoute mapEdgeOld = new MapRoute();
-					for (MapRoute.MapPoint mapPoint : points.subList(0, j)) {
-						mapEdgeOld.addPoint(mapPoint);
-					}
-					MapRoute mapEdgeNew = new MapRoute();
-					for (MapPoint mapPoint : points.subList(j, points.size())) {
-						mapEdgeNew.addPoint(mapPoint);
-					}
-					synchronized (savedEdges) {
-						savedEdges.set(i, mapEdgeOld);
-						savedEdges.add(mapEdgeNew);
-						// TODO new taks for new edge for parallel progession
-					}
-				}
-				last = current;
-			}
-		}
-		logger.info("--> splitted in " + savedEdges.size() + " edges");
-		return savedEdges;
-	}
-
-	private List<Edge> combineEdges() {
-		// combine near points from multiple edges into one
-		// uses multiple edges at once -> linear
-		routeController.sumAllPoints();
-		List<Edge> edges = routeController.getRoute();
-		List<Edge> savedEdges = new ArrayList<>();
-		for (int i = 0; i < edges.size(); i++) {
-			MapRoute mapEdge = new MapRoute();
-			boolean flagHadContact = false;
-			for (GeoPosition point : edges.get(i).getPositions()) {
-				if (!hasAnyNearPoint(point, savedEdges)) {
-					if (flagHadContact) {
-						addMapEdge(savedEdges, mapEdge);
-						mapEdge = new MapRoute();
-						flagHadContact = false;
-					}
-
-					mapEdge.addNewPoint(point, edges);
-				} else {
-					flagHadContact = true;
-				}
-			}
-			addMapEdge(savedEdges, mapEdge);
-			logger.info("Edge " + i + " from " + edges.size() + " processed");
-		}
-		logger.info("--> combined to " + savedEdges.size() + " edges");
-		// updateView
-		routeController.setRoute(savedEdges);
-		return savedEdges;
-	}
-
-	private void addMapEdge(List<Edge> savedEdges, MapRoute mapEdge) {
-		if (mapEdge.getPositions().size() > 3) {
-			mapEdge.updateStartEnd();
-			savedEdges.add(mapEdge);
-			logger.info("Added combined edge; Count: " + savedEdges.size());
-		}
-	}
-
-	private void getContactForPoint(List<Edge> savedEdges, int j, MapPoint mp) {
-		for (int i = 0; i < savedEdges.size(); i++) {
-			// So that the edge do not connect to the same edge, the edge list
-			// has to be ordered to function.
-			if (i == j) {
-				continue;
-			}
-			double calcDistRef = contactSearchDistance;
-			for (int k = 0; k < savedEdges.get(i).getPositions().size(); k++) {
-
-				GeoPosition point = savedEdges.get(i).getPositions().get(k);
-				double calcDist = getDistance(mp.getPosition(), point);
-				// iterate through all points to find the nearest point
-				if (calcDist < calcDistRef) {
-					calcDistRef = calcDist;
-					mp.contactPoint = point;
-				}
-			}
-		}
-	}
 
 	/**
 	 * @param point

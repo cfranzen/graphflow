@@ -12,6 +12,7 @@ import org.jxmapviewer.viewer.GeoPosition;
 import gui.MyMap;
 import main.RouteController;
 import models.Constants;
+import models.Edge;
 import newVersion.models.FlowEntity;
 import newVersion.models.MapNode;
 import newVersion.models.NodeEdge;
@@ -28,7 +29,7 @@ public class NewEntityFlowPainter implements IRoutePainter {
 	private RouteController routeController;
 
 	private List<FlowEntity> entities = new ArrayList<>();
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -57,92 +58,90 @@ public class NewEntityFlowPainter implements IRoutePainter {
 	@Override
 	public void drawRoute(Graphics2D g, MyMap map) {
 		calcOnlyVisibleEdges(g, map);
+
+		for (Edge edge : routeController.getPaintRoute()) {
+			drawGreyEdgeLine(g, map, (NodeEdge) edge);
+		}
+
 		int timeStepBig = timeStep / Constants.PAINT_STEPS;
 
 		// Every bigger time step new Entities are starting from the nodes
 		if (timeStep % Constants.PAINT_STEPS == 0) {
+			// Create land entities
 			for (int i = 0; i < routeController.getRoute().size(); i++) {
-	
+
 				NodeEdge edge = (NodeEdge) routeController.getRoute().get(i);
-				int serviceTime = (int)edge.getServiceTime(timeStepBig);
-	
-				
+				int serviceTime = (int) edge.getServiceTime(timeStepBig);
+
 				FlowEntity e = new FlowEntity(serviceTime, timeStepBig, edge);
 				entities.add(e);
 			}
+			
+			// Create sea entities
+			for (int i = 0; i < routeController.getSeaRoute().size(); i++) {
+				// TODO create sea enitites
+			}
+			
 
 			List<FlowEntity> newEntityList = new ArrayList<>();
 			for (FlowEntity flowEntity : entities) {
 				if (flowEntity.next()) {
-
-//					drawWholeEntity(g, map, timeStepBig, flowEntity.edge);
-					
 					newEntityList.add(flowEntity);
-				} else {
-				}
+				} 
 			}
 			entities = newEntityList;
-		} else {
 		}
 		for (FlowEntity flowEntity : entities) {
-			drawPartEntity(g, map, timeStepBig, flowEntity);
+			drawEntity(g, map, timeStepBig, flowEntity);
 		}
 
-		
-		
 	}
 
 	/**
+	 * Draws a directed line for the given entity with a fixed length which is
+	 * in relation to the point count of the edge.
+	 * 
 	 * @param g
+	 *            the graphics component, needed for drawing lines
 	 * @param map
-	 * @param timeStep2
-	 * @param edge
+	 *            the map on which the lines should be drawn, needed for
+	 *            conversion from {@link GeoPosition} to Pixel
+	 * @param timeStepBig
+	 *            identifies the index of the nodes information for capacity and
+	 *            workload
+	 * @param entity
+	 *            the {@link FlowEntity} which should be drawn
 	 */
-	private void drawPartEntity(Graphics2D g, MyMap map, int timeStepBig, FlowEntity entity) {
-		/*
-		 * Start: 0 - ts --> Länge nimmt zu
-		 * End: ts - end --> Länge bleibt konstant
-		 * Malen von current -> current - Länge
-		 * Länge: Fester Wert? TODO klären
-		 * 	=> (Anzahl Punkte / entity time steps / Paint steps) * ts small
-		 * 
-		 * ts: 0 - 50 (Constants.PAINT_STEPS)
-		 * 
-		 * 
-		 */
-		
-		final int LENGTH = 10;
-		
-		double pointsPerTimeStep = (double) (entity.edge.getPoints().size()) / entity.maxServiceTimeSteps / Constants.PAINT_STEPS;
-		int max = (int) (pointsPerTimeStep * (timeStep % Constants.PAINT_STEPS) + ((entity.currentServiceTimeStep-1) * (pointsPerTimeStep * Constants.PAINT_STEPS)));
-		int min = (int) Math.round(max - pointsPerTimeStep * LENGTH );
-		
-//		System.out.println("MINMAX: "+ min + " - " + max);
-		
-		min = (min >= entity.edge.getPoints().size())? entity.edge.getPoints().size() - 1 : (min < 0)? 0 : min; 
-		
+	private void drawEntity(Graphics2D g, MyMap map, int timeStepBig, FlowEntity entity) {
+		final int LENGTH = 10; // Length of the entity line in relation to the
+								// edge point count
+
+		double pointsPerTimeStep = (double) (entity.edge.getPoints().size()) / entity.maxServiceTimeSteps
+				/ Constants.PAINT_STEPS;
+		int max = (int) (pointsPerTimeStep * (timeStep % Constants.PAINT_STEPS)
+				+ ((entity.currentServiceTimeStep - 1) * (pointsPerTimeStep * Constants.PAINT_STEPS)));
+		int min = (int) Math.round(max - pointsPerTimeStep * LENGTH);
+
+		// System.out.println("MINMAX: "+ min + " - " + max);
+
+		min = (min >= entity.edge.getPoints().size()) ? entity.edge.getPoints().size() - 1 : (min < 0) ? 0 : min;
+
 		GeoPosition last = entity.edge.getPoints().get(min).getPosition();
 		for (int i = min; i < max && i < entity.edge.getPoints().size(); i++) {
 			MapNode node = entity.edge.getPoints().get(i);
 			GeoPosition current = node.getPosition();
-			
+
 			drawRoutePart(g, map, last, current, node.capWork[timeStepBig][0], node.capWork[timeStepBig][1]);
-			
+
 			last = current;
 		}
-		
-		
-		
+
 	}
 
-	private void drawWholeEntity(Graphics2D g, MyMap map, int timeStepBig, NodeEdge edge) {
-		GeoPosition last = edge.getStart();
-		for (MapNode node : edge.getPoints()) {
-
-			GeoPosition current = node.getPosition();
-			drawRoutePart(g, map, last, current, node.capWork[timeStepBig][0], node.capWork[timeStepBig][1]);
-			last = current;
-		}
+	private void drawGreyEdgeLine(Graphics2D g, MyMap map, NodeEdge edge) {
+		g.setColor(Color.GRAY);
+		g.setStroke(new BasicStroke(1.2f));
+		g.draw(edge.getShape(map));
 	}
 
 	private Color lastCol = Color.GRAY;
@@ -167,10 +166,12 @@ public class NewEntityFlowPainter implements IRoutePainter {
 		routeController.refreshPaintRoutes(viewportStart, viewportEnd);
 		if (Constants.debugInfos) {
 			g.setColor(Color.MAGENTA);
-			g.fillOval((int) rect.getMinX() + 300, (int) rect.getMinY() + 150, 10, 10);
-			g.fillOval((int) rect.getMinX() + 300, (int) rect.getMaxY() - 150, 10, 10);
-			g.fillOval((int) rect.getMaxX() - 300, (int) rect.getMaxY() - 150, 10, 10);
-			g.fillOval((int) rect.getMaxX() - 300, (int) rect.getMinY() + 150, 10, 10);
+			g.drawRect((int)rect.getMinX() + 300, (int)rect.getMinY() + 150,
+					(int)rect.getMaxX() - 300 - ((int)rect.getMinX() + 300), (int)rect.getMaxY() - 150 - ((int)rect.getMinY() + 150));
+//			g.fillOval((int) rect.getMinX() + 300, (int) rect.getMinY() + 150, 10, 10);
+//			g.fillOval((int) rect.getMinX() + 300, (int) rect.getMaxY() - 150, 10, 10);
+//			g.fillOval((int) rect.getMaxX() - 300, (int) rect.getMaxY() - 150, 10, 10);
+//			g.fillOval((int) rect.getMaxX() - 300, (int) rect.getMinY() + 150, 10, 10);
 		}
 	}
 

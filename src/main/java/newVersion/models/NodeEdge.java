@@ -1,8 +1,13 @@
 package newVersion.models;
 
+import java.awt.Shape;
+import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
+import gui.MyMap;
+import models.Constants;
 import models.Edge;
 
 /**
@@ -19,6 +24,8 @@ public class NodeEdge extends Edge {
 
 	public List<MapNode> points = new ArrayList<>();
 
+	private Path2D.Double[] path = new Path2D.Double[Constants.MAX_ZOOM_LEVEL];
+	
 	/**
 	 * @param currentEdge
 	 */
@@ -37,6 +44,30 @@ public class NodeEdge extends Edge {
 
 	public MapNode get(int i) {
 		return points.get(i);
+	}
+
+	
+	
+	private Path2D.Double calculateShape(MyMap map) {
+		Path2D.Double path = new Path2D.Double();
+		Point2D p = map.getTileFactory().geoToPixel(start, map.getZoom());
+		path.moveTo(p.getX(), p.getY());
+		for (MapNode node : points) {
+			p = map.getTileFactory().geoToPixel(node.getPosition(), map.getZoom());
+			path.lineTo(p.getX(), p.getY());
+		}
+		return path;
+	}
+
+	/**
+	 * @return the {@link Shape} of the whole edge
+	 */
+	public Path2D.Double getShape(MyMap map) {
+		int zoom = map.getZoom()-1;
+		if (path[zoom] == null) {
+			path[zoom] = calculateShape(map);
+		}
+		return path[zoom];
 	}
 
 }

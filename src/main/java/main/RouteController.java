@@ -252,9 +252,9 @@ public class RouteController {
 	 */
 	private boolean pointOnScreen(GeoPosition pos, GeoPosition viewportStart, GeoPosition viewportEnd) {
 
-		return ((viewportStart.getLatitude() < pos.getLatitude() && pos.getLatitude() < viewportEnd.getLatitude())
-				|| viewportStart.getLongitude() < pos.getLongitude()
-						&& pos.getLongitude() < viewportEnd.getLongitude());
+		return ((viewportStart.getLatitude() > pos.getLatitude() && pos.getLatitude() > viewportEnd.getLatitude())
+				&& (viewportStart.getLongitude() < pos.getLongitude()
+						&& pos.getLongitude() < viewportEnd.getLongitude()));
 	}
 
 	public void sumAllPoints() {
