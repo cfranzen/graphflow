@@ -13,6 +13,7 @@ import gui.MyMap;
 import main.RouteController;
 import models.Constants;
 import models.Edge;
+import models.HighResEdge;
 import newVersion.models.FlowEntity;
 import newVersion.models.MapNode;
 import newVersion.models.NodeEdge;
@@ -68,9 +69,10 @@ public class NewEntityFlowPainter implements IRoutePainter {
 		// Every bigger time step new Entities are starting from the nodes
 		if (timeStep % Constants.PAINT_STEPS == 0) {
 			// Create land entities
-			for (int i = 0; i < routeController.getRoute().size(); i++) {
+			List<Edge> route = routeController.getPaintRoute();
+			for (int i = 0; i < route.size(); i++) {
 
-				NodeEdge edge = (NodeEdge) routeController.getRoute().get(i);
+				NodeEdge edge = (NodeEdge)route.get(i);
 				int serviceTime = (int) edge.getServiceTime(timeStepBig);
 
 				FlowEntity e = new FlowEntity(serviceTime, timeStepBig, edge);
@@ -78,8 +80,17 @@ public class NewEntityFlowPainter implements IRoutePainter {
 			}
 			
 			// Create sea entities
-			for (int i = 0; i < routeController.getSeaRoute().size(); i++) {
-				// TODO create sea enitites
+			route =  routeController.getSeaRoute();
+			for (int i = 0; i < route.size(); i++) {
+				HighResEdge he = (HighResEdge) route.get(i);
+				
+				int serviceTime = (int) he.getServiceTime(timeStepBig);
+
+				NodeEdge edge = new NodeEdge(he);
+				
+				FlowEntity e = new FlowEntity(serviceTime, timeStepBig, edge);
+//				entities.add(e);
+				
 			}
 			
 
@@ -124,8 +135,9 @@ public class NewEntityFlowPainter implements IRoutePainter {
 
 		// System.out.println("MINMAX: "+ min + " - " + max);
 
-		min = (min >= entity.edge.getPoints().size()) ? entity.edge.getPoints().size() - 1 : (min < 0) ? 0 : min;
-
+		min = (min >= entity.edge.getPoints().size()) ? entity.edge.getPoints().size() - 1 : (min < 0) ? 0 : min;;
+		
+		// Edge should contain min. 2 Positions (Start + End)
 		GeoPosition last = entity.edge.getPoints().get(min).getPosition();
 		for (int i = min; i < max && i < entity.edge.getPoints().size(); i++) {
 			MapNode node = entity.edge.getPoints().get(i);

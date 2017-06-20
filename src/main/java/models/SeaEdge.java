@@ -1,7 +1,5 @@
 package models;
 
-import java.awt.Color;
-import java.awt.Stroke;
 import java.awt.geom.Path2D;
 import java.util.HashSet;
 
@@ -17,8 +15,6 @@ import org.jxmapviewer.viewer.GeoPosition;
 public class SeaEdge extends Edge {
 
 	private Path2D path;
-	public Stroke stroke;
-	public Color color;
 	public HashSet<Integer> edgeIds = new HashSet<>();
 
 	/**
