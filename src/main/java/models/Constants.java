@@ -5,6 +5,8 @@ public class Constants {
 	// XXX for debug
 	public static boolean onlyGermany = false;
 	public static boolean debugInfos = true;
+	public static boolean debugInfosSeaEdges = false;
+	public static boolean drawOnlyViewport = true;
 
 	public static final int MAX_ZOOM_LEVEL = 17;
 	public static final double POINT_DISTANCE_GEO = 2.75;

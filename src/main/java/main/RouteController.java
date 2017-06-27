@@ -218,30 +218,32 @@ public class RouteController {
 	 * @param viewportEnd
 	 *            {@link GeoPosition} at last bottom-right pixel of the viewport
 	 */
-	public void refreshPaintRoutes(GeoPosition viewportStart, GeoPosition viewportEnd) {
-		// Land routes
-		List<Edge> result = new ArrayList<>();
-		for (Edge edge : route) {
-//			System.out.println(edge.getStart() + " + " + edge.getDest() + "_ " + viewportStart + " - " + viewportEnd);
-			if ((edge.getStart() != null && pointOnScreen(edge.getStart(), viewportStart, viewportEnd))
-					|| (edge.getDest() != null && pointOnScreen(edge.getDest(), viewportStart, viewportEnd))) {
-				result.add(edge);
+	public void excludeNonVisiblePointFromPaintRoutes(GeoPosition viewportStart, GeoPosition viewportEnd) {
+		if (Constants.drawOnlyViewport) {
+			// Land routes
+			List<Edge> result = new ArrayList<>();
+			for (Edge edge : route) {
+				if ((edge.getStart() != null && pointOnScreen(edge.getStart(), viewportStart, viewportEnd))
+						|| (edge.getDest() != null && pointOnScreen(edge.getDest(), viewportStart, viewportEnd))) {
+					result.add(edge);
+				}
 			}
-		}
-//		System.out.println("PRC: " + result.size());
-		paintRoute = result;
-
-		// Sea routes
-		result = new ArrayList<>();
-		for (Edge edge : seaRoute) {
-
-			if ((edge.getStart() != null && pointOnScreen(edge.getStart(), viewportStart, viewportEnd))
-					|| (edge.getDest() != null && pointOnScreen(edge.getDest(), viewportStart, viewportEnd))) {
-				result.add(edge);
+			paintRoute = result;
+	
+			// Sea routes
+			result = new ArrayList<>();
+			for (Edge edge : seaRoute) {
+	
+				if ((edge.getStart() != null && pointOnScreen(edge.getStart(), viewportStart, viewportEnd))
+						|| (edge.getDest() != null && pointOnScreen(edge.getDest(), viewportStart, viewportEnd))) {
+					result.add(edge);
+				}
 			}
+			paintSeaRoute = result;
+		} else {
+			paintRoute = route;
+			paintSeaRoute = seaRoute;
 		}
-		paintSeaRoute = result;
-
 	}
 
 	/**

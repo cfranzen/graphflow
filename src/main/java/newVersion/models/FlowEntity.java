@@ -1,5 +1,8 @@
 package newVersion.models;
 
+import java.awt.geom.Path2D;
+import java.util.List;
+
 import models.Edge;
 import newVersion.painter.NewEntityFlowPainter;
 
@@ -15,14 +18,20 @@ import newVersion.painter.NewEntityFlowPainter;
  */
 public class FlowEntity {
 
-	public int currentServiceTimeStep = 0;
-	public int maxServiceTimeSteps = 0;
 	public int capWorkIndex = 0;
-	public NodeEdge edge;
+	private int currentServiceTimeStep = 0;
+	private int maxServiceTimeSteps = 0;
+	private NodeEdge edge;
 
 	/**
+	 * Creates a new object of the {@link FlowEntity}-Class, which represents a
+	 * moving entity on the map.
+	 * 
 	 * @param maxServiceTimeSteps
+	 *            the time this entity needs to reach its destination.
 	 * @param capWorkIndex
+	 *            the time step when the entity starts moving to identify his
+	 *            impact on the edges.
 	 */
 	public FlowEntity(int maxServiceTimeSteps, int capWorkIndex, NodeEdge edge) {
 		super();
@@ -41,6 +50,48 @@ public class FlowEntity {
 	public boolean next() {
 		currentServiceTimeStep++;
 		return currentServiceTimeStep <= maxServiceTimeSteps;
+	}
+
+	/**
+	 * Returns the {@link List} of {@link MapNode} which the {@link FlowEntity}
+	 * passes on its way.
+	 * 
+	 * @return {@link List} of {@link MapNode}s
+	 */
+	public List<MapNode> getPoints() {
+		return edge.getPoints();
+	}
+
+	/**
+	 * Returns the maximal time the {@link FlowEntity} needs to reach its
+	 * destination.
+	 * 
+	 * @return maximal time steps as integer
+	 */
+	public int getMaxServiceTimeSteps() {
+		return maxServiceTimeSteps;
+	}
+
+	/**
+	 * Returns the current time step of the entity which can be seen as time to
+	 * life until this value reaches the number of the max service time step
+	 * variable.
+	 * 
+	 * @return the time steps this entity already lives as integer
+	 */
+	public int getCurrentServiceTimeStep() {
+		return currentServiceTimeStep;
+	}
+
+	/**
+	 * If one of the subclasses contains already a {@link Path2D} then use this
+	 * instead of simple line drawing. The {@link Path2D} should be altered for
+	 * every time step.
+	 * 
+	 * @return
+	 */
+	public Path2D.Double getPath() {
+		return null;
 	}
 
 }

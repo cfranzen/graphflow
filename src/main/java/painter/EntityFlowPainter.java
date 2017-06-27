@@ -45,7 +45,7 @@ public class EntityFlowPainter implements IRoutePainter {
 		// XXX Magic Numbers for Debug
 		GeoPosition viewportStart = map.getGeoPos(rect.getMinX() + 300, rect.getMinY() + 150);
 		GeoPosition viewportEnd = map.getGeoPos(rect.getMaxX() - 300, rect.getMaxY() - 150);
-		routeController.refreshPaintRoutes(viewportStart, viewportEnd);
+		routeController.excludeNonVisiblePointFromPaintRoutes(viewportStart, viewportEnd);
 
 		if (Constants.debugInfos) {
 //			int size = 0;
@@ -163,8 +163,8 @@ public class EntityFlowPainter implements IRoutePainter {
 			g.setColor(lineColor);
 
 			g.setStroke(new BasicStroke(4f));
-			// g.setStroke(new BasicStroke((float) (capacity / 75)));// TODO
-			// Gradient
+			// g.setStroke(new BasicStroke((float) (capacity / 75)));
+			// TODO Gradient
 		}
 		GeoPosition last = null;
 		for (int i = fromIndex; i < toIndex && i < points.size(); i++) {

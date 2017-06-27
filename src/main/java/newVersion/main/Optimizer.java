@@ -41,8 +41,16 @@ public class Optimizer {
 		routeController.sumAllPoints();
 		logger.info("optimize v2");
 		// combine edges & create almost empty map points
-		// Creats MapNodes foreach simple point in the list
-		List<Edge> edges = routeController.getRoute();
+		// Creates MapNodes for each simple point in the list
+		routeController.setRoute(optimizeGivenEdges(routeController.getRoute()));
+		logger.info("land edges done - now processing sea edges");
+		routeController.setSeaRoute(optimizeGivenEdges(routeController.getSeaRoute()));
+		PaintController.useNewPainter = true; // TODO Refactor
+		
+		logger.info("optimize v2-end");
+	}
+
+	private List<Edge> optimizeGivenEdges(List<Edge> edges) {
 		List<Edge> savedEdges = new ArrayList<>();
 		List<MapNode> savedNodes = new ArrayList<>();
 		for (int i = 0; i < edges.size(); i++) {
@@ -84,10 +92,7 @@ public class Optimizer {
 				e.printStackTrace();
 			}
 		}
-		routeController.setRoute(savedEdges);
-		PaintController.useNewPainter = true; // TODO Refactor
-		
-		logger.info("optimize v2-end");
+		return savedEdges;
 	}
 
 	/**

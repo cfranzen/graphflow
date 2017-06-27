@@ -92,7 +92,7 @@ public class SeaRoutePainter implements IRoutePainter {
 		this.map = (MyMap) map;
 		List<Edge> route = routeController.getPaintSeaRoute();
 
-//		int currentTimeStep = this.currentTimeStep / Constants.PAINT_STEPS;
+		// int currentTimeStep = this.currentTimeStep / Constants.PAINT_STEPS;
 
 		// XXX does not need to run every frame
 		calcSeaLines(route);
@@ -103,24 +103,25 @@ public class SeaRoutePainter implements IRoutePainter {
 		for (SeaEdge seaEdge : drawEdges) {
 			// TODO Calc load & capacity
 			if (seaEdge.getPath() != null) {
-//				g.setStroke(new BasicStroke(seaEdge.getCapacity(currentTimeStep) / 500));
-//				g.setColor(DefaultRoutePainter.calculateColor(seaEdge.getWorkload(currentTimeStep),
-//						seaEdge.getCapacity(currentTimeStep)));
+				// g.setStroke(new
+				// BasicStroke(seaEdge.getCapacity(currentTimeStep) / 500));
+				// g.setColor(DefaultRoutePainter.calculateColor(seaEdge.getWorkload(currentTimeStep),
+				// seaEdge.getCapacity(currentTimeStep)));
 				g.setColor(Color.GRAY);
 				g.setStroke(new BasicStroke(1.2f));
 				g.draw(seaEdge.getPath());
 			}
 		}
 
-		if (Constants.debugInfos) {
-			// drawPossibleSeaEdges();
-			// drawDebugNodeInfos();
+		if (Constants.debugInfosSeaEdges) {
+			drawPossibleSeaEdges();
+			drawDebugNodeInfos();
 		}
 
 	}
 
 	/**
-	 * 
+	 * Combine overlapping edges
 	 */
 	private void optimzeSeaLines(List<Edge> route) {
 		List<SeaEdge> result = new ArrayList<>();
@@ -143,7 +144,8 @@ public class SeaRoutePainter implements IRoutePainter {
 			}
 
 			for (SeaEdge seaEdge : result) {
-				long[] cap = new long[100]; // FIXME Depends on service time steps
+				long[] cap = new long[100]; // FIXME Depends on service time
+											// steps
 				long[] work = new long[100];
 
 				seaEdge.setCapacites(cap);
@@ -190,9 +192,9 @@ public class SeaRoutePainter implements IRoutePainter {
 		drawEdges.clear();
 
 		for (int i = 0; i < route.size(); i++) {
-			if (route.get(i) instanceof HighResEdge == false)
-				return; // TODO when refactoring SeaEdge
-						// to Edge change to "route"
+			if (route.get(i) instanceof HighResEdge == false) {
+				return;
+			}
 			HighResEdge edge = (HighResEdge) route.get(i);
 
 			GeoPosition lastPos = null;
@@ -275,7 +277,6 @@ public class SeaRoutePainter implements IRoutePainter {
 	/**
 	 * Draws all possible sea ways on the saved map instance For debugging
 	 */
-	@SuppressWarnings("unused")
 	private void drawPossibleSeaEdges() {
 		g.setColor(Color.pink);
 		List<Edge> route = MainController.getInstance().getSeaController().getEdges();
@@ -399,7 +400,6 @@ public class SeaRoutePainter implements IRoutePainter {
 		return Math.sqrt((x * x) + (y * y));
 	}
 
-	@SuppressWarnings("unused")
 	private void drawDebugNodeInfos() {
 		g.setColor(Color.red);
 		g.setFont(new Font("default", Font.BOLD, 16));

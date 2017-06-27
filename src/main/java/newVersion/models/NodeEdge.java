@@ -2,6 +2,7 @@ package newVersion.models;
 
 import java.awt.Shape;
 import java.awt.geom.Path2D;
+import java.awt.geom.Path2D.Double;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.List;
 import gui.MyMap;
 import models.Constants;
 import models.Edge;
+import models.SeaEdge;
 
 /**
  * Contains informations about which points are on this route/edge and the
@@ -24,6 +26,9 @@ public class NodeEdge extends Edge {
 
 	public List<MapNode> points = new ArrayList<>();
 
+	/**
+	 * Contains one {@link Path2D}-Object for every zoom level.
+	 */
 	private Path2D.Double[] path = new Path2D.Double[Constants.MAX_ZOOM_LEVEL];
 	
 	/**
@@ -33,7 +38,6 @@ public class NodeEdge extends Edge {
 		this.start = e.getStart();
 		this.dest = e.getDest();
 		this.serviceTimes = e.getServiceTimes();
-		
 	}
 
 	/**
