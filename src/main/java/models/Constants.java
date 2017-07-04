@@ -5,8 +5,8 @@ public class Constants {
 	// XXX for debug
 	public static boolean onlyGermany = false;
 	public static boolean debugInfos = true;
-	public static boolean debugInfosSeaEdges = false;
-	public static boolean drawOnlyViewport = true;
+	public static boolean debugInfosSeaEdges = true;
+	public static boolean drawOnlyViewport = false;
 
 	public static final int MAX_ZOOM_LEVEL = 17;
 	public static final double POINT_DISTANCE_GEO = 2.75;
@@ -18,5 +18,9 @@ public class Constants {
 	 */
 	public static final int TIME_STEP_DELAY = 75; 
 	// public static final int TIME_STEP_DELAY = 200;
+	/**
+	 * Limits the shown time steps for debug purposes
+	 */
+	public static final int MAX_TIME_STEPS = 250;
 
 }

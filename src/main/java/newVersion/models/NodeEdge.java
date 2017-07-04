@@ -7,6 +7,8 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jxmapviewer.viewer.GeoPosition;
+
 import gui.MyMap;
 import models.Constants;
 import models.Edge;
@@ -30,7 +32,7 @@ public class NodeEdge extends Edge {
 	 * Contains one {@link Path2D}-Object for every zoom level.
 	 */
 	private Path2D.Double[] path = new Path2D.Double[Constants.MAX_ZOOM_LEVEL];
-	
+
 	/**
 	 * @param currentEdge
 	 */
@@ -51,8 +53,6 @@ public class NodeEdge extends Edge {
 		return points.get(i);
 	}
 
-	
-	
 	private Path2D.Double calculateShape(MyMap map) {
 		Path2D.Double path = new Path2D.Double();
 		Point2D p = map.getTileFactory().geoToPixel(start, map.getZoom());
@@ -68,11 +68,20 @@ public class NodeEdge extends Edge {
 	 * @return the {@link Shape} of the whole edge
 	 */
 	public Path2D.Double getShape(MyMap map) {
-		int zoom = map.getZoom()-1;
+		int zoom = map.getZoom() - 1;
 		if (path[zoom] == null) {
 			path[zoom] = calculateShape(map);
 		}
 		return path[zoom];
+	}
+
+	/**
+	 * @param j
+	 * @return
+	 */
+	public GeoPosition getPosition(int j) {
+		j %= points.size();
+		return points.get(j).getPosition();
 	}
 
 }

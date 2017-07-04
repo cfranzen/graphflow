@@ -90,15 +90,7 @@ public class SeaRoutePainter implements IRoutePainter {
 	public void drawRoute(Graphics2D g, MyMap map) {
 		this.g = g;
 		this.map = (MyMap) map;
-		List<Edge> route = routeController.getPaintSeaRoute();
-
-		// int currentTimeStep = this.currentTimeStep / Constants.PAINT_STEPS;
-
-		// XXX does not need to run every frame
-		calcSeaLines(route);
-		// logger.info("Sea-Edge count: " + drawEdges.size());
-		optimzeSeaLines(route);
-		// logger.info("Sea-Edge count: " + drawEdges.size());
+		calcDrawEdges();
 
 		for (SeaEdge seaEdge : drawEdges) {
 			// TODO Calc load & capacity
@@ -118,6 +110,18 @@ public class SeaRoutePainter implements IRoutePainter {
 			drawDebugNodeInfos();
 		}
 
+	}
+
+	private void calcDrawEdges() {
+		List<Edge> route = routeController.getPaintSeaRoute();
+
+		// int currentTimeStep = this.currentTimeStep / Constants.PAINT_STEPS;
+
+		// XXX does not need to run every frame
+		calcSeaLines(route);
+		// logger.info("Sea-Edge count: " + drawEdges.size());
+		optimzeSeaLines(route);
+		// logger.info("Sea-Edge count: " + drawEdges.size());
 	}
 
 	/**

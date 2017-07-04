@@ -169,16 +169,7 @@ public class MainController {
 		if (currentTime >= input.timesteps * Constants.PAINT_STEPS) {
 			currentTime = 0;
 		}
-		if (Constants.debugInfos && currentTime > 25 * Constants.PAINT_STEPS) { // DEBUG,
-																				// nach
-																				// 25
-																				// kommen
-																				// viele
-																				// leere
-																				// Datensätze
-																				// in
-																				// den
-																				// Testdaten
+		if (Constants.debugInfos && currentTime > Constants.MAX_TIME_STEPS * Constants.PAINT_STEPS) { 
 			currentTime = 0;
 		}
 		if (currentTime % Constants.PAINT_STEPS == 0) {

@@ -136,7 +136,7 @@ public class NewEntityFlowPainter implements IRoutePainter {
 	 *            the {@link FlowEntity} which should be drawn
 	 */
 	private void drawLineEntity(Graphics2D g, MyMap map, int timeStepBig, FlowEntity entity) {
-		final int LENGTH = 10; // Length of the entity line in relation to the
+		final int LENGTH = 8; // Length of the entity line in relation to the
 								// edge point count
 
 		double pointsPerTimeStep = (double) (entity.getPoints().size()) / entity.getMaxServiceTimeSteps()

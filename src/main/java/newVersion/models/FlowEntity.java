@@ -3,6 +3,7 @@ package newVersion.models;
 import java.awt.geom.Path2D;
 import java.util.List;
 
+import gui.MyMap;
 import models.Edge;
 import newVersion.painter.NewEntityFlowPainter;
 
@@ -21,7 +22,7 @@ public class FlowEntity {
 	public int capWorkIndex = 0;
 	private int currentServiceTimeStep = 0;
 	private int maxServiceTimeSteps = 0;
-	private NodeEdge edge;
+	protected NodeEdge edge;
 
 	/**
 	 * Creates a new object of the {@link FlowEntity}-Class, which represents a
@@ -87,6 +88,7 @@ public class FlowEntity {
 	 * If one of the subclasses contains already a {@link Path2D} then use this
 	 * instead of simple line drawing. The {@link Path2D} should be altered for
 	 * every time step.
+	 * @param map 
 	 * 
 	 * @return
 	 */

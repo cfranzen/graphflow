@@ -44,7 +44,10 @@ public class Optimizer {
 		// Creates MapNodes for each simple point in the list
 		routeController.setRoute(optimizeGivenEdges(routeController.getRoute()));
 		logger.info("land edges done - now processing sea edges");
-		routeController.setSeaRoute(optimizeGivenEdges(routeController.getSeaRoute()));
+		
+		List<Edge> seaRoute = routeController.getSeaRoute();
+		
+		routeController.setSeaRoute(optimizeGivenEdges(seaRoute));
 		PaintController.useNewPainter = true; // TODO Refactor
 		
 		logger.info("optimize v2-end");
