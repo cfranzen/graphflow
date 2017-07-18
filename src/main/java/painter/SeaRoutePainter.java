@@ -3,6 +3,7 @@ package painter;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Path2D;
+import java.awt.geom.Path2D.Double;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -111,8 +112,9 @@ public class SeaRoutePainter {
 	//
 	// }
 
-	public static List<SeaEdge> calcDrawEdges(List<Edge> seaRoute) {
+	public static List<SeaEdge> calcDrawEdges(List<NodeEdge> seaRoute) {
 		map = MainController.getInstance().getMapViewer();
+		
 		initCircleDiameter(map);
 		// int currentTimeStep = this.currentTimeStep / Constants.PAINT_STEPS;
 
@@ -122,13 +124,28 @@ public class SeaRoutePainter {
 		// logger.info("Sea-Edge count: " + drawEdges.size());
 		drawEdges = optimzeSeaLines(seaRoute);
 		// logger.info("Sea-Edge count: " + drawEdges.size());
+		for (int i = 0; i < seaRoute.size(); i++) {
+			NodeEdge edge =  seaRoute.get(i);
+			for (SeaEdge seaPath : drawEdges) {
+				if (seaPath.edgeIds.contains(edge.id)) {
+					if (edge.path[map.getZoom()-1] == null) {
+						edge.path[map.getZoom()-1] =  seaPath.getPath();
+					} else {
+						edge.path[map.getZoom()-1].append(seaPath.getPath(), true);
+					}
+				}
+			}
+			
+		}
+		
+		
 		return drawEdges;
 	}
 
 	/**
 	 * Combine overlapping edges
 	 */
-	private static List<SeaEdge> optimzeSeaLines(List<Edge> seaRoute) {
+	private static List<SeaEdge> optimzeSeaLines(List<NodeEdge> seaRoute) {
 		List<SeaEdge> result = new ArrayList<>();
 		if (!drawEdges.isEmpty()) {
 			result.add(drawEdges.get(0)); // First edge cannot be compared with
@@ -197,10 +214,10 @@ public class SeaRoutePainter {
 	 * @return {@link List} of {@link SeaEdge} with calculated {@link Path2D}s,
 	 *         or an empty list if the sea data consists of the wrong type.
 	 */
-	private static List<SeaEdge> calcSeaLines(List<Edge> seaRoute) {
+	private static List<SeaEdge> calcSeaLines(List<NodeEdge> seaRoute) {
 		drawEdges.clear();
 
-		for (int i = 0; i < seaRoute.size(); i++) {
+		for (int i = 0; i < seaRoute.size(); i++) {// XXX Cast is ugly
 			if (seaRoute.get(i) instanceof NodeEdge == false) {
 				System.out.println("No instanceof NodeEdge");
 				return null;

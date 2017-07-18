@@ -66,7 +66,7 @@ public class NewEntityFlowPainter implements IRoutePainter {
 
 		for (Edge edge : routeController.getPaintRoute()) {
 			if (Constants.optimzeLandRoutes) {
-			drawGreyEdgeLine(g, map, (NodeEdge) edge);
+				drawGreyEdgeLine(g, map, (NodeEdge) edge);
 			}
 		}
 		for (Edge edge : routeController.getPaintSeaRoute()) {
@@ -90,7 +90,13 @@ public class NewEntityFlowPainter implements IRoutePainter {
 				}
 			}
 			// Create sea entities
-			List<Edge> route =  routeController.getSeaRoute();
+			List<NodeEdge> route = new ArrayList<>();
+			for (Edge nodeEdge :   routeController.getSeaRoute()) {
+				route.add((NodeEdge) nodeEdge);
+			}
+			
+			
+			// TODO Call lazy if no path element for the current zoom level is present
 			List<SeaEdge> seaPaths = SeaRoutePainter.calcDrawEdges(route);
 			
 			for (SeaEdge seaEdge : seaPaths) {
@@ -105,7 +111,7 @@ public class NewEntityFlowPainter implements IRoutePainter {
 			
 			
 			for (int i = 0; i < route.size(); i++) {
-				NodeEdge edge = (NodeEdge) route.get(i);
+				NodeEdge edge = route.get(i);
 				int serviceTime = (int) edge.getServiceTime(timeStepBig);
 				
 				List<Path2D> path = new ArrayList<>();

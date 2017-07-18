@@ -29,7 +29,7 @@ public class NodeEdge extends Edge {
 	/**
 	 * Contains one {@link Path2D}-Object for every zoom level.
 	 */
-	public Path2D.Double[] path = new Path2D.Double[Constants.MAX_ZOOM_LEVEL];
+	public Path2D[] path = new Path2D.Double[Constants.MAX_ZOOM_LEVEL];
 
 	/**
 	 * @param currentEdge
@@ -65,7 +65,7 @@ public class NodeEdge extends Edge {
 	/**
 	 * @return the {@link Shape} of the whole edge
 	 */
-	public Path2D.Double getShape(MyMap map) {
+	public Path2D getShape(MyMap map) {
 		int zoom = map.getZoom() - 1;
 		if (path[zoom] == null) {
 			path[zoom] = calculateShape(map);
