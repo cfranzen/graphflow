@@ -2,7 +2,6 @@ package newVersion.models;
 
 import java.awt.Shape;
 import java.awt.geom.Path2D;
-import java.awt.geom.Path2D.Double;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +11,6 @@ import org.jxmapviewer.viewer.GeoPosition;
 import gui.MyMap;
 import models.Constants;
 import models.Edge;
-import models.SeaEdge;
 
 /**
  * Contains informations about which points are on this route/edge and the
@@ -31,7 +29,7 @@ public class NodeEdge extends Edge {
 	/**
 	 * Contains one {@link Path2D}-Object for every zoom level.
 	 */
-	private Path2D.Double[] path = new Path2D.Double[Constants.MAX_ZOOM_LEVEL];
+	public Path2D.Double[] path = new Path2D.Double[Constants.MAX_ZOOM_LEVEL];
 
 	/**
 	 * @param currentEdge
@@ -80,6 +78,9 @@ public class NodeEdge extends Edge {
 	 * @return
 	 */
 	public GeoPosition getPosition(int j) {
+		if (j < 0) {
+				return points.get(points.size() + j).getPosition();
+		}
 		j %= points.size();
 		return points.get(j).getPosition();
 	}

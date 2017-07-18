@@ -16,9 +16,12 @@ import org.slf4j.LoggerFactory;
 
 import main.MainController;
 import main.RouteController;
+import models.Constants;
 import models.Edge;
+import models.SeaEdge;
 import newVersion.models.MapNode;
 import newVersion.models.NodeEdge;
+import painter.SeaRoutePainter;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
@@ -42,12 +45,13 @@ public class Optimizer {
 		logger.info("optimize v2");
 		// combine edges & create almost empty map points
 		// Creates MapNodes for each simple point in the list
-		routeController.setRoute(optimizeGivenEdges(routeController.getRoute()));
-		logger.info("land edges done - now processing sea edges");
+		if (Constants.optimzeLandRoutes) {
+			routeController.setRoute(optimizeGivenEdges(routeController.getRoute()));
+			logger.info("land edges done - now processing sea edges");
+		}
 		
-		List<Edge> seaRoute = routeController.getSeaRoute();
-		
-		routeController.setSeaRoute(optimizeGivenEdges(seaRoute));
+		List<Edge> seaRoute = optimizeGivenEdges(routeController.getSeaRoute());
+		routeController.setSeaRoute(seaRoute);
 		PaintController.useNewPainter = true; // TODO Refactor
 		
 		logger.info("optimize v2-end");

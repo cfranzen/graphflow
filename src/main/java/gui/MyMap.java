@@ -36,7 +36,6 @@ import newVersion.main.PaintController;
 import painter.CapacityWaypointRenderer;
 import painter.DefaultRoutePainter;
 import painter.IRoutePainter;
-import painter.SeaRoutePainter;
 
 /**
  * 
@@ -70,8 +69,9 @@ public class MyMap extends JXMapViewer {
 
 		// Default values
 		setAddressLocation(new GeoPosition(50.11, 8.68)); // Frankfurt
-		setZoom(13);
-
+		setZoom(15);
+		
+		
 		initPainters(routeController);
 
 		setMinimumSize(new Dimension(250, 250));
@@ -128,7 +128,7 @@ public class MyMap extends JXMapViewer {
 	 */
 	public void setTime(int time) {
 		landRoutePainter.setTimeStep(time);
-		seaRoutePainter.setTimeStep(time);
+//		seaRoutePainter.setTimeStep(time);
 		repaint();
 	}
 
@@ -201,11 +201,11 @@ public class MyMap extends JXMapViewer {
 	 */
 	private void initPainters(RouteController routeController) {
 
-		seaRoutePainter = new SeaRoutePainter(this);
+//		seaRoutePainter = new SeaRoutePainter(this);
 		// landRoutePainter = new SimpleFlowRoutePainter();
 		// landRoutePainter = new EntityFlowPainter();
 		landRoutePainter = PaintController.getInstance();
-		seaRoutePainter.setRouteController(routeController);
+//		seaRoutePainter.setRouteController(routeController);
 		landRoutePainter.setRouteController(routeController);
 
 		// Create a waypoint painter that takes all the waypoints
@@ -218,7 +218,7 @@ public class MyMap extends JXMapViewer {
 		// waypoint-painter
 		List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
 		painters.add(landRoutePainter);
-		painters.add(seaRoutePainter);
+//		painters.add(seaRoutePainter);
 		painters.add(waypointPainter);
 
 		CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>(painters);

@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Path2D;
+import java.awt.geom.Path2D.Double;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,13 +15,14 @@ import gui.MyMap;
 import main.RouteController;
 import models.Constants;
 import models.Edge;
-import models.HighResEdge;
 import models.SeaEdge;
 import newVersion.models.FlowEntity;
 import newVersion.models.MapNode;
 import newVersion.models.NodeEdge;
+import newVersion.models.SeaFlowEntity;
 import painter.DefaultRoutePainter;
 import painter.IRoutePainter;
+import painter.SeaRoutePainter;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
@@ -63,36 +65,59 @@ public class NewEntityFlowPainter implements IRoutePainter {
 		calcOnlyVisibleEdges(g, map);
 
 		for (Edge edge : routeController.getPaintRoute()) {
+			if (Constants.optimzeLandRoutes) {
 			drawGreyEdgeLine(g, map, (NodeEdge) edge);
+			}
 		}
 		for (Edge edge : routeController.getPaintSeaRoute()) {
-			drawGreyEdgeLine(g, map, (NodeEdge) edge);
-		}
+//			drawGreyEdgeLine(g, map, (NodeEdge) edge);
+		} 
 
 		int timeStepBig = timeStep / Constants.PAINT_STEPS;
 
 		// Every bigger time step new Entities are starting from the nodes
 		if (timeStep % Constants.PAINT_STEPS == 0) {
 			// Create land entities
-			List<Edge> route = routeController.getPaintRoute();
-			for (int i = 0; i < route.size(); i++) {
-
-				NodeEdge edge = (NodeEdge)route.get(i);
-				int serviceTime = (int) edge.getServiceTime(timeStepBig);
-
-				FlowEntity e = new FlowEntity(serviceTime, timeStepBig, edge);
-				entities.add(e);
+			if (Constants.optimzeLandRoutes) {
+				List<Edge> route = routeController.getPaintRoute();
+				for (int i = 0; i < route.size(); i++) {
+	
+					NodeEdge edge = (NodeEdge)route.get(i);
+					int serviceTime = (int) edge.getServiceTime(timeStepBig);
+	
+					FlowEntity e = new FlowEntity(serviceTime, timeStepBig, edge);
+					entities.add(e);
+				}
 			}
-			
 			// Create sea entities
-			route =  routeController.getSeaRoute();
+			List<Edge> route =  routeController.getSeaRoute();
+			List<SeaEdge> seaPaths = SeaRoutePainter.calcDrawEdges(route);
+			
+			for (SeaEdge seaEdge : seaPaths) {
+				NodeEdge edge = new NodeEdge(seaEdge);
+				for (int i = 0; i < Constants.MAX_ZOOM_LEVEL; i++) {
+					// FIXME Calc for every zoom level
+					edge.path[i] = (Double) seaEdge.getPath();
+				} 
+			
+				drawGreyEdgeLine(g, map, (NodeEdge) edge);
+			} 
+			
+			
 			for (int i = 0; i < route.size(); i++) {
 				NodeEdge edge = (NodeEdge) route.get(i);
 				int serviceTime = (int) edge.getServiceTime(timeStepBig);
-
 				
-				FlowEntity e = new FlowEntity(serviceTime, timeStepBig, edge);
+				List<Path2D> path = new ArrayList<>();
+				for (SeaEdge seaEdge : seaPaths) {
+//					if (seaEdge.edgeIds.contains(edge.id)) {
+						path.add(seaEdge.getPath());
+//					}
+				}
+				
+				SeaFlowEntity e = new SeaFlowEntity(serviceTime, timeStepBig, edge);
 				// TODO Add Points before adding entity
+				e.setPath(path);
 				entities.add(e);
 				
 			}
@@ -185,8 +210,8 @@ public class NewEntityFlowPainter implements IRoutePainter {
 	private void calcOnlyVisibleEdges(Graphics2D g, MyMap map) {
 		Rectangle rect = map.getViewportBounds();
 		// XXX Magic Numbers for Debug
-		GeoPosition viewportStart = map.getGeoPos(rect.getMinX() + 300, rect.getMinY() + 150);
-		GeoPosition viewportEnd = map.getGeoPos(rect.getMaxX() - 300, rect.getMaxY() - 150);
+		GeoPosition viewportStart = map.getGeoPos(rect.getMinX(), rect.getMinY() );
+		GeoPosition viewportEnd = map.getGeoPos(rect.getMaxX() , rect.getMaxY());
 		routeController.excludeNonVisiblePointFromPaintRoutes(viewportStart, viewportEnd);
 		if (Constants.debugInfos && Constants.drawOnlyViewport) {
 			g.setColor(Color.MAGENTA);

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package interactiveWaypoints;
 
 /**
@@ -18,8 +15,6 @@ import java.awt.event.MouseListener;
 
 /**
  * A waypoint that is represented by a button on the map.
- *
- * @author Daniel Stahr
  */
 public class SwingWaypoint extends DefaultWaypoint {
 	private final JButton button;

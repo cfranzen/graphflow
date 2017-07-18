@@ -20,7 +20,6 @@ import org.jxmapviewer.viewer.WaypointPainter;
  * "Paints" the Swing waypoints. In fact, just takes care of correct positioning
  * of the representing button.
  *
- * @author Daniel Stahr
  */
 public class SwingWaypointOverlayPainter extends WaypointPainter<SwingWaypoint> {
 
