@@ -1,9 +1,7 @@
 package painter;
 
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Path2D;
-import java.awt.geom.Path2D.Double;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,64 +55,9 @@ public class SeaRoutePainter {
 		}
 	}
 
-	// /*
-	// * (non-Javadoc)
-	// *
-	// * @see gui.IRoutePainter#setTimeStep(int)
-	// */
-	// @Override
-	// public void setTimeStep(int time) {
-	// currentTimeStep = time;
-	// }
-
-	// /*
-	// * (non-Javadoc)
-	// *
-	// * @see painter.IRoutePainter#setRoute(java.util.List)
-	// */
-	// @Override
-	// public void setRouteController(RouteController routeController) {
-	// this.routeController = routeController;
-	//
-	// }
-	//
-	// /**
-	// * @param g
-	// * the graphics object
-	// * @param map
-	// * the map
-	// */
-	// @Override
-	// @Deprecated
-	// public void drawRoute(Graphics2D g, MyMap map) {
-	// this.g = g;
-	// this.map = (MyMap) map;
-	//// calcDrawEdges(); // TODO broken / old
-	//
-	// for (SeaEdge seaEdge : drawEdges) {
-	// // TODO Calc load & capacity
-	// if (seaEdge.getPath() != null) {
-	// // g.setStroke(new
-	// // BasicStroke(seaEdge.getCapacity(currentTimeStep) / 500));
-	// //
-	// g.setColor(DefaultRoutePainter.calculateColor(seaEdge.getWorkload(currentTimeStep),
-	// // seaEdge.getCapacity(currentTimeStep)));
-	// g.setColor(Color.GRAY);
-	// g.setStroke(new BasicStroke(1.2f));
-	// g.draw(seaEdge.getPath());
-	// }
-	// }
-	//
-	// if (Constants.debugInfosSeaEdges) {
-	// drawPossibleSeaEdges();
-	// drawDebugNodeInfos();
-	// }
-	//
-	// }
-
 	public static List<SeaEdge> calcDrawEdges(List<NodeEdge> seaRoute) {
 		map = MainController.getInstance().getMapViewer();
-		
+
 		initCircleDiameter(map);
 		// int currentTimeStep = this.currentTimeStep / Constants.PAINT_STEPS;
 
@@ -122,23 +65,9 @@ public class SeaRoutePainter {
 		drawEdges = calcSeaLines(seaRoute);
 
 		// logger.info("Sea-Edge count: " + drawEdges.size());
-		drawEdges = optimzeSeaLines(seaRoute);
-		// logger.info("Sea-Edge count: " + drawEdges.size());
-		for (int i = 0; i < seaRoute.size(); i++) {
-			NodeEdge edge =  seaRoute.get(i);
-			for (SeaEdge seaPath : drawEdges) {
-				if (seaPath.edgeIds.contains(edge.id)) {
-					if (edge.path[map.getZoom()-1] == null) {
-						edge.path[map.getZoom()-1] =  seaPath.getPath();
-					} else {
-						edge.path[map.getZoom()-1].append(seaPath.getPath(), true);
-					}
-				}
-			}
-			
-		}
-		
-		
+//		drawEdges = optimzeSeaLines(seaRoute);
+//		 logger.info("Sea-Edge count: " + drawEdges.size());
+
 		return drawEdges;
 	}
 
@@ -217,13 +146,8 @@ public class SeaRoutePainter {
 	private static List<SeaEdge> calcSeaLines(List<NodeEdge> seaRoute) {
 		drawEdges.clear();
 
-		for (int i = 0; i < seaRoute.size(); i++) {// XXX Cast is ugly
-			if (seaRoute.get(i) instanceof NodeEdge == false) {
-				System.out.println("No instanceof NodeEdge");
-				return null;
-			}
-
-			NodeEdge edge = (NodeEdge) seaRoute.get(i);
+		for (int i = 0; i < seaRoute.size(); i++) {
+			NodeEdge edge = seaRoute.get(i);
 
 			GeoPosition lastPos = null;
 			Point2D lastCircleP = null;

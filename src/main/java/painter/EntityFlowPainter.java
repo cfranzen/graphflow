@@ -126,7 +126,7 @@ public class EntityFlowPainter implements IRoutePainter {
 	/**
 	 * @param g
 	 * @param map
-	 * @param points
+	 * @param nodes
 	 * @param from
 	 * @param to
 	 */

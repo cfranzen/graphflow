@@ -187,7 +187,7 @@ public class MyMap extends JXMapViewer {
 	private void setUpTileFactory() {
 		TileFactoryInfo info = new OSMTileFactoryInfo();
 		DefaultTileFactory tileFactory = new DefaultTileFactory(info);
-		tileFactory.setThreadPoolSize(8);
+		tileFactory.setThreadPoolSize(4);
 		setTileFactory(tileFactory);
 
 		// Setup local file cache

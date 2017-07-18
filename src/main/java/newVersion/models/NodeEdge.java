@@ -9,7 +9,6 @@ import java.util.List;
 import org.jxmapviewer.viewer.GeoPosition;
 
 import gui.MyMap;
-import models.Constants;
 import models.Edge;
 
 /**
@@ -24,12 +23,14 @@ import models.Edge;
  */
 public class NodeEdge extends Edge {
 
-	public List<MapNode> points = new ArrayList<>();
+	public List<MapNode> nodes = new ArrayList<>();
 
 	/**
 	 * Contains one {@link Path2D}-Object for every zoom level.
 	 */
-	public Path2D[] path = new Path2D.Double[Constants.MAX_ZOOM_LEVEL];
+	// public Path2D[] path = new Path2D.Double[Constants.MAX_ZOOM_LEVEL];
+	public List<Path2D> path = new ArrayList<>();
+	private int pathZoomLevel = 0;
 
 	/**
 	 * @param currentEdge
@@ -44,21 +45,23 @@ public class NodeEdge extends Edge {
 	 * @return
 	 */
 	public List<MapNode> getPoints() {
-		return points;
+		return nodes;
 	}
 
 	public MapNode get(int i) {
-		return points.get(i);
+		return nodes.get(i);
 	}
 
-	private Path2D.Double calculateShape(MyMap map) {
+	private Path2D calculateShape(MyMap map) {
 		Path2D.Double path = new Path2D.Double();
 		Point2D p = map.getTileFactory().geoToPixel(start, map.getZoom());
 		path.moveTo(p.getX(), p.getY());
-		for (MapNode node : points) {
+		for (MapNode node : nodes) {
 			p = map.getTileFactory().geoToPixel(node.getPosition(), map.getZoom());
 			path.lineTo(p.getX(), p.getY());
 		}
+		p = map.getTileFactory().geoToPixel(dest, map.getZoom());
+		path.lineTo(p.getX(), p.getY());
 		return path;
 	}
 
@@ -66,11 +69,13 @@ public class NodeEdge extends Edge {
 	 * @return the {@link Shape} of the whole edge
 	 */
 	public Path2D getShape(MyMap map) {
-		int zoom = map.getZoom() - 1;
-		if (path[zoom] == null) {
-			path[zoom] = calculateShape(map);
+		if (path.isEmpty() || map.getZoom() != pathZoomLevel) {
+			path.clear();
+			path.add(calculateShape(map));
 		}
-		return path[zoom];
+		Path2D result = new Path2D.Double();
+		path.stream().forEach(p -> result.append(p, false));
+		return result;
 	}
 
 	/**
@@ -79,10 +84,39 @@ public class NodeEdge extends Edge {
 	 */
 	public GeoPosition getPosition(int j) {
 		if (j < 0) {
-				return points.get(points.size() + j).getPosition();
+			return nodes.get(nodes.size() + j).getPosition();
 		}
-		j %= points.size();
-		return points.get(j).getPosition();
+		j %= nodes.size();
+		return nodes.get(j).getPosition();
+	}
+
+	/**
+	 * @param map
+	 * @return
+	 */
+	public List<Path2D> getPath() {
+		return path;
+	}
+
+	/**
+	 * @param path
+	 *            the path to set
+	 */
+	public void setPath(List<Path2D> path, int zoomLevel) {
+		this.path = path;
+		this.pathZoomLevel = zoomLevel;
+	}
+
+	public void addToPath(List<Path2D> path) {
+		this.path.addAll(path);
+	}
+
+	public void addToPath(Path2D path) {
+		this.path.add(path);
+	}
+
+	public void setPathZoom(int zoomLevel) {
+		this.pathZoomLevel = zoomLevel;
 	}
 
 }

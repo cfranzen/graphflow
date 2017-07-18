@@ -33,7 +33,7 @@ public class InfoMouseInputListener extends MouseInputAdapter {
 	public void mouseClicked(MouseEvent e) {
 		if (e.getButton() == MouseEvent.BUTTON3) {
 			showTooltip = !showTooltip;
-//			controller.getSeaController().addNewNode(controller.getMapViewer().getCoordsForMouse(e));
+			controller.getSeaController().addNewNode(controller.getMapViewer().getCoordsForMouse(e));
 		}
 		if (e.getButton() == MouseEvent.BUTTON2) {
 			controller.getSeaController().printNodes();

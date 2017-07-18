@@ -3,7 +3,6 @@ package newVersion.models;
 import java.awt.geom.Path2D;
 import java.util.List;
 
-import gui.MyMap;
 import models.Edge;
 import newVersion.painter.NewEntityFlowPainter;
 
@@ -22,7 +21,7 @@ public class FlowEntity {
 	public int capWorkIndex = 0;
 	private int currentServiceTimeStep = 0;
 	private int maxServiceTimeSteps = 0;
-	protected NodeEdge edge;
+	public NodeEdge edge;
 
 	/**
 	 * Creates a new object of the {@link FlowEntity}-Class, which represents a
@@ -92,7 +91,7 @@ public class FlowEntity {
 	 * 
 	 * @return
 	 */
-	public Path2D.Double getPath() {
+	public Path2D getPath() {
 		return null;
 	}
 

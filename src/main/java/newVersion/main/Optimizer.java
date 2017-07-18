@@ -18,10 +18,8 @@ import main.MainController;
 import main.RouteController;
 import models.Constants;
 import models.Edge;
-import models.SeaEdge;
 import newVersion.models.MapNode;
 import newVersion.models.NodeEdge;
-import painter.SeaRoutePainter;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
@@ -52,7 +50,7 @@ public class Optimizer {
 		
 		List<Edge> seaRoute = optimizeGivenEdges(routeController.getSeaRoute());
 		routeController.setSeaRoute(seaRoute);
-		PaintController.useNewPainter = true; // TODO Refactor
+		PaintController.useNewPainter(); // TODO Refactor
 		
 		logger.info("optimize v2-end");
 	}
@@ -70,7 +68,8 @@ public class Optimizer {
 					savedNodes.add(node);
 				}
 				node.addEdge(currentEdge);
-				mapEdge.points.add(node);
+				mapEdge.nodes.add(node);
+				mapEdge.id = i;
 			}
 			savedEdges.add(mapEdge);
 			logger.info("Edge " + i + " from " + edges.size() + " processed");

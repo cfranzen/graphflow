@@ -426,7 +426,9 @@ public class MainController {
 		List<Edge> land = routeController.getRoute();
 		List<Edge> sea = routeController.getSeaRoute();
 		List<Edge> route = new ArrayList<>(land.size() + sea.size());
-		route.addAll(land);
+		if (Constants.optimzeLandRoutes) {
+			route.addAll(land);
+		}
 		route.addAll(sea);
 
 		for (Edge edge : route) {

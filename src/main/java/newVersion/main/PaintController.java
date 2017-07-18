@@ -8,6 +8,7 @@ import java.awt.Graphics2D;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.painter.Painter;
 
+import main.MainController;
 import main.RouteController;
 import newVersion.painter.NewEntityFlowPainter;
 import painter.EntityFlowPainter;
@@ -22,7 +23,7 @@ public class PaintController implements Painter<JXMapViewer> {
 	private static PaintController instance;
 	private IRoutePainter painter1 = new EntityFlowPainter();
 	private NewEntityFlowPainter painter2 = new NewEntityFlowPainter();
-	public static boolean useNewPainter = false; // TODO refactor
+	private static boolean useNewPainter = false; // TODO refactor
 	
 	private PaintController() {
 		// NOOP
@@ -61,4 +62,9 @@ public class PaintController implements Painter<JXMapViewer> {
 		painter2.setTimeStep(time);
 	}
 
+	public static void useNewPainter() {
+		useNewPainter = true;
+		MainController.getInstance().getMapViewer().repaint();
+	}
+	
 }
