@@ -7,8 +7,11 @@ public class Constants {
 	public static boolean debugInfos = false;
 	public static boolean debugInfosSeaEdges = false;
 	public static boolean drawOnlyViewport = false;
-	public static boolean optimzeLandRoutes = true;
-
+	public static boolean optimzeLandRoutes = false;
+	public static boolean showTimesteps = true;
+	public static boolean drawLineWhenEnitityStarts = true;
+	
+	
 	public static final int MAX_ZOOM_LEVEL = 17;
 	public static final double POINT_DISTANCE_GEO = 2.75;
 	public static final int PAINT_STEPS = 50;
@@ -24,5 +27,6 @@ public class Constants {
 	 * Limits the shown time steps for debug purposes
 	 */
 	public static final int MAX_TIME_STEPS = 250;
+	public static final double SEA_NODE_MAX_DISTANCE = 300000;
 
 }

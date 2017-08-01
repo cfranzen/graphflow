@@ -2,8 +2,8 @@ package newVersion.models;
 
 import java.awt.geom.Path2D;
 import java.awt.geom.Path2D.Double;
-import java.util.List;
 
+import models.Constants;
 import models.Edge;
 import newVersion.painter.NewEntityFlowPainter;
 
@@ -41,9 +41,9 @@ public class SeaFlowEntity extends FlowEntity {
 //		System.out.println(minMax[0] + " . " + minMax[1]);
 		for(int i = minMax[0]; i < edge.getPath().size() && i <= minMax[1]; i++ ) {
 			Path2D path2d = edge.getPath().get(i);
-			path.append(path2d, false);
+			path.append(path2d, Constants.drawLineWhenEnitityStarts);
 		}
-
+		capWorkIndex = minMax[1];
 		return path;
 	}
 }

@@ -54,8 +54,8 @@ public class MyMap extends JXMapViewer {
 	private Set<Waypoint> waypoints = new HashSet<>();;
 	private WaypointPainter<Waypoint> waypointPainter;
 
-	private PaintController landRoutePainter;
-	public IRoutePainter seaRoutePainter; // XXX
+	private PaintController routePainter;
+	public IRoutePainter seaRoutePainter; // XXX obsolet
 
 	/**
 	 * Default Constructor, initializes the tile factory.
@@ -127,8 +127,8 @@ public class MyMap extends JXMapViewer {
 	 *            to set
 	 */
 	public void setTime(int time) {
-		landRoutePainter.setTimeStep(time);
-//		seaRoutePainter.setTimeStep(time);
+		routePainter.setTimeStep(time);
+		invalidate();
 		repaint();
 	}
 
@@ -144,6 +144,10 @@ public class MyMap extends JXMapViewer {
 		return getTileFactory().pixelToGeo(point, getZoom());
 	}
 
+	public Point2D getPixelPos(GeoPosition pos) {
+		return getTileFactory().geoToPixel(pos, getZoom());
+	}
+	
 	/**
 	 * This method is called automatically when the mouse is over the component.
 	 * Based on the location of the event, we detect if we are over one of the
@@ -204,9 +208,9 @@ public class MyMap extends JXMapViewer {
 //		seaRoutePainter = new SeaRoutePainter(this);
 		// landRoutePainter = new SimpleFlowRoutePainter();
 		// landRoutePainter = new EntityFlowPainter();
-		landRoutePainter = PaintController.getInstance();
+		routePainter = PaintController.getInstance();
 //		seaRoutePainter.setRouteController(routeController);
-		landRoutePainter.setRouteController(routeController);
+		routePainter.setRouteController(routeController);
 
 		// Create a waypoint painter that takes all the waypoints
 		// TODO Refactor, do not use jmapviewers waypoint class
@@ -217,7 +221,7 @@ public class MyMap extends JXMapViewer {
 		// Create a compound painter that uses both the route-painter and the
 		// waypoint-painter
 		List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
-		painters.add(landRoutePainter);
+		painters.add(routePainter);
 //		painters.add(seaRoutePainter);
 		painters.add(waypointPainter);
 

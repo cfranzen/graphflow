@@ -1,5 +1,9 @@
 package painter;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
@@ -26,7 +30,7 @@ public class SeaRoutePainter {
 
 	private static final Logger logger = LoggerFactory.getLogger(SeaRoutePainter.class);
 
-	private static int[] circleDiameter = new int[18];
+	public static int[] circleDiameter = new int[18];
 
 	private static MyMap map;
 
@@ -37,7 +41,7 @@ public class SeaRoutePainter {
 	 * Initalizes the circleDiameter/zoomlevel list.
 	 */
 	public SeaRoutePainter(MyMap map) {
-		// this.map = map;
+		SeaRoutePainter.map = map;
 
 		initCircleDiameter(map);
 
@@ -65,8 +69,8 @@ public class SeaRoutePainter {
 		drawEdges = calcSeaLines(seaRoute);
 
 		// logger.info("Sea-Edge count: " + drawEdges.size());
-//		drawEdges = optimzeSeaLines(seaRoute);
-//		 logger.info("Sea-Edge count: " + drawEdges.size());
+		// drawEdges = optimzeSeaLines(seaRoute);
+		// logger.info("Sea-Edge count: " + drawEdges.size());
 
 		return drawEdges;
 	}
@@ -95,9 +99,8 @@ public class SeaRoutePainter {
 			}
 
 			for (SeaEdge seaEdge : result) {
-				long[] cap = new long[100]; // FIXME Depends on service time
-											// steps
-				long[] work = new long[100];
+				long[] cap = new long[Constants.MAX_TIME_STEPS]; 
+				long[] work = new long[Constants.MAX_TIME_STEPS];
 
 				seaEdge.setCapacites(cap);
 				seaEdge.setWorkload(work);
@@ -227,29 +230,40 @@ public class SeaRoutePainter {
 		return drawEdges;
 	}
 
-	// /**
-	// * Draws all possible sea ways on the saved map instance For debugging
-	// */
-	// private void drawPossibleSeaEdges() {
-	// g.setColor(Color.pink);
-	// List<Edge> route =
-	// MainController.getInstance().getSeaController().getEdges();
-	// for (Edge edge : route) {
-	// GeoPosition last = null;
-	// for (GeoPosition pos : edge.getPositions()) {
-	// if (last == null) {
-	// last = pos;
-	// continue;
-	// }
-	// if (checkEquatorEdge(last, pos)) {
-	// drawSimpleEquatorEdge(last, pos);
-	// } else {
-	// DefaultRoutePainter.drawNormalLine(g, map, last, pos);
-	// last = pos;
-	// }
-	// }
-	// }
-	// }
+	/**
+	 * Draws all possible sea ways on the saved map instance For debugging
+	 */
+	public static void drawPossibleSeaEdges(Graphics2D g) {
+		g.setStroke(new BasicStroke(2));
+		g.setColor(Color.pink);
+		List<Edge> route = MainController.getInstance().getSeaController().getEdges();
+
+		// GeoPosition p1 = new GeoPosition(49.55372551347579, -22.587890625);
+
+		for (Edge edge : route) {
+
+			// // pos=[49.55372551347579, -22.587890625] -> 266057 300000km
+			// if (edge.getStart().equals(p1)) {
+			// System.out.println(edge.getGeoDistance() + " PING");
+			// }
+			//
+
+			GeoPosition last = null;
+			for (GeoPosition pos : edge.getPositions()) {
+				if (last == null) {
+					last = pos;
+					continue;
+				}
+				if (checkEquatorEdge(last, pos)) {
+					drawSimpleEquatorEdge(g, last, pos);
+				} else {
+					DefaultRoutePainter.drawNormalLine(g, map, last, pos);
+					last = pos;
+				}
+			}
+		}
+		drawDebugNodeInfos(g);
+	}
 
 	/**
 	 * see {@link #getCirclePoint(Point2D, Point2D)}
@@ -285,6 +299,14 @@ public class SeaRoutePainter {
 		return map.getTileFactory().pixelToGeo(point, map.getZoom());
 	}
 
+	private static Point2D getCirclePoint(Point2D p1, Point2D p2) {
+		return getCirclePoint(p1, p2, circleDiameter[map.getZoom()] / 2);
+	}
+
+	public static Point2D getCirclePoint(GeoPosition p1, GeoPosition p2, double r) {
+		return getCirclePoint(map.getPixelPos(p1), map.getPixelPos(p2), r);
+	}
+	
 	/**
 	 * Calculates the crossing point from the line between p1 and p2, and the
 	 * circle which has p2 as center and the value of the member variable
@@ -294,11 +316,12 @@ public class SeaRoutePainter {
 	 *            startpoint line
 	 * @param p2
 	 *            center of circle
+	 * @param r
+	 *            radius of the circle
 	 * @return crossing {@link Point2D} of line and circle.
 	 */
-	private static Point2D getCirclePoint(Point2D p1, Point2D p2) {
+	public static Point2D getCirclePoint(Point2D p1, Point2D p2, double r) {
 		// // gerade: y = mg * x + b | mg=y2-y1/x2-x1, b = y1
-		double r = circleDiameter[map.getZoom()] / 2;
 
 		double x1 = p1.getX();
 		double y1 = p1.getY();
@@ -354,61 +377,69 @@ public class SeaRoutePainter {
 		return Math.sqrt((x * x) + (y * y));
 	}
 
-	// private void drawDebugNodeInfos() {
-	// g.setColor(Color.red);
-	// g.setFont(new Font("default", Font.BOLD, 16));
-	// for (Edge edge :
-	// MainController.getInstance().getSeaController().getEdges()) {
-	// GeoPosition pos = edge.getDest();
-	// Point2D p = convertGeo(pos);
-	//
-	// int diameter = circleDiameter[map.getZoom()];
-	// g.drawOval((int) (p.getX() - (diameter / 2)), (int) (p.getY() - (diameter
-	// / 2)), diameter, diameter);
-	//
-	// final int circle = 4;
-	// g.fillOval((int) (p.getX() - (circle / 2)), (int) (p.getY() - (circle /
-	// 2)), circle, circle);
-	//
-	// if (edge.getInfo() != null) {
-	// g.drawString(edge.getInfo(), (int) p.getX() + 15, (int) p.getY());
-	// }
-	// }
-	//
-	// }
+	private static void drawDebugNodeInfos(Graphics2D g) {
+		g.setColor(Color.red);
+		g.setFont(new Font("default", Font.BOLD, 16));
+		for (Edge edge : MainController.getInstance().getSeaController().getEdges()) {
+			GeoPosition pos = edge.getDest();
+			Point2D p = convertGeo(pos);
+
+			int diameter = circleDiameter[map.getZoom()];
+			g.drawOval((int) (p.getX() - (diameter / 2)), (int) (p.getY() - (diameter / 2)), diameter, diameter);
+
+			final int circle = 4;
+			g.fillOval((int) (p.getX() - (circle / 2)), (int) (p.getY() - (circle / 2)), circle, circle);
+
+			if (edge.getInfo() != null) {
+				g.drawString(edge.getInfo(), (int) p.getX() + 15, (int) p.getY());
+			}
+		}
+
+	}
 
 	private static boolean checkEquatorEdge(GeoPosition point, GeoPosition last) {
 		return ((last.getLongitude() > 90) && (point.getLongitude() < -30)
 				|| (last.getLongitude() < -30) && (point.getLongitude() > 90));
 	}
 
-	// /**
-	// * @return
-	// *
-	// */
-	// private Point2D[] drawSimpleEquatorEdge(GeoPosition from, GeoPosition to)
-	// {
-	// // init vars
-	// GeoPosition pos1 = from;
-	// GeoPosition pos2 = to;
-	//
-	// if (from.getLongitude() > 90) {
-	// pos1 = from;
-	// pos2 = to;
-	// } else {
-	// pos1 = to;
-	// pos2 = from;
-	// }
-	//
-	// // draw first part
-	// GeoPosition pointPos = new GeoPosition(pos2.getLatitude(), (360 +
-	// pos2.getLongitude()));
-	// DefaultRoutePainter.drawNormalLine(g, map, pos1, pointPos);
-	//
-	// // draw second part
-	// pointPos = new GeoPosition(pos1.getLatitude(), (-360 +
-	// pos1.getLongitude()));
-	// return DefaultRoutePainter.drawNormalLine(g, map, pos2, pointPos);
-	// }
+	private static Point2D[] drawSimpleEquatorEdge(Graphics2D g, GeoPosition from, GeoPosition to) {
+		// init vars
+		GeoPosition pos1 = from;
+		GeoPosition pos2 = to;
+
+		if (from.getLongitude() > 90) {
+			pos1 = from;
+			pos2 = to;
+		} else {
+			pos1 = to;
+			pos2 = from;
+		}
+
+		// draw first part
+		GeoPosition pointPos = new GeoPosition(pos2.getLatitude(), (360 + pos2.getLongitude()));
+		DefaultRoutePainter.drawNormalLine(g, map, pos1, pointPos);
+
+		// draw second part
+		pointPos = new GeoPosition(pos1.getLatitude(), (-360 + pos1.getLongitude()));
+		return DefaultRoutePainter.drawNormalLine(g, map, pos2, pointPos);
+	}
+
+	/**
+	 * @param d
+	 * @return
+	 */
+	public static double circleDiameterFaktor(double d) {
+		return circleDiameter[map.getZoom()] * d;
+	}
+
+	/**
+	 * @param pos
+	 * @param pos2
+	 * @param circleDiameterFaktor
+	 * @return
+	 */
+	public static GeoPosition getCirclePointAsGeo(GeoPosition pos, GeoPosition pos2, double r) {
+		return map.getGeoPos(getCirclePoint(pos, pos2, r));
+	}
 
 }

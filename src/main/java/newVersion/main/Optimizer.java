@@ -9,6 +9,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.jxmapviewer.viewer.GeoPosition;
 import org.slf4j.Logger;
@@ -39,6 +41,7 @@ public class Optimizer {
 	}
 
 	public void optimize() {
+		
 		routeController.sumAllPoints();
 		logger.info("optimize v2");
 		// combine edges & create almost empty map points
@@ -52,6 +55,7 @@ public class Optimizer {
 		routeController.setSeaRoute(seaRoute);
 		PaintController.useNewPainter(); // TODO Refactor
 		
+		routeController.sumAllPoints();
 		logger.info("optimize v2-end");
 	}
 
@@ -76,7 +80,8 @@ public class Optimizer {
 		}
 
 		logger.info("Precalculate Capacity and Workload");
-		ExecutorService service = Executors.newCachedThreadPool();
+		ExecutorService service = //Executors.newCachedThreadPool();
+		Executors.newFixedThreadPool(10);
 		// for each map point, calc work&cap
 		final int timesteps = edges.get(0).getCapacites().length;
 		List<Future<?>> futures = new ArrayList<>();
@@ -86,16 +91,26 @@ public class Optimizer {
 			}));
 		}
 		logger.info("Futures generated, wait for completition");
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		for (int i = 0; i < futures.size(); i++) {
 			Future<?> future = futures.get(i);
 			try {
-				future.get();
-				if (i % 100 == 0) {
+				
+				future.get(200, TimeUnit.MILLISECONDS);
+				if (i % 500 == 0) {
 					logger.info("Computed CapWork for Point " + i + " from " + futures.size());
 				}
 			} catch (InterruptedException | ExecutionException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} catch (TimeoutException e) {
+				// TODO Auto-generated catch block
+				logger.error("Future Timeout" + e.getMessage());
 			}
 		}
 		return savedEdges;

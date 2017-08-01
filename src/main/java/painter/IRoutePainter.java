@@ -16,7 +16,7 @@ import main.RouteController;
  */
 public interface IRoutePainter extends Painter<JXMapViewer> {
 
-	boolean antiAlias = true;
+	boolean antiAlias = false;
 
 	/**
 	 * @param route

@@ -1,5 +1,6 @@
 package sea;
 
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,7 +19,10 @@ import org.slf4j.LoggerFactory;
 
 import com.syncrotess.pathfinder.model.entity.ServiceType;
 
+import gui.MyMap;
+import models.Constants;
 import models.Edge;
+import painter.SeaRoutePainter;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
@@ -38,17 +42,20 @@ public class SeaController {
 	private List<Edge> edges = new ArrayList<>(); // represents the ways on the sea
 	
 	private int idCounter = 0;
+
 	
-	private SeaController() {
-		// noop
+	private SeaRoutePainter seaRoutePainter; // TODO move used methods in this class
+	
+	private SeaController(MyMap map) {
+		seaRoutePainter = new SeaRoutePainter(map);
 	}
 	
 	/**
 	 * @return
 	 */
-	public static SeaController getInstance() {
+	public static SeaController getInstance(MyMap map) {
 		if (instance == null) {
-			instance = new SeaController();
+			instance = new SeaController(map);
 		}
 		return instance;
 	}
@@ -101,16 +108,35 @@ public class SeaController {
 	
 	public List<Edge> createEdges() {
 		List<Edge> result = new ArrayList<>();
-		for (SeaNode seaNode : points) {
+//		for (SeaNode seaNode : points) {
+		for (int i = 0; i < points.size(); i++) {
+			SeaNode seaNode = points.get(i);
 			for (Long pointref : seaNode.edges) {
 				SeaNode des = getPosById(pointref);
-				Edge edge = new Edge(seaNode.pos, des.pos);
+				GeoPosition from = seaNode.pos;
+//				while (Edge.calcDistance(from, des.pos) > Constants.SEA_NODE_MAX_DISTANCE) {
+//					GeoPosition pos = SeaRoutePainter.getCirclePointAsGeo(from, des.pos, SeaRoutePainter.circleDiameterFaktor(0.6));
+//					createPointFromPos(pos,);
+////					System.out.println(from);
+////					System.out.println(des.pos);
+////					System.out.println(pos);
+////					System.out.println("");
+//					Edge edge = new Edge(from, pos);
+//					edge.setInfo(pointref + "");
+//					edge.setType(ServiceType.UNKOWN);
+//					from = pos;
+//				}
+				
+				Edge edge = new Edge(from, des.pos);
 				edge.setInfo(pointref + "");
 				edge.setType(ServiceType.UNKOWN);
 				
 				result.add(edge);
 			}
+			
+//			logger.info("Processed SeaNode " + i + " from " + points.size());
 		}
+		
 		return result;
 		
 	}

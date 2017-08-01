@@ -10,9 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jxmapviewer.viewer.GeoPosition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gui.MyMap;
-import main.MainController;
 import main.RouteController;
 import models.Constants;
 import models.Edge;
@@ -31,9 +32,10 @@ import painter.SeaRoutePainter;
  */
 public class NewEntityFlowPainter implements IRoutePainter {
 
+	private static final Logger logger = LoggerFactory.getLogger(NewEntityFlowPainter.class);
 	private static int timeStep = 0;
 	private RouteController routeController;
-
+	private Color lastCol = Color.GRAY;
 	private List<FlowEntity> entities = new ArrayList<>();
 
 	/*
@@ -72,7 +74,7 @@ public class NewEntityFlowPainter implements IRoutePainter {
 		}
 		List<SeaEdge> seaEdges = SeaRoutePainter.calcDrawEdges(seaRoute);
 		for (NodeEdge nodeEdge : seaRoute) {
-			nodeEdge.path.clear();
+			nodeEdge.setPath(new ArrayList<>(), 0);
 			nodeEdge.setPathZoom(map.getZoom());
 			for (SeaEdge seaEdge : seaEdges) {
 				if (seaEdge.edgeIds.contains(nodeEdge.id)) {
@@ -99,7 +101,7 @@ public class NewEntityFlowPainter implements IRoutePainter {
 		if (timeStep % Constants.PAINT_STEPS == 0) {
 
 			if (Constants.debugInfos) {
-				System.out.println("Current Zoom level " + map.getZoom());
+				logger.info("Current Zoom level " + map.getZoom());
 			}
 			// Create land entities
 			if (Constants.optimzeLandRoutes) {
@@ -108,7 +110,6 @@ public class NewEntityFlowPainter implements IRoutePainter {
 
 					NodeEdge edge = (NodeEdge) route.get(i);
 					int serviceTime = (int) edge.getServiceTime(timeStepBig);
-
 					FlowEntity e = new FlowEntity(serviceTime, timeStepBig, edge);
 					entities.add(e);
 				}
@@ -119,7 +120,9 @@ public class NewEntityFlowPainter implements IRoutePainter {
 				NodeEdge edge = (NodeEdge) routeController.getSeaRoute().get(i);
 				int serviceTime = (int) edge.getServiceTime(timeStepBig);
 				if (serviceTime > 0) {
-					System.out.println(edge.id + ": ServiceTime: " + serviceTime);
+					if (Constants.debugInfosSeaEdges) {
+						logger.info(edge.id + ": ServiceTime: " + serviceTime);
+					}
 					SeaFlowEntity e = new SeaFlowEntity(serviceTime, timeStepBig, edge);
 					entities.add(e);
 				}
@@ -133,9 +136,26 @@ public class NewEntityFlowPainter implements IRoutePainter {
 			}
 			entities = newEntityList;
 		}
+		if (Constants.debugInfosSeaEdges) {
+			SeaRoutePainter.drawPossibleSeaEdges(g);
+		}
 		for (FlowEntity flowEntity : entities) {
+			if (Constants.debugInfos) {
+				g.setColor(Color.BLUE);
+				g.setStroke(new BasicStroke(2f));
+				double pSize = flowEntity.edge.getPoints().size() - 1;
+				double ppStep = (pSize) / flowEntity.getMaxServiceTimeSteps();
+
+				for (int i = 0; i < pSize - 10; i += ppStep) {
+
+					GeoPosition geoPos = flowEntity.getPoints().get(i).getPosition();
+					Point2D point = map.getTileFactory().geoToPixel(geoPos, map.getZoom());
+					g.drawOval((int) point.getX() - 5, (int) point.getY() - 5, 10, 10);
+				}
+				
+			}
 			
-			
+
 			Path2D path = flowEntity.getPath();
 			if (path == null) {
 				drawLineEntity(g, map, timeStepBig, flowEntity);
@@ -145,7 +165,6 @@ public class NewEntityFlowPainter implements IRoutePainter {
 				g.draw(path);
 			}
 		}
-
 	}
 
 	/**
@@ -165,7 +184,6 @@ public class NewEntityFlowPainter implements IRoutePainter {
 	 */
 	private void drawLineEntity(Graphics2D g, MyMap map, int timeStepBig, FlowEntity entity) {
 		int[] minMax = calcMinMaxIndex(entity);
-
 		// Edge should contain min. 2 Positions (Start + End)
 		GeoPosition last = entity.getPoints().get(minMax[0]).getPosition();
 		for (int i = minMax[0]; i < minMax[1] && i < entity.getPoints().size(); i++) {
@@ -182,14 +200,13 @@ public class NewEntityFlowPainter implements IRoutePainter {
 	public static int[] calcMinMaxIndex(FlowEntity entity) {
 		final int LENGTH = 8; // Length of the entity line in relation to the
 		// edge point count
-
-		double pointsPerTimeStep = (double) ( entity.edge.getPath().size()) / entity.getMaxServiceTimeSteps()
+		double pointsPerTimeStep = (double) (entity.edge.getPathSize()) / entity.getMaxServiceTimeSteps()
 				/ Constants.PAINT_STEPS;
-		int max = (int) Math.round( (pointsPerTimeStep * (timeStep % Constants.PAINT_STEPS)
-				+ ((entity.getCurrentServiceTimeStep()-1 ) * (pointsPerTimeStep * Constants.PAINT_STEPS))));
-		int min = (int) Math.round(max - pointsPerTimeStep * LENGTH);
+		int max = (int) Math.ceil((pointsPerTimeStep * (timeStep % Constants.PAINT_STEPS)
+				+ ((entity.getCurrentServiceTimeStep() - 1) * (pointsPerTimeStep * Constants.PAINT_STEPS))));
+		int min = (int) Math.floor(max - pointsPerTimeStep * LENGTH);
 
-		min = (min >= entity.edge.getPath().size()) ? entity.edge.getPath().size() - 1 : (min < 0) ? 0 : min;
+		min = (int) ((min >= entity.edge.getPathSize()) ? entity.edge.getPathSize() - 1 : (min < 0) ? 0 : min);
 
 		return new int[] { min, max };
 	}
@@ -199,22 +216,7 @@ public class NewEntityFlowPainter implements IRoutePainter {
 		g.setStroke(new BasicStroke(1.2f));
 		g.draw(edge.getShape(map));
 
-		if (Constants.debugInfosSeaEdges) {
-			List<GeoPosition> list = new ArrayList<>();
-			for (MapNode node : edge.getPoints()) {
-				list.add(node.getPosition());
-			}
-			for (int i = 0; i < list.size(); i++) {
-				GeoPosition pos = list.get(i);
-				Point2D p = map.getTileFactory().geoToPixel(pos, map.getZoom());
-				g.setColor(Color.MAGENTA);
-				g.setStroke(new BasicStroke(10f));
-				g.drawString("" + i, (int) p.getX() + 10, (int) p.getY() + 10);
-			}
-		}
 	}
-
-	private Color lastCol = Color.GRAY;
 
 	private void drawRoutePart(Graphics2D g, MyMap map, GeoPosition from, GeoPosition to, long capacity,
 			long workload) {
@@ -224,7 +226,6 @@ public class NewEntityFlowPainter implements IRoutePainter {
 			g.setColor(curCol);
 			g.setStroke(new BasicStroke(capacity / 250f));
 		}
-
 		DefaultRoutePainter.drawNormalLine(g, map, from, to);
 	}
 

@@ -84,7 +84,7 @@ public class MainController {
 	private JFrame frame;
 
 	private RouteController routeController = RouteController.getInstance();
-	private SeaController seaController = SeaController.getInstance();
+	private SeaController seaController;
 
 	/**
 	 * used to search for contact points with other edges, distance in lat/lon
@@ -95,7 +95,7 @@ public class MainController {
 	 * used for removing multiple point which are near together, distance in
 	 * lat/lon not pixel
 	 */
-	public final static double reduceEdgeDistance = 0.0075;
+	public final static double reduceEdgeDistance = 0.01075;
 	/**
 	 * used for combining points and summarizing workload and capacity, distance
 	 * in lat/lon not pixel
@@ -133,6 +133,7 @@ public class MainController {
 		initGui();
 
 		// Load sea data
+		seaController = SeaController.getInstance(mapViewer);
 		seaController.loadSeaNodes(cliInput.seaNodes);
 
 		// Processing input to own classes
@@ -172,8 +173,8 @@ public class MainController {
 		if (Constants.debugInfos && currentTime > Constants.MAX_TIME_STEPS * Constants.PAINT_STEPS) { 
 			currentTime = 0;
 		}
-		if (currentTime % Constants.PAINT_STEPS == 0) {
-			System.out.println("Timestep: " + currentTime / Constants.PAINT_STEPS);
+		if (currentTime % Constants.PAINT_STEPS == 0 && Constants.showTimesteps) {
+			logger.info("Timestep: " + currentTime / Constants.PAINT_STEPS);
 		}
 
 		mapViewer.setTime(currentTime);
@@ -281,7 +282,7 @@ public class MainController {
 		mapEdgesToStreets();
 		logger.info("End GH - " + (System.currentTimeMillis() - time));
 
-		reducePointCount();
+//		reducePointCount();
 
 		// own thread so that the main thread is not blocked
 		Thread t = new Thread(new Runnable() {

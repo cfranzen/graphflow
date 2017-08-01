@@ -29,7 +29,7 @@ public class NodeEdge extends Edge {
 	 * Contains one {@link Path2D}-Object for every zoom level.
 	 */
 	// public Path2D[] path = new Path2D.Double[Constants.MAX_ZOOM_LEVEL];
-	public List<Path2D> path = new ArrayList<>();
+	private List<Path2D> path = new ArrayList<>();
 	private int pathZoomLevel = 0;
 
 	/**
@@ -117,6 +117,16 @@ public class NodeEdge extends Edge {
 
 	public void setPathZoom(int zoomLevel) {
 		this.pathZoomLevel = zoomLevel;
+	}
+
+	/**
+	 * @return
+	 */
+	public double getPathSize() {
+		if (path.size() == 1) {
+			return nodes.size();
+		} 
+		return path.size();
 	}
 
 }

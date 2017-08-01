@@ -7,7 +7,6 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jxmapviewer.viewer.GeoPosition;
 
 import com.graphhopper.util.DistanceCalc3D;
-import com.syncrotess.pathfinder.model.entity.Node;
 import com.syncrotess.pathfinder.model.entity.Service;
 import com.syncrotess.pathfinder.model.entity.ServiceType;
 
@@ -46,7 +45,7 @@ public class Edge {
 		super();
 		this.start = start;
 		this.dest = dest;
-		calcDistance();
+		this.geoDistance = calcDistance(start, dest);
 	}
 
 	/**
@@ -63,7 +62,7 @@ public class Edge {
 		this.capacites = capacites;
 		this.workloads = workload;
 		this.type = type;
-		calcDistance();
+		this.geoDistance = calcDistance(start, dest);
 	}
 
 	public Edge(Edge e) {
@@ -77,7 +76,7 @@ public class Edge {
 		this.info = e.info;
 		this.serviceTimes = e.serviceTimes;
 		this.maxServiceTime = e.maxServiceTime;
-		calcDistance();
+		this.geoDistance = calcDistance(start, dest);
 	}
 
 	/**
@@ -86,11 +85,10 @@ public class Edge {
 	 * @param edge
 	 */
 	public Edge(Service edge) {
-		Node start = edge.getStartNode();
-		Node end = edge.getEndNode();
-		new Edge(new GeoPosition(start.getLatitude(), start.getLongitude()),
-				new GeoPosition(end.getLatitude(), end.getLongitude()));
-		calcDistance();
+		GeoPosition start = new GeoPosition(edge.getStartNode().getLatitude(), edge.getStartNode().getLongitude());
+		GeoPosition dest = new GeoPosition(edge.getEndNode().getLatitude(), edge.getEndNode().getLongitude());
+		new Edge(start, dest);
+		this.geoDistance = calcDistance(start, dest);
 	}
 
 	/**
@@ -256,11 +254,12 @@ public class Edge {
 		return geoDistance;
 	}
 
-	private void calcDistance() {
+	public static double calcDistance(GeoPosition start, GeoPosition dest) {
 		if (start != null && dest != null) {
-			geoDistance = calulator.calcDist(start.getLatitude(), start.getLongitude(), dest.getLatitude(),
+			return calulator.calcDist(start.getLatitude(), start.getLongitude(), dest.getLatitude(),
 					dest.getLongitude());
 		}
+		return 0;
 	}
 
 	/**

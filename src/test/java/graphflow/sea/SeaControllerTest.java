@@ -9,6 +9,7 @@ import java.util.List;
 import org.jxmapviewer.viewer.GeoPosition;
 
 import junit.framework.TestCase;
+import main.MainController;
 import sea.SeaController;
 import sea.SeaController.SeaNode;
 
@@ -18,7 +19,7 @@ import sea.SeaController.SeaNode;
  */
 public class SeaControllerTest extends TestCase {
 
-	private SeaController instance = SeaController.getInstance();
+	private SeaController instance = SeaController.getInstance(MainController.getInstance().getMapViewer());
 	
 	public void testCreateFromData() {
 		SeaController.SeaNode result = instance.new SeaNode(1, new GeoPosition(new double[]{57.621875380195455, 7.14111328125}), new ArrayList<>());
