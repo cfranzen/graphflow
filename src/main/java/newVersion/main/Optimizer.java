@@ -63,6 +63,7 @@ public class Optimizer {
 		List<Edge> savedEdges = new ArrayList<>();
 		List<MapNode> savedNodes = new ArrayList<>();
 		for (int i = 0; i < edges.size(); i++) {
+			long time = System.currentTimeMillis();
 			Edge currentEdge = edges.get(i);
 			NodeEdge mapEdge = new NodeEdge(currentEdge);
 			for (GeoPosition point : currentEdge.getPositions()) {
@@ -76,7 +77,7 @@ public class Optimizer {
 				mapEdge.id = i;
 			}
 			savedEdges.add(mapEdge);
-			logger.info("Edge " + i + " from " + edges.size() + " processed");
+			logger.info("Edge " + i + " from " + edges.size() + " processed : " + mapEdge.nodes.size() + " Nodes - " + (System.currentTimeMillis() - time) + " ms");
 		}
 
 		logger.info("Precalculate Capacity and Workload");

@@ -28,8 +28,7 @@ public class NodeEdge extends Edge {
 	/**
 	 * Contains one {@link Path2D}-Object for every zoom level.
 	 */
-	// public Path2D[] path = new Path2D.Double[Constants.MAX_ZOOM_LEVEL];
-	private List<Path2D> path = new ArrayList<>();
+	private List<Path2D> currentZoomPath = new ArrayList<>();
 	private int pathZoomLevel = 0;
 
 	/**
@@ -69,13 +68,17 @@ public class NodeEdge extends Edge {
 	 * @return the {@link Shape} of the whole edge
 	 */
 	public Path2D getShape(MyMap map) {
-		if (path.isEmpty() || map.getZoom() != pathZoomLevel) {
-			path.clear();
-			path.add(calculateShape(map));
+		if (currentZoomPath.isEmpty() || map.getZoom() != pathZoomLevel) {
+			currentZoomPath.clear();
+			currentZoomPath.add(calculateShape(map));
+//			currentZoomPathFull = new Path2D.Double();
+//			currentZoomPath.stream().forEach(p -> currentZoomPathFull.append(p, false));
 		}
-		Path2D result = new Path2D.Double();
-		path.stream().forEach(p -> result.append(p, false));
+		Path2D result =  new Path2D.Double();
+		currentZoomPath.stream().forEach(p -> result.append(p, false));
 		return result;
+		
+//		return currentZoomPathFull;
 	}
 
 	/**
@@ -95,7 +98,7 @@ public class NodeEdge extends Edge {
 	 * @return
 	 */
 	public List<Path2D> getPath() {
-		return path;
+		return currentZoomPath;
 	}
 
 	/**
@@ -103,16 +106,16 @@ public class NodeEdge extends Edge {
 	 *            the path to set
 	 */
 	public void setPath(List<Path2D> path, int zoomLevel) {
-		this.path = path;
+		this.currentZoomPath = path;
 		this.pathZoomLevel = zoomLevel;
 	}
 
 	public void addToPath(List<Path2D> path) {
-		this.path.addAll(path);
+		this.currentZoomPath.addAll(path);
 	}
 
 	public void addToPath(Path2D path) {
-		this.path.add(path);
+		this.currentZoomPath.add(path);
 	}
 
 	public void setPathZoom(int zoomLevel) {
@@ -123,10 +126,10 @@ public class NodeEdge extends Edge {
 	 * @return
 	 */
 	public double getPathSize() {
-		if (path.size() == 1) {
+		if (currentZoomPath.size() == 1) {
 			return nodes.size();
 		} 
-		return path.size();
+		return currentZoomPath.size();
 	}
 
 }

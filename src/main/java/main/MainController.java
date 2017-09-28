@@ -282,7 +282,7 @@ public class MainController {
 		mapEdgesToStreets();
 		logger.info("End GH - " + (System.currentTimeMillis() - time));
 
-//		reducePointCount();
+		reducePointCount();
 
 		// own thread so that the main thread is not blocked
 		Thread t = new Thread(new Runnable() {

@@ -82,16 +82,16 @@ public class NewEntityFlowPainter implements IRoutePainter {
 				}
 			}
 		}
+		// Manipulate the graphics object one tim before the loop instead of
+		// every run, because it is a resource consuming operation
+		g.setColor(Color.GRAY);
+		g.setStroke(new BasicStroke(1.2f));
 		for (int i = 0; i < routeController.getSeaRoute().size(); i++) {
 			NodeEdge edge = (NodeEdge) routeController.getSeaRoute().get(i);
 			drawGreyEdgeLine(g, map, edge);
 		}
-
-		// for (Edge nodeEdge : routeController.getSeaRoute()) {
-		// drawGreyEdgeLine(g, map, (NodeEdge) nodeEdge);
-		// }
-		for (Edge edge : routeController.getPaintRoute()) {
-			if (Constants.optimzeLandRoutes) {
+		if (Constants.optimzeLandRoutes) {
+			for (Edge edge : routeController.getPaintRoute()) {
 				drawGreyEdgeLine(g, map, (NodeEdge) edge);
 			}
 		}
@@ -100,9 +100,6 @@ public class NewEntityFlowPainter implements IRoutePainter {
 		int timeStepBig = timeStep / Constants.PAINT_STEPS;
 		if (timeStep % Constants.PAINT_STEPS == 0) {
 
-			if (Constants.debugInfos) {
-				logger.info("Current Zoom level " + map.getZoom());
-			}
 			// Create land entities
 			if (Constants.optimzeLandRoutes) {
 				List<Edge> route = routeController.getPaintRoute();
@@ -128,6 +125,7 @@ public class NewEntityFlowPainter implements IRoutePainter {
 				}
 			}
 
+			// Increase the TTL of the entities
 			List<FlowEntity> newEntityList = new ArrayList<>();
 			for (FlowEntity flowEntity : entities) {
 				if (flowEntity.next()) {
@@ -152,16 +150,24 @@ public class NewEntityFlowPainter implements IRoutePainter {
 					Point2D point = map.getTileFactory().geoToPixel(geoPos, map.getZoom());
 					g.drawOval((int) point.getX() - 5, (int) point.getY() - 5, 10, 10);
 				}
-				
+
 			}
-			
 
 			Path2D path = flowEntity.getPath();
 			if (path == null) {
 				drawLineEntity(g, map, timeStepBig, flowEntity);
 			} else {
-				g.setColor(Color.MAGENTA);
+				g.setColor(Color.BLUE);
 				g.setStroke(new BasicStroke(5));
+				// TODO Color sea edges correctly
+				
+				// get Point XX
+				// all P / current step
+//				flowEntity.getPoints().get(flowEntity.capWorkIndex);
+//				
+//				capWork[timeStepBig][0]
+//				
+//				modifyGraphics(g, capacity, workload);
 				g.draw(path);
 			}
 		}
@@ -198,7 +204,7 @@ public class NewEntityFlowPainter implements IRoutePainter {
 	}
 
 	public static int[] calcMinMaxIndex(FlowEntity entity) {
-		final int LENGTH = 8; // Length of the entity line in relation to the
+		final int LENGTH = 8; // TODO Change: Length of the entity line in relation to the
 		// edge point count
 		double pointsPerTimeStep = (double) (entity.edge.getPathSize()) / entity.getMaxServiceTimeSteps()
 				/ Constants.PAINT_STEPS;
@@ -212,26 +218,30 @@ public class NewEntityFlowPainter implements IRoutePainter {
 	}
 
 	private void drawGreyEdgeLine(Graphics2D g, MyMap map, NodeEdge edge) {
-		g.setColor(Color.GRAY);
-		g.setStroke(new BasicStroke(1.2f));
+		// Grapic maniuplation has to be done before the loop
+		// g.setColor(Color.DARK_GRAY);
+		// g.setStroke(new BasicStroke(1.2f));
 		g.draw(edge.getShape(map));
 
 	}
 
 	private void drawRoutePart(Graphics2D g, MyMap map, GeoPosition from, GeoPosition to, long capacity,
 			long workload) {
+		modifyGraphics(g, capacity, workload);
+		DefaultRoutePainter.drawNormalLine(g, map, from, to);
+	}
+
+	private void modifyGraphics(Graphics2D g, long capacity, long workload) {
 		// modifying the graphics component is work intensive,
 		Color curCol = DefaultRoutePainter.calculateColor(workload, capacity);
 		if (!curCol.equals(lastCol)) {
 			g.setColor(curCol);
 			g.setStroke(new BasicStroke(capacity / 250f));
 		}
-		DefaultRoutePainter.drawNormalLine(g, map, from, to);
 	}
 
 	private void calcOnlyVisibleEdges(Graphics2D g, MyMap map) {
 		Rectangle rect = map.getViewportBounds();
-		// XXX Magic Numbers for Debug
 		GeoPosition viewportStart = map.getGeoPos(rect.getMinX(), rect.getMinY());
 		GeoPosition viewportEnd = map.getGeoPos(rect.getMaxX(), rect.getMaxY());
 		routeController.excludeNonVisiblePointFromPaintRoutes(viewportStart, viewportEnd);

@@ -34,7 +34,7 @@ public class SeaRoutePainter {
 
 	private static MyMap map;
 
-	private static List<SeaEdge> drawEdges = new ArrayList<>();
+	private static List<List<SeaEdge>> drawEdges = new ArrayList<>();
 	// private List<Edge> route;
 
 	/**
@@ -42,7 +42,6 @@ public class SeaRoutePainter {
 	 */
 	public SeaRoutePainter(MyMap map) {
 		SeaRoutePainter.map = map;
-
 		initCircleDiameter(map);
 
 	}
@@ -56,68 +55,29 @@ public class SeaRoutePainter {
 		for (int i = 1; i <= Constants.MAX_ZOOM_LEVEL; i++) {
 			Point2D p = map.getTileFactory().geoToPixel(pos, i);
 			circleDiameter[i] = (int) Math.abs(map.getTileFactory().geoToPixel(pcopy, i).getX() - p.getX());
+			drawEdges.add(new ArrayList<>());
 		}
 	}
 
 	public static List<SeaEdge> calcDrawEdges(List<NodeEdge> seaRoute) {
 		map = MainController.getInstance().getMapViewer();
 
+//		drawEdges.clear();
+		
 		initCircleDiameter(map);
 		// int currentTimeStep = this.currentTimeStep / Constants.PAINT_STEPS;
 
 		// XXX does not need to run every frame
-		drawEdges = calcSeaLines(seaRoute);
-
+		if (drawEdges.get(map.getZoom()-1).isEmpty()) {
+			drawEdges.set(map.getZoom()-1,  calcSeaLines(seaRoute));
+		}
 		// logger.info("Sea-Edge count: " + drawEdges.size());
 		// drawEdges = optimzeSeaLines(seaRoute);
 		// logger.info("Sea-Edge count: " + drawEdges.size());
 
-		return drawEdges;
+		return drawEdges.get(map.getZoom()-1);
 	}
 
-	/**
-	 * Combine overlapping edges
-	 */
-	private static List<SeaEdge> optimzeSeaLines(List<NodeEdge> seaRoute) {
-		List<SeaEdge> result = new ArrayList<>();
-		if (!drawEdges.isEmpty()) {
-			result.add(drawEdges.get(0)); // First edge cannot be compared with
-											// empty list
-			for (int i = 1; i < drawEdges.size(); i++) {
-				SeaEdge edge = drawEdges.get(i);
-				boolean flag = false;
-				for (int j = 0; j < result.size(); j++) {
-					SeaEdge cEdge = result.get(j);
-					if (edge.equals(cEdge)) {
-						cEdge.edgeIds.addAll(edge.edgeIds);
-						flag = true;
-					}
-				}
-				if (!flag) {
-					result.add(edge);
-				}
-			}
-
-			for (SeaEdge seaEdge : result) {
-				long[] cap = new long[Constants.MAX_TIME_STEPS]; 
-				long[] work = new long[Constants.MAX_TIME_STEPS];
-
-				seaEdge.setCapacites(cap);
-				seaEdge.setWorkload(work);
-
-				for (int id : seaEdge.edgeIds) {
-					for (Edge edge : seaRoute) {
-						if (edge.id == id) {
-							seaEdge.addCapacities(edge.getCapacites());
-							seaEdge.addWorkloads(edge.getWorkloads());
-						}
-					}
-				}
-			}
-
-		}
-		return result;
-	}
 
 	/**
 	 * Adds the created {@link PointPath}-Element to the draw edges array as
@@ -132,10 +92,8 @@ public class SeaRoutePainter {
 		SeaEdge seaEdge = new SeaEdge(start, dest);
 		seaEdge.setPath(path.getPath());
 
-		// seaEdge.setCapacites(edge.getCapacites());
-		// seaEdge.setWorkload(edge.getWorkloads());
 		seaEdge.edgeIds.add(edge.id);
-		drawEdges.add(seaEdge);
+		drawEdges.get(map.getZoom()-1).add(seaEdge);
 
 	}
 
@@ -147,7 +105,7 @@ public class SeaRoutePainter {
 	 *         or an empty list if the sea data consists of the wrong type.
 	 */
 	private static List<SeaEdge> calcSeaLines(List<NodeEdge> seaRoute) {
-		drawEdges.clear();
+//		drawEdges.clear();
 
 		for (int i = 0; i < seaRoute.size(); i++) {
 			NodeEdge edge = seaRoute.get(i);
@@ -227,7 +185,7 @@ public class SeaRoutePainter {
 
 			}
 		}
-		return drawEdges;
+		return drawEdges.get(map.getZoom()-1);
 	}
 
 	/**
