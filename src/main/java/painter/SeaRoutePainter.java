@@ -122,19 +122,6 @@ public class SeaRoutePainter {
 				path.moveTo(convertGeo(edge.getStart()));
 				path.lineTo(lastCircleP);
 				addDrawEdge(edge, edge.getStart(), lastPos, path);
-
-				// End
-				Point2D circleP = getCirclePoint(edge.getDest(), edge.getPosition(-1));
-				path = new PointPath();
-				path.moveTo(convertGeo(edge.getDest()));
-				path.lineTo(circleP);
-				addDrawEdge(edge, edge.getDest(), convertPoint(circleP), path);
-
-				path = new PointPath();
-				path.moveTo(circleP);
-				path.quadTo(convertGeo(edge.getPosition(-1)),
-						getCirclePoint(convertGeo(edge.getPosition(-2)), convertGeo(edge.getPosition(-1))));
-				addDrawEdge(edge, convertPoint(circleP), edge.getPosition(-1), path);
 			} else {
 				lastCircleP = convertGeo(edge.getStart());
 				lastPos = edge.getPosition(0);
@@ -184,6 +171,17 @@ public class SeaRoutePainter {
 				}
 
 			}
+			// End
+			Point2D circleP = getCirclePoint(convertGeo(edge.getPosition(-2)), convertGeo(edge.getPosition(-1)));
+			PointPath path = new PointPath();
+			path.moveTo(getCirclePoint(convertGeo(edge.getPosition(-1)), convertGeo(edge.getPosition(-2))));
+			path.lineTo(circleP);
+			addDrawEdge(edge, edge.getPosition(-2), edge.getPosition(-1), path);
+			
+			path.moveTo(circleP);
+			path.quadTo(convertGeo(edge.getPosition(-1)), getCirclePoint(edge.getDest(), edge.getPosition(-1)));
+			path.lineTo(convertGeo(edge.getDest()));
+			addDrawEdge(edge, edge.getPosition(-1), edge.getDest(), path);
 		}
 		return drawEdges.get(map.getZoom()-1);
 	}

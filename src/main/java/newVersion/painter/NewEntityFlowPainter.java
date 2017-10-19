@@ -82,7 +82,7 @@ public class NewEntityFlowPainter implements IRoutePainter {
 				}
 			}
 		}
-		// Manipulate the graphics object one tim before the loop instead of
+		// Manipulate the graphics object one time before the loop instead of
 		// every run, because it is a resource consuming operation
 		g.setColor(Color.GRAY);
 		g.setStroke(new BasicStroke(1.2f));
@@ -157,8 +157,24 @@ public class NewEntityFlowPainter implements IRoutePainter {
 			if (path == null) {
 				drawLineEntity(g, map, timeStepBig, flowEntity);
 			} else {
+				
+				g.setColor(Color.RED);
+				g.setStroke(new BasicStroke(15));
+				
+//				g.drawString("T", (int)path.getCurrentPoint().getX(), (int)path.getCurrentPoint().getY());
+				
+				// -- XXX debug
+//				int max = 2;
+//				for (int i = 0; i < max; i++) {
+//					MapNode node = flowEntity.getPoints().get(flowEntity.capWorkIndex - i);
+//					Point2D p =  map.getPixelPos(node.getPosition());
+//					g.drawString(max - i + "", (int)p.getX(), (int)p.getY());
+//				}
+				// --
+				
 				g.setColor(Color.BLUE);
 				g.setStroke(new BasicStroke(5));
+				
 				// TODO Color sea edges correctly
 				
 				// get Point XX
@@ -214,6 +230,10 @@ public class NewEntityFlowPainter implements IRoutePainter {
 
 		min = (int) ((min >= entity.edge.getPathSize()) ? entity.edge.getPathSize() - 1 : (min < 0) ? 0 : min);
 
+		//--new 
+		max = (int) ((max >= entity.edge.getPathSize()) ? entity.edge.getPathSize() - 1 : max);
+		// FIXME Fehler dass das ende zuerst gemalt wird muss hier zu finden sein
+		
 		return new int[] { min, max };
 	}
 

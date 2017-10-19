@@ -9,7 +9,7 @@ public class Constants {
 	public static boolean drawOnlyViewport = true;
 	public static boolean optimzeLandRoutes = true;
 	public static boolean showTimesteps = true;
-	public static boolean drawLineWhenEnitityStarts = false;
+	public static boolean drawLineWhenEnitityStarts = true;
 	
 	
 	public static final int MAX_ZOOM_LEVEL = 17;

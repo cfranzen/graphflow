@@ -37,8 +37,10 @@ public class SeaFlowEntity extends FlowEntity {
 //		minMax[0] = 0;
 //		minMax[1] =   edge.getPath().size();
 		Path2D path = new Double();
-//		for (Path2D path2d : fullPath) {
-//		System.out.println(minMax[0] + " . " + minMax[1]);
+//		for (Path2D p,ath2d : fullPath) {
+		System.out.println(minMax[0] + " . " + minMax[1]);
+		
+		minMax[0] = minMax[0] > 0 ? minMax[0] : 0; 
 		for(int i = minMax[0]; i < edge.getPath().size() && i <= minMax[1]; i++ ) {
 			Path2D path2d = edge.getPath().get(i);
 			path.append(path2d, Constants.drawLineWhenEnitityStarts);

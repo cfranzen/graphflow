@@ -68,17 +68,18 @@ public class NodeEdge extends Edge {
 	 * @return the {@link Shape} of the whole edge
 	 */
 	public Path2D getShape(MyMap map) {
+		// Generates a new path on zoom level change
 		if (currentZoomPath.isEmpty() || map.getZoom() != pathZoomLevel) {
 			currentZoomPath.clear();
 			currentZoomPath.add(calculateShape(map));
-//			currentZoomPathFull = new Path2D.Double();
-//			currentZoomPath.stream().forEach(p -> currentZoomPathFull.append(p, false));
+			pathZoomLevel = map.getZoom();
 		}
-		Path2D result =  new Path2D.Double();
-		currentZoomPath.stream().forEach(p -> result.append(p, false));
+		Path2D result = new Path2D.Double();
+//		currentZoomPath.stream().forEach(p -> result.append(p, false));
+		for (int i = 0; i < currentZoomPath.size(); i++) {
+			result.append(currentZoomPath.get(i), true);
+		}
 		return result;
-		
-//		return currentZoomPathFull;
 	}
 
 	/**
@@ -128,7 +129,7 @@ public class NodeEdge extends Edge {
 	public double getPathSize() {
 		if (currentZoomPath.size() == 1) {
 			return nodes.size();
-		} 
+		}
 		return currentZoomPath.size();
 	}
 
