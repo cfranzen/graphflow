@@ -28,5 +28,6 @@ public class Constants {
 	 */
 	public static final int MAX_TIME_STEPS = 250;
 	public static final double SEA_NODE_MAX_DISTANCE = 300000;
+	public static final float SHIP_SCALE_FACTOR = 1.75f;
 
 }

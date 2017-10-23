@@ -157,33 +157,10 @@ public class NewEntityFlowPainter implements IRoutePainter {
 			if (path == null) {
 				drawLineEntity(g, map, timeStepBig, flowEntity);
 			} else {
-				
-				g.setColor(Color.RED);
-				g.setStroke(new BasicStroke(15));
-				
-//				g.drawString("T", (int)path.getCurrentPoint().getX(), (int)path.getCurrentPoint().getY());
-				
-				// -- XXX debug
-//				int max = 2;
-//				for (int i = 0; i < max; i++) {
-//					MapNode node = flowEntity.getPoints().get(flowEntity.capWorkIndex - i);
-//					Point2D p =  map.getPixelPos(node.getPosition());
-//					g.drawString(max - i + "", (int)p.getX(), (int)p.getY());
-//				}
-				// --
-				
-				g.setColor(Color.BLUE);
-				g.setStroke(new BasicStroke(5));
-				
-				// TODO Color sea edges correctly
-				
-				// get Point XX
-				// all P / current step
-//				flowEntity.getPoints().get(flowEntity.capWorkIndex);
-//				
-//				capWork[timeStepBig][0]
-//				
-//				modifyGraphics(g, capacity, workload);
+				MapNode currentNode = flowEntity.getPoints().get(flowEntity.capWorkIndex);
+				long capacity = currentNode.capWork[flowEntity.startTimestep][0];
+				long workload = currentNode.capWork[flowEntity.startTimestep][1];
+				modifyGraphics(g, capacity, workload, true);
 				g.draw(path);
 			}
 		}
@@ -229,10 +206,7 @@ public class NewEntityFlowPainter implements IRoutePainter {
 		int min = (int) Math.floor(max - pointsPerTimeStep * LENGTH);
 
 		min = (int) ((min >= entity.edge.getPathSize()) ? entity.edge.getPathSize() - 1 : (min < 0) ? 0 : min);
-
-		//--new 
 		max = (int) ((max >= entity.edge.getPathSize()) ? entity.edge.getPathSize() - 1 : max);
-		// FIXME Fehler dass das ende zuerst gemalt wird muss hier zu finden sein
 		
 		return new int[] { min, max };
 	}
@@ -250,13 +224,23 @@ public class NewEntityFlowPainter implements IRoutePainter {
 		modifyGraphics(g, capacity, workload);
 		DefaultRoutePainter.drawNormalLine(g, map, from, to);
 	}
-
+	
+	
 	private void modifyGraphics(Graphics2D g, long capacity, long workload) {
+		modifyGraphics(g, capacity, workload, false);
+	}
+
+	private void modifyGraphics(Graphics2D g, long capacity, long workload, boolean isShip) {
 		// modifying the graphics component is work intensive,
 		Color curCol = DefaultRoutePainter.calculateColor(workload, capacity);
 		if (!curCol.equals(lastCol)) {
+			
 			g.setColor(curCol);
-			g.setStroke(new BasicStroke(capacity / 250f));
+			float scale = capacity / 250f;
+			if (isShip) {
+				scale /= Constants.SHIP_SCALE_FACTOR;
+			}
+			g.setStroke(new BasicStroke(scale));
 		}
 	}
 

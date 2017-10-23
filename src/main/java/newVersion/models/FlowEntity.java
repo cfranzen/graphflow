@@ -18,6 +18,7 @@ import newVersion.painter.NewEntityFlowPainter;
  */
 public class FlowEntity {
 
+	public int startTimestep = 0;
 	public int capWorkIndex = 0;
 	private int currentServiceTimeStep = 0;
 	private int maxServiceTimeSteps = 0;
@@ -36,7 +37,7 @@ public class FlowEntity {
 	public FlowEntity(int maxServiceTimeSteps, int capWorkIndex, NodeEdge edge) {
 		super();
 		this.maxServiceTimeSteps = maxServiceTimeSteps;
-		this.capWorkIndex = capWorkIndex;
+		this.startTimestep = capWorkIndex;
 		this.edge = edge;
 	}
 
