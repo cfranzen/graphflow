@@ -34,10 +34,11 @@ public class Optimizer {
 	private RouteController routeController;
 
 	/**
+	 * @param routeController 
 	 * 
 	 */
-	public Optimizer() {
-		this.routeController = RouteController.getInstance();
+	public Optimizer(RouteController routeController) {
+		this.routeController = routeController;
 	}
 
 	public void optimize() {

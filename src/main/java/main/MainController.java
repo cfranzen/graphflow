@@ -83,7 +83,7 @@ public class MainController {
 
 	private JFrame frame;
 
-	private RouteController routeController = RouteController.getInstance();
+	private RouteController routeController = new RouteController();
 	private SeaController seaController;
 
 	/**
@@ -228,6 +228,8 @@ public class MainController {
 		// layeredPane.setSize(frame.getSize());
 		logger.debug(layeredPane.getSize().toString());
 
+		// TODO Add Layout to layeredPane, to order Buttons etc
+		
 		JButton btn = new RunButton(this);
 		btn.setSize(150, 50);
 		layeredPane.add(btn, new Integer(20));
@@ -289,7 +291,7 @@ public class MainController {
 
 			@Override
 			public void run() {
-				Optimizer optimizer = new Optimizer();
+				Optimizer optimizer = new Optimizer(routeController);
 				optimizer.optimize();
 			}
 		});
@@ -417,7 +419,8 @@ public class MainController {
 		}
 	}
 
-	private static double getDistance(GeoPosition refPoint, GeoPosition point) {
+	// FIXME change to private
+	public static double getDistance(GeoPosition refPoint, GeoPosition point) {
 		double deltaX = Math.abs(refPoint.getLatitude() - point.getLatitude());
 		double deltaY = Math.abs(refPoint.getLongitude() - point.getLongitude());
 		return deltaX + deltaY;

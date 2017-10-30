@@ -4,7 +4,6 @@ package interactiveWaypoints;
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */
-
 import org.jxmapviewer.viewer.DefaultWaypoint;
 import org.jxmapviewer.viewer.GeoPosition;
 
@@ -16,6 +15,7 @@ import java.awt.event.MouseListener;
 /**
  * A waypoint that is represented by a button on the map.
  */
+@Deprecated
 public class SwingWaypoint extends DefaultWaypoint {
 	private final JButton button;
 	private final String text;

@@ -1,10 +1,13 @@
-/**
- * 
- */
 package models;
 
+import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
+
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
 
 import org.jxmapviewer.beans.AbstractBean;
 import org.jxmapviewer.viewer.GeoPosition;
@@ -21,7 +24,8 @@ public class CapacityWaypoint extends AbstractBean implements Waypoint {
 	private GeoPosition position;
 	private double maxCapacity;
 	private double workload = 0;
-	private Point mapPosi;
+	private Point mapPosi = new Point(0, 0);
+	private JButton button;
 
 	/**
 	 * Creates a new instance of Waypoint
@@ -29,6 +33,8 @@ public class CapacityWaypoint extends AbstractBean implements Waypoint {
 	public CapacityWaypoint(double maxCapacity) {
 		this.position = new GeoPosition(0, 0);
 		this.maxCapacity = maxCapacity;
+		setMapPosiFromGeo(position);
+		initButton();
 	}
 
 	/**
@@ -40,6 +46,8 @@ public class CapacityWaypoint extends AbstractBean implements Waypoint {
 	public CapacityWaypoint(double latitude, double longitude, double maxCapacity) {
 		this.position = new GeoPosition(latitude, longitude);
 		this.maxCapacity = maxCapacity;
+		setMapPosiFromGeo(position);
+		initButton();
 	}
 
 	/**
@@ -49,6 +57,8 @@ public class CapacityWaypoint extends AbstractBean implements Waypoint {
 	public CapacityWaypoint(GeoPosition geo, double maxCapacity) {
 		this.position = geo;
 		this.maxCapacity = maxCapacity;
+		setMapPosiFromGeo(geo);
+		initButton();
 	}
 
 	/**
@@ -129,6 +139,51 @@ public class CapacityWaypoint extends AbstractBean implements Waypoint {
 	@Override
 	public GeoPosition getPosition() {
 		return position;
+	}
+
+	private void initButton() {
+		button = new JButton("A");
+		button.setSize(240, 240);
+		button.setPreferredSize(new Dimension(240, 240));
+		button.addMouseListener(new SwingWaypointMouseListener());
+		button.setVisible(true);
+	}
+	
+	/**
+	 * @return
+	 */
+	public JButton getButton() {
+		return button;
+	}
+	
+	public MouseListener getMouseListener(){
+		return button.getMouseListeners()[1];
+	}
+	
+	private class SwingWaypointMouseListener implements MouseListener {
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			System.out.println("PING");
+			JOptionPane.showMessageDialog(button, "You clicked on a button");
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+			System.out.println("PONG");
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+		}
 	}
 
 }

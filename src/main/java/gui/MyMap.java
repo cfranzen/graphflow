@@ -5,6 +5,8 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -28,6 +30,7 @@ import org.jxmapviewer.viewer.TileFactoryInfo;
 import org.jxmapviewer.viewer.Waypoint;
 import org.jxmapviewer.viewer.WaypointPainter;
 
+import interactiveWaypoints.SwingWaypointOverlayPainter;
 import main.MainController;
 import main.RouteController;
 import models.CapacityWaypoint;
@@ -45,43 +48,40 @@ import painter.IRoutePainter;
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */
-public class MyMap extends JXMapViewer {
+public class MyMap extends JXMapViewer implements PropertyChangeListener {
 
 	private static final long serialVersionUID = -6620174270673711401L;
 
-	private MainController controller;
-
-	private Set<Waypoint> waypoints = new HashSet<>();;
+	private Set<CapacityWaypoint> waypoints = new HashSet<>();;
 	private WaypointPainter<Waypoint> waypointPainter;
 
-	private PaintController routePainter;
-	public IRoutePainter seaRoutePainter; // XXX obsolet
+	private PaintController routePaintController;
 
 	/**
 	 * Default Constructor, initializes the tile factory.
 	 */
 	public MyMap(MainController controller, RouteController routeController) {
 		super();
-		this.controller = controller;
-
-		addUserInteractions();
+		
+		addUserInteractions(controller, routeController);
 		setUpTileFactory();
 
 		// Default values
 		setAddressLocation(new GeoPosition(50.11, 8.68)); // Frankfurt
 		setZoom(15);
 		
-		
 		initPainters(routeController);
-
+		
 		setMinimumSize(new Dimension(250, 250));
 		setPreferredSize(new Dimension(1400, 400));
 	}
 
+	
+	
 	/**
-	 * @return the waypoints
+	 * @return the {@link Waypoint} positions as {@link GeoPosition}
 	 */
-	public List<GeoPosition> getWaypoints() {
+	public List<GeoPosition> getWaypointPositions() {
 		List<GeoPosition> result = new ArrayList<>(waypoints.size());
 		for (Waypoint waypoint : waypoints) {
 			result.add(waypoint.getPosition());
@@ -89,6 +89,13 @@ public class MyMap extends JXMapViewer {
 		return result;
 	}
 
+	/**
+	 * @return the {@link Waypoint} as {@link List}
+	 */
+	public List<CapacityWaypoint> getWaypoints() {
+		return new ArrayList<>(waypoints);
+	}
+	
 	/**
 	 * Adds the given nodes to the graph.
 	 * 
@@ -110,7 +117,11 @@ public class MyMap extends JXMapViewer {
 			}
 		} else {
 			for (GeoPosition geoPos : nodes) {
-				waypoints.add(new CapacityWaypoint(geoPos.getLatitude(), geoPos.getLongitude(), 0));
+				
+				CapacityWaypoint waypoint = new CapacityWaypoint(geoPos.getLatitude(), geoPos.getLongitude(), 0);
+//				addMouseListener(waypoint.getMouseListener()); XXX
+				
+				waypoints.add(waypoint);
 				zoomNodes.add(geoPos);
 			}
 		}
@@ -127,7 +138,11 @@ public class MyMap extends JXMapViewer {
 	 *            to set
 	 */
 	public void setTime(int time) {
-		routePainter.setTimeStep(time);
+		routePaintController.setTimeStep(time);
+		updateMap();
+	}
+	
+	public void updateMap() {
 		invalidate();
 		repaint();
 	}
@@ -160,19 +175,14 @@ public class MyMap extends JXMapViewer {
 		String text = String.format("Latitude: %f\nLongitude: %f", position.getLatitude(), position.getLongitude());
 
 		return "<html><p width=\"250\">" + text + "</p></html>";
-		// Point p = new Point(event.getX(), event.getY());
-		// for (Waypoint waypoint : waypoints) {
-		// if (isMouseOnWaypoint(p, waypoint)) {
-		// return getTooltipForWaypoint(waypoint);
-		// }
-		// }
-		// return null;
 	}
 
 	/**
 	 * Adds the {@link MouseListener}s for user-interaction
+	 * @param controller 
+	 * @param routeController 
 	 */
-	private void addUserInteractions() {
+	private void addUserInteractions(MainController controller, RouteController routeController) {
 		MouseInputListener mia = new PanMouseInputListener(this);
 		addMouseListener(mia);
 		addMouseMotionListener(mia);
@@ -182,6 +192,7 @@ public class MyMap extends JXMapViewer {
 		addMouseMotionListener(mia);
 		addMouseWheelListener(new ZoomMouseWheelListenerCenter(this));
 		addKeyListener(new PanKeyListener(this));
+		addMouseListener(new WaypointClickMouseListener(this, routeController));
 	}
 
 	/**
@@ -208,21 +219,19 @@ public class MyMap extends JXMapViewer {
 //		seaRoutePainter = new SeaRoutePainter(this);
 		// landRoutePainter = new SimpleFlowRoutePainter();
 		// landRoutePainter = new EntityFlowPainter();
-		routePainter = PaintController.getInstance();
-//		seaRoutePainter.setRouteController(routeController);
-		routePainter.setRouteController(routeController);
+		routePaintController = PaintController.getInstance();
+		routePaintController.setRouteController(routeController);
 
 		// Create a waypoint painter that takes all the waypoints
 		// TODO Refactor, do not use jmapviewers waypoint class
-		waypointPainter = new WaypointPainter<Waypoint>();
+		waypointPainter = new SwingWaypointOverlayPainter();
 		waypointPainter.setRenderer(new CapacityWaypointRenderer());
 		waypointPainter.setWaypoints(waypoints);
 
 		// Create a compound painter that uses both the route-painter and the
 		// waypoint-painter
 		List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
-		painters.add(routePainter);
-//		painters.add(seaRoutePainter);
+		painters.add(routePaintController);
 		painters.add(waypointPainter);
 
 		CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>(painters);
@@ -232,10 +241,25 @@ public class MyMap extends JXMapViewer {
 	/**
 	 * @param waypoints
 	 */
-	public void setWaypoints(Set<Waypoint> waypoints) {
+	public void setWaypoints(Set<CapacityWaypoint> waypoints) {
 		this.waypoints = waypoints;
 		waypointPainter.setWaypoints(waypoints);
 
 	}
+
+
+
+	/* (non-Javadoc)
+	 * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
+	 */
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		String propertyName = evt.getPropertyName();
+		if (Constants.EVENT_NAME_WAYPOINT.equals(propertyName)) {
+			repaint();
+		}		
+	}
+
+
 
 }

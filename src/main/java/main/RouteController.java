@@ -1,12 +1,16 @@
 package main;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.jxmapviewer.viewer.GeoPosition;
-import org.jxmapviewer.viewer.Waypoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,13 +29,13 @@ import models.HighResEdge;
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */
-public class RouteController {
+public class RouteController implements PropertyChangeListener {
 
 	static final Logger logger = LoggerFactory.getLogger(RouteController.class);
 	
-	private static RouteController instance;
 	private List<Edge> route = new ArrayList<>();
 	private List<Edge> seaRoute = new ArrayList<>();
+	private CapacityWaypoint highlightedWaypoint = null;
 
 	/**
 	 * Contains the visible route part
@@ -43,7 +47,7 @@ public class RouteController {
 	 */
 	private List<Edge> paintSeaRoute = new ArrayList<>();
 
-	private RouteController() {
+	RouteController() {
 		// noop
 	}
 
@@ -185,7 +189,7 @@ public class RouteController {
 
 	public void importGrapHopperPoints(PointList points, MyMap map) {
 		List<Edge> route = getRoute();
-		Set<Waypoint> waypoints = new HashSet<>();
+		Set<CapacityWaypoint> waypoints = new HashSet<>();
 		GeoPosition last = new GeoPosition(points.getLatitude(0), points.getLongitude(0));
 		waypoints.add(new CapacityWaypoint(last.getLatitude(), last.getLongitude(), 0));
 		for (int i = 1; i < points.size(); i++) {
@@ -200,17 +204,14 @@ public class RouteController {
 	}
 
 	/**
-	 * Returns always the same instance of a {@link RouteController}
-	 * 
-	 * @return
+	 * @param viewportStart
+	 * @param viewportEnd
 	 */
-	public static RouteController getInstance() {
-		if (instance == null) {
-			instance = new RouteController();
-		}
-		return instance;
+	public void excludeNonVisiblePointFromPaintRoutes(GeoPosition viewportStart, GeoPosition viewportEnd) {
+		excludeNonVisiblePointFromPaintRoutes(viewportStart, viewportEnd, route);
 	}
 
+	
 	/**
 	 * 
 	 * @param viewportStart
@@ -218,7 +219,7 @@ public class RouteController {
 	 * @param viewportEnd
 	 *            {@link GeoPosition} at last bottom-right pixel of the viewport
 	 */
-	public void excludeNonVisiblePointFromPaintRoutes(GeoPosition viewportStart, GeoPosition viewportEnd) {
+	public void excludeNonVisiblePointFromPaintRoutes(GeoPosition viewportStart, GeoPosition viewportEnd, List<Edge> route) {
 		if (Constants.drawOnlyViewport) {
 			// Land routes
 			List<Edge> result = new ArrayList<>();
@@ -268,5 +269,69 @@ public class RouteController {
 		logger.info(i + " Points - " + edges.size() + " Edges");
 	
 	}
+
+	private void calcOnlyVisibleEdges(Graphics2D g, MyMap map) {
+		Rectangle rect = map.getViewportBounds();
+		GeoPosition viewportStart = map.getGeoPos(rect.getMinX(), rect.getMinY());
+		GeoPosition viewportEnd = map.getGeoPos(rect.getMaxX(), rect.getMaxY());
+		excludeNonVisiblePointFromPaintRoutes(viewportStart, viewportEnd, route);
+		if (Constants.debugInfos && Constants.drawOnlyViewport) {
+			g.setColor(Color.MAGENTA);
+			g.drawRect((int) rect.getMinX() + 300, (int) rect.getMinY() + 150,
+					(int) rect.getMaxX() - 300 - ((int) rect.getMinX() + 300),
+					(int) rect.getMaxY() - 150 - ((int) rect.getMinY() + 150));
+		}
+	}
+	
+	/**
+	 * @param g
+	 * @param map
+	 */
+	public void updatePaintRoute(Graphics2D g, MyMap map) {
+		calcOnlyVisibleEdges(g, map);
+		if (highlightedWaypoint != null) {
+			showOnlyWaypointEdges(route, seaRoute);
+		}
+
+		
+	}
+
+	/**
+	 * @param seaRoute 
+	 * 
+	 */
+	private void showOnlyWaypointEdges(List<Edge> route, List<Edge> seaRoute) {
+		List<Edge> result = new ArrayList<>();
+		for (Edge edge : route) {
+			if (edge.getStart().equals(highlightedWaypoint.getPosition())
+					|| edge.getDest().equals(highlightedWaypoint.getPosition())) {
+				result.add(edge);
+			}
+		}
+		paintRoute = result;
+		
+		result = new ArrayList<>();
+		for (Edge edge : seaRoute) {
+			if (edge.getStart().equals(highlightedWaypoint.getPosition())
+					|| edge.getDest().equals(highlightedWaypoint.getPosition())) {
+				result.add(edge);
+			}
+		}
+		paintSeaRoute = result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
+	 */
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		String propertyName = evt.getPropertyName();
+		if (Constants.EVENT_NAME_WAYPOINT.equals(propertyName)) {
+			highlightedWaypoint = (CapacityWaypoint) evt.getNewValue();
+		}
+		
+		
+	}
+
 
 }

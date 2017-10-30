@@ -36,11 +36,13 @@ public class SeaFlowEntity extends FlowEntity {
 		int[] minMax = NewEntityFlowPainter.calcMinMaxIndex(this);
 		Path2D path = new Double();
 		minMax[0] = minMax[0] > 0 ? minMax[0] : 0;
+		minMax[1] = minMax[1] > 0 ? minMax[1] : 1;
 		for (int i = minMax[0]; i < edge.getPath().size() && i <= minMax[1]; i++) {
 			Path2D path2d = edge.getPath().get(i);
 			path.append(path2d, Constants.drawLineWhenEnitityStarts);
 		}
-		capWorkIndex = minMax[1] / edge.getPath().size() * edge.nodes.size();
+		int edgeElements = edge.getPath().size() * edge.nodes.size();
+		capWorkIndex = minMax[1] / (edgeElements > 0 ? edgeElements : 1);
 		return path;
 	}
 }

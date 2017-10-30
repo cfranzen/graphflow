@@ -28,6 +28,10 @@ public class Constants {
 	 */
 	public static final int MAX_TIME_STEPS = 250;
 	public static final double SEA_NODE_MAX_DISTANCE = 300000;
-	public static final float SHIP_SCALE_FACTOR = 1.75f;
+	public static final float SHIP_SCALE_FACTOR = 1.95f;
+	
+	public static final int CIRCLE_DIAMETER = 10;
 
+	public static final String EVENT_NAME_WAYPOINT = "highlightedWaypoint";
+	
 }

@@ -17,6 +17,10 @@ import org.jxmapviewer.viewer.DefaultWaypointRenderer;
 import org.jxmapviewer.viewer.Waypoint;
 import org.jxmapviewer.viewer.WaypointRenderer;
 
+import interactiveWaypoints.SwingWaypoint;
+import models.CapacityWaypoint;
+import models.Constants;
+
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
@@ -24,8 +28,6 @@ import org.jxmapviewer.viewer.WaypointRenderer;
 public class CapacityWaypointRenderer implements WaypointRenderer<Waypoint> {
 
 	private static final Log log = LogFactory.getLog(DefaultWaypointRenderer.class);
-	private static final int circleRadius = 10;
-
 	private BufferedImage img = null;
 
 	/**
@@ -56,6 +58,8 @@ public class CapacityWaypointRenderer implements WaypointRenderer<Waypoint> {
 	@Override
 	public void paintWaypoint(Graphics2D g, JXMapViewer map, Waypoint waypoint) {
 		Point2D point = map.getTileFactory().geoToPixel(waypoint.getPosition(), map.getZoom());
+		boolean debug = true;
+		
 		if (img == null) {
 			drawCircleWaypoint(g, point);
 		} else {
@@ -65,11 +69,11 @@ public class CapacityWaypointRenderer implements WaypointRenderer<Waypoint> {
 	}
 
 	private void drawCircleWaypoint(Graphics2D g, Point2D point) {
-		int x = (int) point.getX() - (circleRadius / 2);
-		int y = (int) point.getY() - (circleRadius / 2);
+		int x = (int) point.getX() - (Constants.CIRCLE_DIAMETER / 2);
+		int y = (int) point.getY() - (Constants.CIRCLE_DIAMETER / 2);
 
 		g.setColor(getWaypointColor());
-		g.fillOval(x, y, circleRadius, circleRadius);
+		g.fillOval(x, y, Constants.CIRCLE_DIAMETER, Constants.CIRCLE_DIAMETER);
 	}
 
 	private Color getWaypointColor() {

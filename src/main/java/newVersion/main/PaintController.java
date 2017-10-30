@@ -8,6 +8,7 @@ import java.awt.Graphics2D;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.painter.Painter;
 
+import gui.MyMap;
 import main.MainController;
 import main.RouteController;
 import newVersion.painter.NewEntityFlowPainter;
@@ -23,7 +24,8 @@ public class PaintController implements Painter<JXMapViewer> {
 	private static PaintController instance;
 	private IRoutePainter painter1 = new EntityFlowPainter();
 	private NewEntityFlowPainter painter2 = new NewEntityFlowPainter();
-	private static boolean useNewPainter = false; // TODO refactor
+	private RouteController routeController;
+	private static boolean useNewPainter = false; 
 	
 	private PaintController() {
 		// NOOP
@@ -42,6 +44,7 @@ public class PaintController implements Painter<JXMapViewer> {
 	 */
 	@Override
 	public void paint(Graphics2D g, JXMapViewer map, int w, int h) {
+		routeController.updatePaintRoute(g, (MyMap) map);
 		if (useNewPainter) {
 			painter2.paint(g, map, w, h);
 		} else {
@@ -50,6 +53,7 @@ public class PaintController implements Painter<JXMapViewer> {
 	}
 	
 	public void setRouteController(RouteController routeController) {
+		this.routeController = routeController;
 		painter1.setRouteController(routeController);
 		painter2.setRouteController(routeController);
 	}
