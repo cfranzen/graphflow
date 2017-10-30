@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jxmapviewer.viewer.GeoPosition;
+import org.jxmapviewer.viewer.Waypoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +23,9 @@ import models.Constants;
 import models.Edge;
 import models.EdgeType;
 import models.HighResEdge;
+import models.SeaEdge;
+import newVersion.models.NodeEdge;
+import painter.SeaRoutePainter;
 
 /**
  * Contains the route which is to be painted from multiple sources
@@ -32,7 +36,7 @@ import models.HighResEdge;
 public class RouteController implements PropertyChangeListener {
 
 	static final Logger logger = LoggerFactory.getLogger(RouteController.class);
-	
+
 	private List<Edge> route = new ArrayList<>();
 	private List<Edge> seaRoute = new ArrayList<>();
 	private CapacityWaypoint highlightedWaypoint = null;
@@ -70,7 +74,7 @@ public class RouteController implements PropertyChangeListener {
 	public List<Edge> getPaintRoute() {
 		return paintRoute;
 	}
-	
+
 	public List<Edge> getPaintSeaRoute() {
 		return paintSeaRoute;
 	}
@@ -211,7 +215,6 @@ public class RouteController implements PropertyChangeListener {
 		excludeNonVisiblePointFromPaintRoutes(viewportStart, viewportEnd, route);
 	}
 
-	
 	/**
 	 * 
 	 * @param viewportStart
@@ -219,7 +222,8 @@ public class RouteController implements PropertyChangeListener {
 	 * @param viewportEnd
 	 *            {@link GeoPosition} at last bottom-right pixel of the viewport
 	 */
-	public void excludeNonVisiblePointFromPaintRoutes(GeoPosition viewportStart, GeoPosition viewportEnd, List<Edge> route) {
+	public void excludeNonVisiblePointFromPaintRoutes(GeoPosition viewportStart, GeoPosition viewportEnd,
+			List<Edge> route) {
 		if (Constants.drawOnlyViewport) {
 			// Land routes
 			List<Edge> result = new ArrayList<>();
@@ -230,11 +234,11 @@ public class RouteController implements PropertyChangeListener {
 				}
 			}
 			paintRoute = result;
-	
+
 			// Sea routes
 			result = new ArrayList<>();
 			for (Edge edge : seaRoute) {
-	
+
 				if ((edge.getStart() != null && pointOnScreen(edge.getStart(), viewportStart, viewportEnd))
 						|| (edge.getDest() != null && pointOnScreen(edge.getDest(), viewportStart, viewportEnd))) {
 					result.add(edge);
@@ -267,7 +271,7 @@ public class RouteController implements PropertyChangeListener {
 			i += edge.getPositions().size();
 		}
 		logger.info(i + " Points - " + edges.size() + " Edges");
-	
+
 	}
 
 	private void calcOnlyVisibleEdges(Graphics2D g, MyMap map) {
@@ -282,46 +286,70 @@ public class RouteController implements PropertyChangeListener {
 					(int) rect.getMaxY() - 150 - ((int) rect.getMinY() + 150));
 		}
 	}
-	
+
 	/**
 	 * @param g
 	 * @param map
 	 */
 	public void updatePaintRoute(Graphics2D g, MyMap map) {
+		calculateSeaEdges(map);
 		calcOnlyVisibleEdges(g, map);
 		if (highlightedWaypoint != null) {
 			showOnlyWaypointEdges(route, seaRoute);
 		}
-
-		
 	}
 
+	private void calculateSeaEdges(MyMap map){
+		List<NodeEdge> seaRoute = new ArrayList<>();
+		for (Edge edge : getSeaRoute()) {
+			if (!(edge instanceof NodeEdge)) {
+				return;
+			}
+			seaRoute.add((NodeEdge) edge);
+		}
+		List<SeaEdge> seaEdges = SeaRoutePainter.calcDrawEdges(seaRoute);
+		for (NodeEdge nodeEdge : seaRoute) {
+			nodeEdge.setPath(new ArrayList<>(), 0);
+			nodeEdge.setPathZoom(map.getZoom());
+			for (SeaEdge seaEdge : seaEdges) {
+				if (seaEdge.edgeIds.contains(nodeEdge.id)) {
+					nodeEdge.addToPath(seaEdge.getPath());
+				}
+			}
+		}
+	}
+	
 	/**
-	 * @param seaRoute 
-	 * 
+	 * Filters the given {@link List}s to that only {@link Edge}s which have the
+	 * saved {@link Waypoint} as start positon are drawn.
 	 */
 	private void showOnlyWaypointEdges(List<Edge> route, List<Edge> seaRoute) {
 		List<Edge> result = new ArrayList<>();
 		for (Edge edge : route) {
 			if (edge.getStart().equals(highlightedWaypoint.getPosition())
-					|| edge.getDest().equals(highlightedWaypoint.getPosition())) {
+			// || edge.getDest().equals(highlightedWaypoint.getPosition())
+			) {
 				result.add(edge);
 			}
 		}
 		paintRoute = result;
-		
+
 		result = new ArrayList<>();
 		for (Edge edge : seaRoute) {
 			if (edge.getStart().equals(highlightedWaypoint.getPosition())
-					|| edge.getDest().equals(highlightedWaypoint.getPosition())) {
+			// || edge.getDest().equals(highlightedWaypoint.getPosition())
+			) {
 				result.add(edge);
 			}
 		}
 		paintSeaRoute = result;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.beans.PropertyChangeListener#propertyChange(java.beans.
+	 * PropertyChangeEvent)
 	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
@@ -329,9 +357,7 @@ public class RouteController implements PropertyChangeListener {
 		if (Constants.EVENT_NAME_WAYPOINT.equals(propertyName)) {
 			highlightedWaypoint = (CapacityWaypoint) evt.getNewValue();
 		}
-		
-		
-	}
 
+	}
 
 }

@@ -16,7 +16,6 @@ import gui.MyMap;
 import main.RouteController;
 import models.Constants;
 import models.Edge;
-import models.SeaEdge;
 import newVersion.models.FlowEntity;
 import newVersion.models.MapNode;
 import newVersion.models.NodeEdge;
@@ -65,20 +64,6 @@ public class NewEntityFlowPainter implements IRoutePainter {
 	@Override
 	public void drawRoute(Graphics2D g, MyMap map) {
 	
-		List<NodeEdge> seaRoute = new ArrayList<>();
-		for (Edge edge : routeController.getPaintSeaRoute()) {
-			seaRoute.add((NodeEdge) edge);
-		}
-		List<SeaEdge> seaEdges = SeaRoutePainter.calcDrawEdges(seaRoute);
-		for (NodeEdge nodeEdge : seaRoute) {
-			nodeEdge.setPath(new ArrayList<>(), 0);
-			nodeEdge.setPathZoom(map.getZoom());
-			for (SeaEdge seaEdge : seaEdges) {
-				if (seaEdge.edgeIds.contains(nodeEdge.id)) {
-					nodeEdge.addToPath(seaEdge.getPath());
-				}
-			}
-		}
 		// Manipulate the graphics object one time before the loop instead of
 		// every run, because it is a resource consuming operation
 		g.setColor(Color.GRAY);

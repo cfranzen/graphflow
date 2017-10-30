@@ -21,7 +21,7 @@ import models.Constants;
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */
-public class WaypointClickMouseListener extends AbstractBean implements MouseListener  {
+public class WaypointClickMouseListener extends AbstractBean implements MouseListener {
 
 	private MyMap map;
 	private CapacityWaypoint waypoint;
@@ -43,7 +43,8 @@ public class WaypointClickMouseListener extends AbstractBean implements MouseLis
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		GeoPosition gp = map.getCoordsForMouse(e);
-//		System.out.println("ClickPos:" + gp.toString() + " | Zoom: " + map.getZoom());
+		// System.out.println("ClickPos:" + gp.toString() + " | Zoom: " +
+		// map.getZoom());
 		Map<CapacityWaypoint, Double> distanceMap = new HashMap<>();
 		double precision = 0.25 * map.getZoom() / 3;
 		for (CapacityWaypoint waypoint : map.getWaypoints()) {
@@ -51,7 +52,8 @@ public class WaypointClickMouseListener extends AbstractBean implements MouseLis
 			double distance = MainController.getDistance(gp, wp);
 			if (distance < precision) {
 				distanceMap.put(waypoint, distance);
-//				System.out.println(wp.toString() + " - DIST: " + MainController.getDistance(gp, wp));
+				// System.out.println(wp.toString() + " - DIST: " +
+				// MainController.getDistance(gp, wp));
 
 			}
 		}
@@ -62,13 +64,22 @@ public class WaypointClickMouseListener extends AbstractBean implements MouseLis
 			}
 		}
 		CapacityWaypoint oldValue = getWaypoint();
+
 		if (minEntry != null) {
-//			JOptionPane.showMessageDialog(map, "Nearest node:\n" + minEntry.getKey().toString());
+			// JOptionPane.showMessageDialog(map, "Nearest node:\n" +
+			// minEntry.getKey().toString());
 			this.waypoint = minEntry.getKey();
 		} else {
 			this.waypoint = null;
 		}
+		if (oldValue != null) {
+			oldValue.setWorkload(0);
+		}
+		if (getWaypoint() != null) {
+			getWaypoint().setWorkload(1);
+		}
 		firePropertyChange(Constants.EVENT_NAME_WAYPOINT, oldValue, getWaypoint());
+
 	}
 
 	/*
@@ -78,7 +89,7 @@ public class WaypointClickMouseListener extends AbstractBean implements MouseLis
 	 */
 	@Override
 	public void mousePressed(MouseEvent e) {
-		//NOOP
+		// NOOP
 	}
 
 	/*
@@ -89,7 +100,7 @@ public class WaypointClickMouseListener extends AbstractBean implements MouseLis
 	 */
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		//NOOP
+		// NOOP
 	}
 
 	/*
@@ -99,7 +110,7 @@ public class WaypointClickMouseListener extends AbstractBean implements MouseLis
 	 */
 	@Override
 	public void mouseEntered(MouseEvent e) {
-		//NOOP
+		// NOOP
 	}
 
 	/*
@@ -109,9 +120,9 @@ public class WaypointClickMouseListener extends AbstractBean implements MouseLis
 	 */
 	@Override
 	public void mouseExited(MouseEvent e) {
-		//NOOP
+		// NOOP
 	}
-	
+
 	public CapacityWaypoint getWaypoint() {
 		return waypoint;
 	}
