@@ -58,26 +58,31 @@ public class CapacityWaypointRenderer implements WaypointRenderer<Waypoint> {
 	public void paintWaypoint(Graphics2D g, JXMapViewer map, Waypoint waypoint) {
 		Point2D point = map.getTileFactory().geoToPixel(waypoint.getPosition(), map.getZoom());
 		if (img == null) {
-			drawCircleWaypoint(g, point, ((CapacityWaypoint) waypoint).getWorkload());
+			drawCircleWaypoint(g, point, ((CapacityWaypoint) waypoint).getColorFlag());
 		} else {
 			drawImageWaypoint(g, point);
 		}
 	}
 
-	private void drawCircleWaypoint(Graphics2D g, Point2D point, double workload) {
+	private void drawCircleWaypoint(Graphics2D g, Point2D point, int colorFlag) {
 		int x = (int) point.getX() - (Constants.CIRCLE_DIAMETER / 2);
 		int y = (int) point.getY() - (Constants.CIRCLE_DIAMETER / 2);
 
-		g.setColor(getWaypointColor(workload));
+		g.setColor(getWaypointColor(colorFlag));
 		g.fillOval(x, y, Constants.CIRCLE_DIAMETER, Constants.CIRCLE_DIAMETER);
 	}
 
-	private Color getWaypointColor(double workload) {
-		// TODO Gradient
-		if (workload == 0) {
-			return Color.BLACK;
-		} else {
+	private Color getWaypointColor(int colorFlag) {
+		
+		switch (colorFlag) {
+		case 1:
 			return Color.RED;
+		case 2: 
+			return Color.BLUE;
+		case 3:
+			return Color.MAGENTA;
+		default:
+			return Color.BLACK;
 		}
 	}
 

@@ -23,7 +23,7 @@ public class CapacityWaypoint extends AbstractBean implements Waypoint {
 
 	private GeoPosition position;
 	private double maxCapacity;
-	private double workload = 0;
+	private int colorFlag = 0;
 	private Point mapPosi = new Point(0, 0);
 	private JButton button;
 
@@ -92,16 +92,16 @@ public class CapacityWaypoint extends AbstractBean implements Waypoint {
 	/**
 	 * @return the workload
 	 */
-	public double getWorkload() {
-		return workload;
+	public int getColorFlag() {
+		return colorFlag;
 	}
 
 	/**
 	 * @param workload
 	 *            the workload to set
 	 */
-	public void setWorkload(double workload) {
-		this.workload = workload;
+	public void setColorFlag(int value) {
+		this.colorFlag = value;
 	}
 
 	public void setMapPosiFromGeo(GeoPosition geo) {
@@ -128,7 +128,7 @@ public class CapacityWaypoint extends AbstractBean implements Waypoint {
 	@Override
 	public String toString() {
 		return String.format("Latitude: %f\nLongitude: %f\nCapacity: %f\nWorkload: %f",
-				position.getLatitude(), position.getLongitude(), maxCapacity, workload);
+				position.getLatitude(), position.getLongitude(), maxCapacity, colorFlag);
 	}
 
 	/*

@@ -32,6 +32,7 @@ public class Constants {
 	
 	public static final int CIRCLE_DIAMETER = 10;
 
-	public static final String EVENT_NAME_WAYPOINT = "highlightedWaypoint";
+	public static final String EVENT_NAME_WAYPOINT_FROM = "highlightedWaypointFrom";
+	public static final String EVENT_NAME_WAYPOINT_TO = "highlightedWaypointTo";
 	
 }

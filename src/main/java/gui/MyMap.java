@@ -255,8 +255,10 @@ public class MyMap extends JXMapViewer implements PropertyChangeListener {
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 		String propertyName = evt.getPropertyName();
-		if (Constants.EVENT_NAME_WAYPOINT.equals(propertyName)) {
+		if (Constants.EVENT_NAME_WAYPOINT_FROM.equals(propertyName)
+				|| Constants.EVENT_NAME_WAYPOINT_TO.equals(propertyName)) {
 			repaint();
+			// TODO Remove running entities
 		}		
 	}
 

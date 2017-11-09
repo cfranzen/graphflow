@@ -39,7 +39,8 @@ public class RouteController implements PropertyChangeListener {
 
 	private List<Edge> route = new ArrayList<>();
 	private List<Edge> seaRoute = new ArrayList<>();
-	private CapacityWaypoint highlightedWaypoint = null;
+	private CapacityWaypoint highlightedWaypointFrom = null;
+	private CapacityWaypoint highlightedWaypointTo = null;
 
 	/**
 	 * Contains the visible route part
@@ -294,12 +295,12 @@ public class RouteController implements PropertyChangeListener {
 	public void updatePaintRoute(Graphics2D g, MyMap map) {
 		calculateSeaEdges(map);
 		calcOnlyVisibleEdges(g, map);
-		if (highlightedWaypoint != null) {
+		if (highlightedWaypointFrom != null || highlightedWaypointTo != null) {
 			showOnlyWaypointEdges(route, seaRoute);
 		}
 	}
 
-	private void calculateSeaEdges(MyMap map){
+	private void calculateSeaEdges(MyMap map) {
 		List<NodeEdge> seaRoute = new ArrayList<>();
 		for (Edge edge : getSeaRoute()) {
 			if (!(edge instanceof NodeEdge)) {
@@ -318,17 +319,20 @@ public class RouteController implements PropertyChangeListener {
 			}
 		}
 	}
-	
+
 	/**
 	 * Filters the given {@link List}s to that only {@link Edge}s which have the
 	 * saved {@link Waypoint} as start positon are drawn.
 	 */
 	private void showOnlyWaypointEdges(List<Edge> route, List<Edge> seaRoute) {
+
 		List<Edge> result = new ArrayList<>();
+		GeoPosition from = highlightedWaypointFrom == null ? new GeoPosition(0, 0)
+				: highlightedWaypointFrom.getPosition();
+		GeoPosition to = highlightedWaypointTo == null ? new GeoPosition(0, 0) : highlightedWaypointTo.getPosition();
+
 		for (Edge edge : route) {
-			if (edge.getStart().equals(highlightedWaypoint.getPosition())
-			// || edge.getDest().equals(highlightedWaypoint.getPosition())
-			) {
+			if (edge.getStart().equals(from) || edge.getDest().equals(to)) {
 				result.add(edge);
 			}
 		}
@@ -336,9 +340,7 @@ public class RouteController implements PropertyChangeListener {
 
 		result = new ArrayList<>();
 		for (Edge edge : seaRoute) {
-			if (edge.getStart().equals(highlightedWaypoint.getPosition())
-			// || edge.getDest().equals(highlightedWaypoint.getPosition())
-			) {
+			if (edge.getStart().equals(from) || edge.getDest().equals(to)) {
 				result.add(edge);
 			}
 		}
@@ -354,8 +356,11 @@ public class RouteController implements PropertyChangeListener {
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 		String propertyName = evt.getPropertyName();
-		if (Constants.EVENT_NAME_WAYPOINT.equals(propertyName)) {
-			highlightedWaypoint = (CapacityWaypoint) evt.getNewValue();
+		if (Constants.EVENT_NAME_WAYPOINT_FROM.equals(propertyName)) {
+			highlightedWaypointFrom = (CapacityWaypoint) evt.getNewValue();
+		}
+		if (Constants.EVENT_NAME_WAYPOINT_TO.equals(propertyName)) {
+			highlightedWaypointTo = (CapacityWaypoint) evt.getNewValue();
 		}
 
 	}

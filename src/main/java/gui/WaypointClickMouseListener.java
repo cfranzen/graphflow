@@ -24,7 +24,8 @@ import models.Constants;
 public class WaypointClickMouseListener extends AbstractBean implements MouseListener {
 
 	private MyMap map;
-	private CapacityWaypoint waypoint;
+	private CapacityWaypoint waypointFrom;
+	private CapacityWaypoint waypointTo;
 
 	/**
 	 * @param myMap
@@ -63,22 +64,39 @@ public class WaypointClickMouseListener extends AbstractBean implements MouseLis
 				minEntry = entry;
 			}
 		}
-		CapacityWaypoint oldValue = getWaypoint();
-
-		if (minEntry != null) {
-			// JOptionPane.showMessageDialog(map, "Nearest node:\n" +
-			// minEntry.getKey().toString());
-			this.waypoint = minEntry.getKey();
-		} else {
-			this.waypoint = null;
+		if (e.getButton() == MouseEvent.BUTTON1) {
+			CapacityWaypoint oldValue = getWaypointFrom();
+	
+			if (minEntry != null) {
+				// JOptionPane.showMessageDialog(map, "Nearest node:\n" +
+				// minEntry.getKey().toString());
+				this.waypointFrom = minEntry.getKey();
+			} else {
+				this.waypointFrom = null;
+			}
+			if (oldValue != null) {
+				oldValue.setColorFlag(oldValue.getColorFlag() - 1);
+			}
+			if (getWaypointFrom() != null) {
+				getWaypointFrom().setColorFlag(getWaypointFrom().getColorFlag() + 1);
+			}
+			firePropertyChange(Constants.EVENT_NAME_WAYPOINT_FROM, oldValue, getWaypointFrom());
+		} else if (e.getButton() == MouseEvent.BUTTON3) {
+			CapacityWaypoint oldValue = getWaypointTo();
+			
+			if (minEntry != null) {
+				this.waypointTo = minEntry.getKey();
+			} else {
+				this.waypointTo = null;
+			}
+			if (oldValue != null) {
+				oldValue.setColorFlag(oldValue.getColorFlag() - 2);
+			}
+			if (getWaypointTo() != null) {
+				getWaypointTo().setColorFlag(getWaypointTo().getColorFlag() + 2);
+			}
+			firePropertyChange(Constants.EVENT_NAME_WAYPOINT_TO, oldValue, getWaypointTo());
 		}
-		if (oldValue != null) {
-			oldValue.setWorkload(0);
-		}
-		if (getWaypoint() != null) {
-			getWaypoint().setWorkload(1);
-		}
-		firePropertyChange(Constants.EVENT_NAME_WAYPOINT, oldValue, getWaypoint());
 
 	}
 
@@ -123,7 +141,12 @@ public class WaypointClickMouseListener extends AbstractBean implements MouseLis
 		// NOOP
 	}
 
-	public CapacityWaypoint getWaypoint() {
-		return waypoint;
+	public CapacityWaypoint getWaypointFrom() {
+		return waypointFrom;
+	}
+	
+
+	public CapacityWaypoint getWaypointTo() {
+		return waypointTo;
 	}
 }
