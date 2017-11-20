@@ -46,6 +46,7 @@ import models.MapRoute;
 import models.MapRoute.MapPoint;
 import models.ModelLoader;
 import newVersion.main.Optimizer;
+import newVersion.main.WaypointController;
 import sea.SeaController;
 
 /**
@@ -84,6 +85,7 @@ public class MainController {
 	private JFrame frame;
 
 	private RouteController routeController = new RouteController();
+	private WaypointController waypointController = new WaypointController();
 	private SeaController seaController;
 
 	/**
@@ -139,6 +141,9 @@ public class MainController {
 		// Processing input to own classes
 		loadSolution();
 
+		waypointController.createWaypointsFromGeo(input.nodes);
+		routeController.addEdges(input.edges);
+
 		optimize();
 
 	}
@@ -147,8 +152,6 @@ public class MainController {
 		File f = new File(cliInput.modelFilePath);
 		if (f.exists() && !f.isDirectory()) {
 			input = ModelLoader.loadFile(cliInput.modelFilePath, cliInput.solutionFilePath);
-			mapViewer.addPositions(input.nodes);
-			routeController.addEdges(input.edges);
 		}
 
 	}
@@ -170,7 +173,7 @@ public class MainController {
 		if (currentTime >= input.timesteps * Constants.PAINT_STEPS) {
 			currentTime = 0;
 		}
-		if (Constants.debugInfos && currentTime > Constants.MAX_TIME_STEPS * Constants.PAINT_STEPS) { 
+		if (Constants.debugInfos && currentTime > Constants.MAX_TIME_STEPS * Constants.PAINT_STEPS) {
 			currentTime = 0;
 		}
 		if (currentTime % Constants.PAINT_STEPS == 0 && Constants.showTimesteps) {
@@ -229,7 +232,7 @@ public class MainController {
 		logger.debug(layeredPane.getSize().toString());
 
 		// TODO Add Layout to layeredPane, to order Buttons etc
-		
+
 		JButton btn = new RunButton(this);
 		btn.setSize(150, 50);
 		layeredPane.add(btn, new Integer(20));
@@ -291,8 +294,8 @@ public class MainController {
 
 			@Override
 			public void run() {
-				Optimizer optimizer = new Optimizer(routeController);
-				optimizer.optimize();
+				Optimizer optimizer = new Optimizer();
+				optimizer.optimize(routeController, waypointController);
 			}
 		});
 		t.start();
@@ -324,7 +327,6 @@ public class MainController {
 	private void reducePointCount() {
 		reducePointCount(1);
 	}
-
 
 	/**
 	 * @param point
@@ -419,7 +421,6 @@ public class MainController {
 		}
 	}
 
-	// FIXME change to private
 	public static double getDistance(GeoPosition refPoint, GeoPosition point) {
 		double deltaX = Math.abs(refPoint.getLatitude() - point.getLatitude());
 		double deltaY = Math.abs(refPoint.getLongitude() - point.getLongitude());

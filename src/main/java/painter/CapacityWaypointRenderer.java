@@ -24,7 +24,7 @@ import models.Constants;
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */
-public class CapacityWaypointRenderer implements WaypointRenderer<Waypoint> {
+public class CapacityWaypointRenderer implements WaypointRenderer<CapacityWaypoint> {
 
 	private static final Log log = LogFactory.getLog(DefaultWaypointRenderer.class);
 	private BufferedImage img = null;
@@ -55,7 +55,7 @@ public class CapacityWaypointRenderer implements WaypointRenderer<Waypoint> {
 	 * Graphics2D, org.jxmapviewer.JXMapViewer, java.lang.Object)
 	 */
 	@Override
-	public void paintWaypoint(Graphics2D g, JXMapViewer map, Waypoint waypoint) {
+	public void paintWaypoint(Graphics2D g, JXMapViewer map, CapacityWaypoint waypoint) {
 		Point2D point = map.getTileFactory().geoToPixel(waypoint.getPosition(), map.getZoom());
 		if (img == null) {
 			drawCircleWaypoint(g, point, ((CapacityWaypoint) waypoint).getColorFlag());
@@ -73,11 +73,11 @@ public class CapacityWaypointRenderer implements WaypointRenderer<Waypoint> {
 	}
 
 	private Color getWaypointColor(int colorFlag) {
-		
+
 		switch (colorFlag) {
 		case 1:
 			return Color.RED;
-		case 2: 
+		case 2:
 			return Color.BLUE;
 		case 3:
 			return Color.MAGENTA;

@@ -24,7 +24,7 @@ import models.CapacityWaypoint;
  * of the representing button.
  *
  */
-public class SwingWaypointOverlayPainter extends WaypointPainter<Waypoint> {
+public class SwingWaypointOverlayPainter extends WaypointPainter<CapacityWaypoint> {
 
 	@Override
 	protected void doPaint(Graphics2D g, JXMapViewer jxMapViewer, int width, int height) {

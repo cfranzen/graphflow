@@ -31,33 +31,46 @@ public class Optimizer {
 
 	private static final Logger logger = LoggerFactory.getLogger(Optimizer.class);
 
-	private RouteController routeController;
-
 	/**
-	 * @param routeController 
+	 * @param routeController
 	 * 
 	 */
-	public Optimizer(RouteController routeController) {
-		this.routeController = routeController;
+	public Optimizer() {
+		// noop
 	}
 
-	public void optimize() {
-		
+	public void optimize(RouteController routeController, WaypointController waypointController) {
 		routeController.sumAllPoints();
 		logger.info("optimize v2");
+
+		aggregateWaypoints(routeController, waypointController);
+
 		// combine edges & create almost empty map points
 		// Creates MapNodes for each simple point in the list
 		if (Constants.optimzeLandRoutes) {
 			routeController.setRoute(optimizeGivenEdges(routeController.getRoute()));
 			logger.info("land edges done - now processing sea edges");
 		}
-		
+
 		List<Edge> seaRoute = optimizeGivenEdges(routeController.getSeaRoute());
 		routeController.setSeaRoute(seaRoute);
 		PaintController.useNewPainter(); // TODO Refactor
-		
+
 		routeController.sumAllPoints();
 		logger.info("optimize v2-end");
+	}
+
+	/**
+	 * @param routeController
+	 * @param waypointController
+	 */
+	private void aggregateWaypoints(RouteController routeController, WaypointController waypointController) {
+		long time = System.currentTimeMillis();
+		logger.info("Aggregate waypoints");
+		// TODO
+		logger.info("Change route ends to aggregated waypoints");
+		// TODO
+		logger.info("Aggregate waypoints end - " + (System.currentTimeMillis() - time) + " ms");
 	}
 
 	private List<Edge> optimizeGivenEdges(List<Edge> edges) {
@@ -78,12 +91,13 @@ public class Optimizer {
 				mapEdge.id = i;
 			}
 			savedEdges.add(mapEdge);
-			logger.info("Edge " + i + " from " + edges.size() + " processed : " + mapEdge.nodes.size() + " Nodes - " + (System.currentTimeMillis() - time) + " ms");
+			logger.info("Edge " + i + " from " + edges.size() + " processed : " + mapEdge.nodes.size() + " Nodes - "
+					+ (System.currentTimeMillis() - time) + " ms");
 		}
 
 		logger.info("Precalculate Capacity and Workload");
-		ExecutorService service = //Executors.newCachedThreadPool();
-		Executors.newFixedThreadPool(10);
+		ExecutorService service = // Executors.newCachedThreadPool();
+				Executors.newFixedThreadPool(10);
 		// for each map point, calc work&cap
 		final int timesteps = edges.get(0).getCapacites().length;
 		List<Future<?>> futures = new ArrayList<>();
@@ -102,7 +116,7 @@ public class Optimizer {
 		for (int i = 0; i < futures.size(); i++) {
 			Future<?> future = futures.get(i);
 			try {
-				
+
 				future.get(200, TimeUnit.MILLISECONDS);
 				if (i % 500 == 0) {
 					logger.info("Computed CapWork for Point " + i + " from " + futures.size());
@@ -119,9 +133,14 @@ public class Optimizer {
 	}
 
 	/**
+	 * Returns the nearest {@link MapNode} of the given {@link List} within a
+	 * specific radius.
+	 * 
 	 * @param point
-	 * @param savedEdges
-	 * @return
+	 * @param nodes
+	 *            {@link List} of {@link MapNode}s to search in
+	 * @return nearest {@link MapNode} if within radius, <br>
+	 *         <code>null</code> otherwise
 	 */
 	private MapNode getNearestNode(GeoPosition point, List<MapNode> nodes) {
 		for (MapNode mapNode : nodes) {

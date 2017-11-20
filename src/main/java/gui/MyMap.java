@@ -9,7 +9,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -27,7 +26,6 @@ import org.jxmapviewer.viewer.DefaultTileFactory;
 import org.jxmapviewer.viewer.GeoPosition;
 import org.jxmapviewer.viewer.LocalResponseCache;
 import org.jxmapviewer.viewer.TileFactoryInfo;
-import org.jxmapviewer.viewer.Waypoint;
 import org.jxmapviewer.viewer.WaypointPainter;
 
 import interactiveWaypoints.SwingWaypointOverlayPainter;
@@ -52,8 +50,7 @@ public class MyMap extends JXMapViewer implements PropertyChangeListener {
 
 	private static final long serialVersionUID = -6620174270673711401L;
 
-	private Set<CapacityWaypoint> waypoints = new HashSet<>();;
-	private WaypointPainter<Waypoint> waypointPainter;
+	private WaypointPainter<CapacityWaypoint> waypointPainter;
 
 	private PaintController routePaintController;
 
@@ -62,72 +59,18 @@ public class MyMap extends JXMapViewer implements PropertyChangeListener {
 	 */
 	public MyMap(MainController controller, RouteController routeController) {
 		super();
-		
+
 		addUserInteractions(controller, routeController);
 		setUpTileFactory();
 
 		// Default values
 		setAddressLocation(new GeoPosition(50.11, 8.68)); // Frankfurt
 		setZoom(15);
-		
+
 		initPainters(routeController);
-		
+
 		setMinimumSize(new Dimension(250, 250));
 		setPreferredSize(new Dimension(1400, 400));
-	}
-
-	
-	
-	/**
-	 * @return the {@link Waypoint} positions as {@link GeoPosition}
-	 */
-	public List<GeoPosition> getWaypointPositions() {
-		List<GeoPosition> result = new ArrayList<>(waypoints.size());
-		for (Waypoint waypoint : waypoints) {
-			result.add(waypoint.getPosition());
-		}
-		return result;
-	}
-
-	/**
-	 * @return the {@link Waypoint} as {@link List}
-	 */
-	public List<CapacityWaypoint> getWaypoints() {
-		return new ArrayList<>(waypoints);
-	}
-	
-	/**
-	 * Adds the given nodes to the graph.
-	 * 
-	 * @param nodes
-	 *            {@link List} with {@link GeoPosition}s as nodes
-	 */
-	public void addPositions(List<GeoPosition> nodes) {
-		List<GeoPosition> zoomNodes = new ArrayList<>();
-		if (Constants.onlyGermany) {
-			for (GeoPosition geoPos : nodes) {
-				double lat = geoPos.getLatitude();
-				double lon = geoPos.getLongitude();
-
-				// Only Germany
-				if ((6 < lon && lon < 14) && (45 < lat && lat < 55)) {
-					waypoints.add(new CapacityWaypoint(lat, lon, 0));
-					zoomNodes.add(geoPos);
-				}
-			}
-		} else {
-			for (GeoPosition geoPos : nodes) {
-				
-				CapacityWaypoint waypoint = new CapacityWaypoint(geoPos.getLatitude(), geoPos.getLongitude(), 0);
-//				addMouseListener(waypoint.getMouseListener()); XXX
-				
-				waypoints.add(waypoint);
-				zoomNodes.add(geoPos);
-			}
-		}
-		// TODO schöner machen
-		// zoomToBestFit(new HashSet<>(zoomNodes), 0.7);
-		waypointPainter.setWaypoints(waypoints);
 	}
 
 	/**
@@ -141,7 +84,7 @@ public class MyMap extends JXMapViewer implements PropertyChangeListener {
 		routePaintController.setTimeStep(time);
 		updateMap();
 	}
-	
+
 	public void updateMap() {
 		invalidate();
 		repaint();
@@ -162,7 +105,7 @@ public class MyMap extends JXMapViewer implements PropertyChangeListener {
 	public Point2D getPixelPos(GeoPosition pos) {
 		return getTileFactory().geoToPixel(pos, getZoom());
 	}
-	
+
 	/**
 	 * This method is called automatically when the mouse is over the component.
 	 * Based on the location of the event, we detect if we are over one of the
@@ -179,8 +122,9 @@ public class MyMap extends JXMapViewer implements PropertyChangeListener {
 
 	/**
 	 * Adds the {@link MouseListener}s for user-interaction
-	 * @param controller 
-	 * @param routeController 
+	 * 
+	 * @param controller
+	 * @param routeController
 	 */
 	private void addUserInteractions(MainController controller, RouteController routeController) {
 		MouseInputListener mia = new PanMouseInputListener(this);
@@ -216,7 +160,7 @@ public class MyMap extends JXMapViewer implements PropertyChangeListener {
 	 */
 	private void initPainters(RouteController routeController) {
 
-//		seaRoutePainter = new SeaRoutePainter(this);
+		// seaRoutePainter = new SeaRoutePainter(this);
 		// landRoutePainter = new SimpleFlowRoutePainter();
 		// landRoutePainter = new EntityFlowPainter();
 		routePaintController = PaintController.getInstance();
@@ -226,7 +170,6 @@ public class MyMap extends JXMapViewer implements PropertyChangeListener {
 		// TODO Refactor, do not use jmapviewers waypoint class
 		waypointPainter = new SwingWaypointOverlayPainter();
 		waypointPainter.setRenderer(new CapacityWaypointRenderer());
-		waypointPainter.setWaypoints(waypoints);
 
 		// Create a compound painter that uses both the route-painter and the
 		// waypoint-painter
@@ -242,15 +185,15 @@ public class MyMap extends JXMapViewer implements PropertyChangeListener {
 	 * @param waypoints
 	 */
 	public void setWaypoints(Set<CapacityWaypoint> waypoints) {
-		this.waypoints = waypoints;
 		waypointPainter.setWaypoints(waypoints);
 
 	}
 
-
-
-	/* (non-Javadoc)
-	 * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.beans.PropertyChangeListener#propertyChange(java.beans.
+	 * PropertyChangeEvent)
 	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
@@ -259,9 +202,14 @@ public class MyMap extends JXMapViewer implements PropertyChangeListener {
 				|| Constants.EVENT_NAME_WAYPOINT_TO.equals(propertyName)) {
 			repaint();
 			// TODO Remove running entities
-		}		
+		}
 	}
 
-
+	/**
+	 * @return
+	 */
+	public Set<CapacityWaypoint> getWaypoints() {
+		return waypointPainter.getWaypoints();
+	}
 
 }

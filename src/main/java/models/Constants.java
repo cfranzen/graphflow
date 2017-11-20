@@ -2,7 +2,6 @@ package models;
 
 public class Constants {
 
-	// XXX for debug
 	public static boolean onlyGermany = false;
 	public static boolean debugInfos = false;
 	public static boolean debugInfosSeaEdges = false;
@@ -21,7 +20,7 @@ public class Constants {
 	 * Delay between increasing the time step counter in milliseconds
 	 */
 //	public static final int TIME_STEP_DELAY = 75;
-	public static final int TIME_STEP_DELAY = 30;
+	public static final int TIME_STEP_DELAY = 30; // Faster for debug
 
 	/**
 	 * Limits the shown time steps for debug purposes
