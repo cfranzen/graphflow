@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
@@ -131,7 +132,6 @@ public class MainController {
 	 * Main method.
 	 */
 	public void run() {
-
 		initGui();
 
 		// Load sea data
@@ -141,10 +141,16 @@ public class MainController {
 		// Processing input to own classes
 		loadSolution();
 
-		waypointController.createWaypointsFromGeo(input.nodes);
 		routeController.addEdges(input.edges);
+		
+		waypointController.createWaypointsFromGeo(input.nodes);
+		Optimizer.aggregateWaypoints(routeController, waypointController);
+		System.out.println("" + routeController.getRoute().get(1));
+		mapViewer.setWaypoints(new HashSet<>(waypointController.getWaypoints()));
+
 
 		optimize();
+		System.out.println("" + routeController.getRoute().get(1));
 
 	}
 
@@ -286,9 +292,11 @@ public class MainController {
 		// optimize GH edges
 		mapEdgesToStreets();
 		logger.info("End GH - " + (System.currentTimeMillis() - time));
-
+		
 		reducePointCount();
 
+//		if (true) return;
+		
 		// own thread so that the main thread is not blocked
 		Thread t = new Thread(new Runnable() {
 
@@ -296,6 +304,7 @@ public class MainController {
 			public void run() {
 				Optimizer optimizer = new Optimizer();
 				optimizer.optimize(routeController, waypointController);
+				mapViewer.setWaypoints(new HashSet<>(waypointController.getWaypoints()));
 			}
 		});
 		t.start();
@@ -429,6 +438,7 @@ public class MainController {
 
 	private void mapEdgesToStreets() {
 		List<Edge> land = routeController.getRoute();
+		System.out.println("" + routeController.getRoute().get(1));
 		List<Edge> sea = routeController.getSeaRoute();
 		List<Edge> route = new ArrayList<>(land.size() + sea.size());
 		if (Constants.optimzeLandRoutes) {

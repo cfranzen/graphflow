@@ -3,13 +3,15 @@ package models;
 public class Constants {
 
 	public static boolean onlyGermany = false;
-	public static boolean debugInfos = false;
+	public static boolean debugInfos = true;
 	public static boolean debugInfosSeaEdges = false;
 	public static boolean drawOnlyViewport = true;
 	public static boolean optimzeLandRoutes = true;
 	public static boolean showTimesteps = true;
 	public static boolean drawLineWhenEnitityStarts = true;
 	
+	public static int ZOOM_LEVEL_COUNT = 3;
+	public static float ZOOM_LEVEL_DISTANCE_GEO = 6;
 	
 	public static final int MAX_ZOOM_LEVEL = 17;
 	public static final double POINT_DISTANCE_GEO = 2.75;

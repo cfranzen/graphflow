@@ -62,7 +62,6 @@ public class DefaultRoutePainter implements IRoutePainter {
 		showSearchRadius(g, map, route);
 		for (Edge edge : route) {
 
-			// XXX debug, do not draw sea solution edges
 			if (edge.getType().equals(EdgeType.VESSEL)) {
 				System.out.println("ERROR wrong edge");
 			}
@@ -99,6 +98,7 @@ public class DefaultRoutePainter implements IRoutePainter {
 
 		g.drawLine((int) startPt2D.getX(), (int) startPt2D.getY(), (int) endPt2D.getX(), (int) endPt2D.getY());
 
+		
 		return new Point2D[] { startPt2D, endPt2D };
 	}
 

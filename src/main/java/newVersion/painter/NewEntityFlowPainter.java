@@ -142,7 +142,7 @@ public class NewEntityFlowPainter implements IRoutePainter {
 				MapNode currentNode = flowEntity.getPoints().get(flowEntity.capWorkIndex);
 				long capacity = currentNode.capWork[flowEntity.startTimestep][0];
 				long workload = currentNode.capWork[flowEntity.startTimestep][1];
-				modifyGraphics(g, capacity, workload, true);
+				modifyGraphics(g, capacity, workload, true, map.getZoom());
 				g.draw(path);
 			}
 		}
@@ -172,8 +172,12 @@ public class NewEntityFlowPainter implements IRoutePainter {
 			GeoPosition current = node.getPosition();
 
 			drawRoutePart(g, map, last, current, node.capWork[timeStepBig][0], node.capWork[timeStepBig][1]);
-
 			last = current;
+		}
+		if (Constants.debugInfos) {
+			Point2D p = map.getPixelPos(last);
+			g.setColor(Color.red);
+			g.drawString("Id: " + entity.edge.id, (int)p.getX(), (int)p.getY());
 		}
 
 	}
@@ -204,21 +208,21 @@ public class NewEntityFlowPainter implements IRoutePainter {
 
 	private void drawRoutePart(Graphics2D g, MyMap map, GeoPosition from, GeoPosition to, long capacity,
 			long workload) {
-		modifyGraphics(g, capacity, workload);
+		modifyGraphics(g, capacity, workload, map.getZoom());
 		DefaultRoutePainter.drawNormalLine(g, map, from, to);
 	}
 
-	private void modifyGraphics(Graphics2D g, long capacity, long workload) {
-		modifyGraphics(g, capacity, workload, false);
+	private void modifyGraphics(Graphics2D g, long capacity, long workload, int currentZoom) {
+		modifyGraphics(g, capacity, workload, false, currentZoom);
 	}
 
-	private void modifyGraphics(Graphics2D g, long capacity, long workload, boolean isShip) {
+	private void modifyGraphics(Graphics2D g, long capacity, long workload, boolean isShip, int currentZoom) {
 		// modifying the graphics component is work intensive,
 		Color curCol = DefaultRoutePainter.calculateColor(workload, capacity);
 		if (!curCol.equals(lastCol)) {
 
 			g.setColor(curCol);
-			float scale = capacity / 250f;
+			float scale = Math.min(capacity / 250f, 350 / currentZoom);
 			if (isShip) {
 				scale /= Constants.SHIP_SCALE_FACTOR;
 			}

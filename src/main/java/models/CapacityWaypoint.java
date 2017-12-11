@@ -96,10 +96,6 @@ public class CapacityWaypoint extends AbstractBean implements Waypoint {
 		return colorFlag;
 	}
 
-	/**
-	 * @param workload
-	 *            the workload to set
-	 */
 	public void setColorFlag(int value) {
 		this.colorFlag = value;
 	}

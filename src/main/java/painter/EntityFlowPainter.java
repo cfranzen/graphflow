@@ -2,6 +2,7 @@ package painter;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
@@ -91,8 +92,16 @@ public class EntityFlowPainter implements IRoutePainter {
 					Point2D point = map.getTileFactory().geoToPixel(geoPos, map.getZoom());
 					g.setColor(Color.BLUE);
 					g.drawOval((int) point.getX(), (int) point.getY(), 15, 15);
+					String info = "";
+					if (edge.getInfo() != null) {
+						info = edge.getInfo();
+					} else {
+						info = "ID: " + edge.id;
+					}
+					g.setColor(Color.RED);
+					g.setFont(new Font("default", Font.BOLD, 16));
+					g.drawString(info, (int) point.getX(), (int) point.getY() + 15);
 				}
-
 				if (edge instanceof MapRoute) {
 					mapRoutePainter(g, map, (MapRoute) edge, entityStepCurrent, i, pointsPerStep);
 				} else {

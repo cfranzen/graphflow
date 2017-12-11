@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import main.MainController;
 import main.RouteController;
+import models.CapacityWaypoint;
 import models.Constants;
 import models.Edge;
 import newVersion.models.MapNode;
@@ -43,8 +44,6 @@ public class Optimizer {
 		routeController.sumAllPoints();
 		logger.info("optimize v2");
 
-		aggregateWaypoints(routeController, waypointController);
-
 		// combine edges & create almost empty map points
 		// Creates MapNodes for each simple point in the list
 		if (Constants.optimzeLandRoutes) {
@@ -64,12 +63,30 @@ public class Optimizer {
 	 * @param routeController
 	 * @param waypointController
 	 */
-	private void aggregateWaypoints(RouteController routeController, WaypointController waypointController) {
+	public static void aggregateWaypoints(RouteController routeController, WaypointController waypointController) {
 		long time = System.currentTimeMillis();
 		logger.info("Aggregate waypoints");
-		// TODO
-		logger.info("Change route ends to aggregated waypoints");
-		// TODO
+		List<CapacityWaypoint> savedNodes = new ArrayList<>();
+		for (CapacityWaypoint waypoint : waypointController.getWaypoints()) {
+			CapacityWaypoint node = getNearWaypoint(waypoint.getPosition(), savedNodes,
+					Constants.ZOOM_LEVEL_DISTANCE_GEO);
+			if (node == null) {
+				savedNodes.add(waypoint);
+			} else {
+				for (int i = 0; i < routeController.getRoute().size(); i++) {
+					Edge edge = routeController.getRoute().get(i);
+					Edge newEdge = new Edge(edge);
+					if (edge.getStart().equals(waypoint.getPosition())) {
+						newEdge.setStart(node.getPosition());
+					}
+					if (edge.getDest().equals(waypoint.getPosition())) {
+						newEdge.setDest(node.getPosition());
+					}
+					routeController.updateEdge(edge, newEdge);
+				}
+			}
+		}
+		waypointController.setWaypoints(savedNodes);
 		logger.info("Aggregate waypoints end - " + (System.currentTimeMillis() - time) + " ms");
 	}
 
@@ -90,7 +107,9 @@ public class Optimizer {
 				mapEdge.nodes.add(node);
 				mapEdge.id = i;
 			}
-			savedEdges.add(mapEdge);
+			if (mapEdge.nodes.size() > 5) {
+				savedEdges.add(mapEdge);
+			}
 			logger.info("Edge " + i + " from " + edges.size() + " processed : " + mapEdge.nodes.size() + " Nodes - "
 					+ (System.currentTimeMillis() - time) + " ms");
 		}
@@ -146,6 +165,15 @@ public class Optimizer {
 		for (MapNode mapNode : nodes) {
 			if (MainController.isNear(mapNode.getPosition(), point, MainController.combinePointsDistance)) {
 				return mapNode;
+			}
+		}
+		return null;
+	}
+
+	private static CapacityWaypoint getNearWaypoint(GeoPosition point, List<CapacityWaypoint> nodes, double distance) {
+		for (CapacityWaypoint waypoint : nodes) {
+			if (MainController.isNear(waypoint.getPosition(), point, distance)) {
+				return waypoint;
 			}
 		}
 		return null;
