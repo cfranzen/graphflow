@@ -23,7 +23,7 @@ public class WaypointController {
 	 * 
 	 */
 	public WaypointController() {
-		for (int i = 0; i < Constants.ZOOM_LEVEL_COUNT; i++) {
+		for (int i = 0; i <= Constants.ZOOM_LEVEL_COUNT; i++) {
 			zoomWaypoints.add(new ArrayList<>());
 		}
 	}
@@ -61,7 +61,12 @@ public class WaypointController {
 	}
 
 	public List<CapacityWaypoint> getWaypoints(int zoomlevel) {
-		return zoomWaypoints.get(zoomlevel);
+		if (Constants.debugInfos) {
+			System.out.println( (Constants.ZOOM_LEVEL_COUNT*2 / (float) (Constants.MAX_ZOOM_LEVEL)
+					* (Constants.MAX_ZOOM_LEVEL - zoomlevel)));
+		}
+		return zoomWaypoints.get(Math.min(Constants.ZOOM_LEVEL_COUNT, Math.max(0,(int) (Constants.ZOOM_LEVEL_COUNT*2 / (float) (Constants.MAX_ZOOM_LEVEL)
+				* (Constants.MAX_ZOOM_LEVEL - zoomlevel)))));
 	}
 
 	public void setWaypoints(List<CapacityWaypoint> savedNodes) {
@@ -71,17 +76,6 @@ public class WaypointController {
 	public List<GeoPosition> getWaypointPositions(int zoomlevel) {
 		List<GeoPosition> result = new ArrayList<>(zoomWaypoints.get(zoomlevel).size());
 		for (Waypoint waypoint : zoomWaypoints.get(zoomlevel)) {
-			result.add(waypoint.getPosition());
-		}
-		return result;
-	}
-
-	/**
-	 * @return the {@link Waypoint} positions as {@link GeoPosition}
-	 */
-	public List<GeoPosition> getWaypointPositions() {
-		List<GeoPosition> result = new ArrayList<>(waypoints.size());
-		for (Waypoint waypoint : waypoints) {
 			result.add(waypoint.getPosition());
 		}
 		return result;

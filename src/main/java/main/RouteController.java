@@ -158,7 +158,8 @@ public class RouteController implements PropertyChangeListener {
 	 * @param edges
 	 *            {@link List} with {@link Edge}s.
 	 */
-	public void addEdges(List<Edge> edges) {
+	public void importEdges(List<Edge> edges) {
+		List<Edge> route =  new ArrayList<>();
 		if (Constants.onlyGermany) {
 			// for (Edge edge : edges) {
 			for (int i = 0; i < edges.size(); i++) {
@@ -279,7 +280,7 @@ public class RouteController implements PropertyChangeListener {
 		Rectangle rect = map.getViewportBounds();
 		GeoPosition viewportStart = map.getGeoPos(rect.getMinX(), rect.getMinY());
 		GeoPosition viewportEnd = map.getGeoPos(rect.getMaxX(), rect.getMaxY());
-		excludeNonVisiblePointFromPaintRoutes(viewportStart, viewportEnd, route);
+		excludeNonVisiblePointFromPaintRoutes(viewportStart, viewportEnd, getRoute());
 		if (Constants.debugInfos && Constants.drawOnlyViewport) {
 			g.setColor(Color.MAGENTA);
 			g.drawRect((int) rect.getMinX() + 300, (int) rect.getMinY() + 150,
@@ -296,7 +297,7 @@ public class RouteController implements PropertyChangeListener {
 		calculateSeaEdges(map);
 		calcOnlyVisibleEdges(g, map);
 		if (highlightedWaypointFrom != null || highlightedWaypointTo != null) {
-			showOnlyWaypointEdges(route, seaRoute);
+			showOnlyWaypointEdges(getRoute(), getSeaRoute());
 		}
 	}
 

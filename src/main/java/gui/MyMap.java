@@ -34,6 +34,7 @@ import main.RouteController;
 import models.CapacityWaypoint;
 import models.Constants;
 import newVersion.main.PaintController;
+import newVersion.main.WaypointController;
 import painter.CapacityWaypointRenderer;
 import painter.DefaultRoutePainter;
 import painter.IRoutePainter;
@@ -57,10 +58,10 @@ public class MyMap extends JXMapViewer implements PropertyChangeListener {
 	/**
 	 * Default Constructor, initializes the tile factory.
 	 */
-	public MyMap(MainController controller, RouteController routeController) {
+	public MyMap(MainController controller, RouteController routeController, WaypointController waypointController) {
 		super();
 
-		addUserInteractions(controller, routeController);
+		addUserInteractions(controller, routeController, waypointController);
 		setUpTileFactory();
 
 		// Default values
@@ -126,7 +127,7 @@ public class MyMap extends JXMapViewer implements PropertyChangeListener {
 	 * @param controller
 	 * @param routeController
 	 */
-	private void addUserInteractions(MainController controller, RouteController routeController) {
+	private void addUserInteractions(MainController controller, RouteController routeController, WaypointController waypointController) {
 		MouseInputListener mia = new PanMouseInputListener(this);
 		addMouseListener(mia);
 		addMouseMotionListener(mia);
@@ -135,6 +136,7 @@ public class MyMap extends JXMapViewer implements PropertyChangeListener {
 		addMouseListener(mia);
 		addMouseMotionListener(mia);
 		addMouseWheelListener(new ZoomMouseWheelListenerCenter(this));
+		addMouseWheelListener(new WaypointMouseWheelListener(this, waypointController));
 		addKeyListener(new PanKeyListener(this));
 		addMouseListener(new WaypointClickMouseListener(this, routeController));
 	}

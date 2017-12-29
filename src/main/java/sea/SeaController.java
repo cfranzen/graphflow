@@ -1,6 +1,5 @@
 package sea;
 
-import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import com.syncrotess.pathfinder.model.entity.ServiceType;
 
 import gui.MyMap;
-import models.Constants;
 import models.Edge;
 import painter.SeaRoutePainter;
 

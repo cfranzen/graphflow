@@ -53,7 +53,7 @@ public class Optimizer {
 
 		List<Edge> seaRoute = optimizeGivenEdges(routeController.getSeaRoute());
 		routeController.setSeaRoute(seaRoute);
-		PaintController.useNewPainter(); // TODO Refactor
+		PaintController.useNewPainter();
 
 		routeController.sumAllPoints();
 		logger.info("optimize v2-end");
@@ -66,27 +66,42 @@ public class Optimizer {
 	public static void aggregateWaypoints(RouteController routeController, WaypointController waypointController) {
 		long time = System.currentTimeMillis();
 		logger.info("Aggregate waypoints");
-		List<CapacityWaypoint> savedNodes = new ArrayList<>();
-		for (CapacityWaypoint waypoint : waypointController.getWaypoints()) {
-			CapacityWaypoint node = getNearWaypoint(waypoint.getPosition(), savedNodes,
-					Constants.ZOOM_LEVEL_DISTANCE_GEO);
-			if (node == null) {
-				savedNodes.add(waypoint);
-			} else {
-				for (int i = 0; i < routeController.getRoute().size(); i++) {
-					Edge edge = routeController.getRoute().get(i);
-					Edge newEdge = new Edge(edge);
-					if (edge.getStart().equals(waypoint.getPosition())) {
-						newEdge.setStart(node.getPosition());
+		
+		
+		for (int level = 1; level < Constants.ZOOM_LEVEL_COUNT; level++) {
+logger.info("Run - " + level);
+			List<CapacityWaypoint> savedNodes = new ArrayList<>();
+			for (CapacityWaypoint waypoint : waypointController.getWaypoints()) {
+				CapacityWaypoint node = getNearWaypoint(waypoint.getPosition(), savedNodes,
+						Constants.ZOOM_LEVEL_DISTANCE_GEO / level);
+				if (node == null) {
+					savedNodes.add(waypoint);
+				} else {
+					for (Edge edge : routeController.getRoute()) {
+						Edge newEdge = new Edge(edge);
+						if (edge.getStart().equals(waypoint.getPosition())) {
+							newEdge.setStart(node.getPosition());
+						}
+						if (edge.getDest().equals(waypoint.getPosition())) {
+							newEdge.setDest(node.getPosition());
+						}
+						routeController.updateEdge(edge, newEdge);
 					}
-					if (edge.getDest().equals(waypoint.getPosition())) {
-						newEdge.setDest(node.getPosition());
+					for (Edge edge : routeController.getSeaRoute()) {
+						Edge newEdge = new Edge(edge);
+						if (edge.getStart().equals(waypoint.getPosition())) {
+							newEdge.setStart(node.getPosition());
+						}
+						if (edge.getDest().equals(waypoint.getPosition())) {
+							newEdge.setDest(node.getPosition());
+						}
+						routeController.updateSeaEdge(edge, newEdge);
 					}
-					routeController.updateEdge(edge, newEdge);
 				}
 			}
+			waypointController.setWaypoints(savedNodes, level-1);
 		}
-		waypointController.setWaypoints(savedNodes);
+		waypointController.setWaypoints(waypointController.getWaypoints(), Constants.ZOOM_LEVEL_COUNT-1);
 		logger.info("Aggregate waypoints end - " + (System.currentTimeMillis() - time) + " ms");
 	}
 

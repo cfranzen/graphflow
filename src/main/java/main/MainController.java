@@ -141,17 +141,13 @@ public class MainController {
 		// Processing input to own classes
 		loadSolution();
 
-		routeController.addEdges(input.edges);
+		routeController.importEdges(input.edges);
 		
 		waypointController.createWaypointsFromGeo(input.nodes);
 		Optimizer.aggregateWaypoints(routeController, waypointController);
-		System.out.println("" + routeController.getRoute().get(1));
-		mapViewer.setWaypoints(new HashSet<>(waypointController.getWaypoints()));
-
+		mapViewer.setWaypoints(new HashSet<>(waypointController.getWaypoints(mapViewer.getZoom())));
 
 		optimize();
-		System.out.println("" + routeController.getRoute().get(1));
-
 	}
 
 	private void loadSolution() {
@@ -268,7 +264,7 @@ public class MainController {
 		layeredPane.add(minusBtn, new Integer(40));
 
 		// Add input to viewer
-		mapViewer = new MyMap(this, routeController);
+		mapViewer = new MyMap(this, routeController, waypointController);
 
 		JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());
@@ -304,7 +300,7 @@ public class MainController {
 			public void run() {
 				Optimizer optimizer = new Optimizer();
 				optimizer.optimize(routeController, waypointController);
-				mapViewer.setWaypoints(new HashSet<>(waypointController.getWaypoints()));
+				mapViewer.setWaypoints(new HashSet<>(waypointController.getWaypoints(mapViewer.getZoom())));
 			}
 		});
 		t.start();
