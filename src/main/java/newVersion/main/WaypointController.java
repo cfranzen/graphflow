@@ -23,7 +23,7 @@ public class WaypointController {
 	 * 
 	 */
 	public WaypointController() {
-		for (int i = 0; i <= Constants.ZOOM_LEVEL_COUNT; i++) {
+		for (int i = 0; i < Constants.ZOOM_LEVEL_COUNT; i++) {
 			zoomWaypoints.add(new ArrayList<>());
 		}
 	}

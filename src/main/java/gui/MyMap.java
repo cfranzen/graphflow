@@ -162,14 +162,10 @@ public class MyMap extends JXMapViewer implements PropertyChangeListener {
 	 */
 	private void initPainters(RouteController routeController) {
 
-		// seaRoutePainter = new SeaRoutePainter(this);
-		// landRoutePainter = new SimpleFlowRoutePainter();
-		// landRoutePainter = new EntityFlowPainter();
 		routePaintController = PaintController.getInstance();
 		routePaintController.setRouteController(routeController);
 
 		// Create a waypoint painter that takes all the waypoints
-		// TODO Refactor, do not use jmapviewers waypoint class
 		waypointPainter = new SwingWaypointOverlayPainter();
 		waypointPainter.setRenderer(new CapacityWaypointRenderer());
 

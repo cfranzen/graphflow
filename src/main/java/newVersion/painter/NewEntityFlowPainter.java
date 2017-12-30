@@ -199,7 +199,7 @@ public class NewEntityFlowPainter implements IRoutePainter {
 	}
 
 	private void drawGreyEdgeLine(Graphics2D g, MyMap map, NodeEdge edge) {
-		// Grapic maniuplation has to be done before the loop
+		// Graphic manipulation has to be done before the loop
 		// g.setColor(Color.DARK_GRAY);
 		// g.setStroke(new BasicStroke(1.2f));
 		g.draw(edge.getShape(map));

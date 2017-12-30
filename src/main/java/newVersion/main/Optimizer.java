@@ -41,13 +41,19 @@ public class Optimizer {
 	}
 
 	public void optimize(RouteController routeController, WaypointController waypointController) {
-		routeController.sumAllPoints();
+		routeController.sumRoutePoints();
 		logger.info("optimize v2");
+		long time = System.currentTimeMillis();
 
 		// combine edges & create almost empty map points
 		// Creates MapNodes for each simple point in the list
 		if (Constants.optimzeLandRoutes) {
-			routeController.setRoute(optimizeGivenEdges(routeController.getRoute()));
+
+			List<List<Edge>> routes = routeController.getAllRoutes();
+			for (int i = 0; i < routes.size(); i++) {
+
+				routeController.setRoute(optimizeGivenEdges(routeController.getRoute(i)), i);
+			}
 			logger.info("land edges done - now processing sea edges");
 		}
 
@@ -55,8 +61,8 @@ public class Optimizer {
 		routeController.setSeaRoute(seaRoute);
 		PaintController.useNewPainter();
 
-		routeController.sumAllPoints();
-		logger.info("optimize v2-end");
+		routeController.sumRoutePoints();
+		logger.info("optimize v2-end + " + (time - System.currentTimeMillis()) + " ms");
 	}
 
 	/**
@@ -66,10 +72,9 @@ public class Optimizer {
 	public static void aggregateWaypoints(RouteController routeController, WaypointController waypointController) {
 		long time = System.currentTimeMillis();
 		logger.info("Aggregate waypoints");
-		
-		
+
 		for (int level = 1; level < Constants.ZOOM_LEVEL_COUNT; level++) {
-logger.info("Run - " + level);
+			logger.info("Run - " + level);
 			List<CapacityWaypoint> savedNodes = new ArrayList<>();
 			for (CapacityWaypoint waypoint : waypointController.getWaypoints()) {
 				CapacityWaypoint node = getNearWaypoint(waypoint.getPosition(), savedNodes,
@@ -77,7 +82,9 @@ logger.info("Run - " + level);
 				if (node == null) {
 					savedNodes.add(waypoint);
 				} else {
-					for (Edge edge : routeController.getRoute()) {
+					List<Edge> route = new ArrayList<>(routeController.getRoute(Constants.ZOOM_LEVEL_COUNT - 1));
+					for (int i = 0; i < route.size(); i++) {
+						Edge edge = route.get(i);
 						Edge newEdge = new Edge(edge);
 						if (edge.getStart().equals(waypoint.getPosition())) {
 							newEdge.setStart(node.getPosition());
@@ -85,8 +92,20 @@ logger.info("Run - " + level);
 						if (edge.getDest().equals(waypoint.getPosition())) {
 							newEdge.setDest(node.getPosition());
 						}
-						routeController.updateEdge(edge, newEdge);
+						route.set(i, newEdge);
 					}
+					routeController.setRoute(route, level - 1);
+
+					// for (Edge edge : routeController.getRoute()) {
+					// Edge newEdge = new Edge(edge);
+					// if (edge.getStart().equals(waypoint.getPosition())) {
+					// newEdge.setStart(node.getPosition());
+					// }
+					// if (edge.getDest().equals(waypoint.getPosition())) {
+					// newEdge.setDest(node.getPosition());
+					// }
+					// routeController.updateEdge(edge, newEdge);
+					// }
 					for (Edge edge : routeController.getSeaRoute()) {
 						Edge newEdge = new Edge(edge);
 						if (edge.getStart().equals(waypoint.getPosition())) {
@@ -99,9 +118,9 @@ logger.info("Run - " + level);
 					}
 				}
 			}
-			waypointController.setWaypoints(savedNodes, level-1);
+			waypointController.setWaypoints(savedNodes, level - 1);
 		}
-		waypointController.setWaypoints(waypointController.getWaypoints(), Constants.ZOOM_LEVEL_COUNT-1);
+		waypointController.setWaypoints(waypointController.getWaypoints(), Constants.ZOOM_LEVEL_COUNT - 1);
 		logger.info("Aggregate waypoints end - " + (System.currentTimeMillis() - time) + " ms");
 	}
 

@@ -142,7 +142,7 @@ public class MainController {
 		loadSolution();
 
 		routeController.importEdges(input.edges);
-		
+
 		waypointController.createWaypointsFromGeo(input.nodes);
 		Optimizer.aggregateWaypoints(routeController, waypointController);
 		mapViewer.setWaypoints(new HashSet<>(waypointController.getWaypoints(mapViewer.getZoom())));
@@ -288,11 +288,11 @@ public class MainController {
 		// optimize GH edges
 		mapEdgesToStreets();
 		logger.info("End GH - " + (System.currentTimeMillis() - time));
-		
+
 		reducePointCount();
 
-//		if (true) return;
-		
+		// if (true) return;
+
 		// own thread so that the main thread is not blocked
 		Thread t = new Thread(new Runnable() {
 
@@ -312,20 +312,22 @@ public class MainController {
 	 */
 	private void reducePointCount(int factor) {
 		logger.info("Reduce point resolution per edge; before - after");
-		routeController.sumAllPoints();
-		List<Edge> edges = routeController.getRoute();
-		if (edges.get(0) instanceof MapRoute) {
-			for (Edge edge : edges) {
-				MapRoute mapEdge = (MapRoute) edge;
-				routeController.updateEdge(mapEdge, reduceEdgePoints(mapEdge, factor));
-			}
-		} else {
-			for (Edge edge : edges) {
-				routeController.updateEdge(edge, reduceEdgePoints(edge, factor));
+		routeController.sumRoutePoints();
+
+		for (List<Edge> edges : routeController.getAllRoutes()) {
+			if (edges.get(0) instanceof MapRoute) {
+				for (Edge edge : edges) {
+					MapRoute mapEdge = (MapRoute) edge;
+					routeController.updateEdge(mapEdge, reduceEdgePoints(mapEdge, factor));
+				}
+			} else {
+				for (Edge edge : edges) {
+					routeController.updateEdge(edge, reduceEdgePoints(edge, factor));
+				}
 			}
 		}
 		repaint();
-		routeController.sumAllPoints();
+		routeController.sumRoutePoints();
 
 	}
 
@@ -433,15 +435,30 @@ public class MainController {
 	}
 
 	private void mapEdgesToStreets() {
-		List<Edge> land = routeController.getRoute();
-		System.out.println("" + routeController.getRoute().get(1));
-		List<Edge> sea = routeController.getSeaRoute();
-		List<Edge> route = new ArrayList<>(land.size() + sea.size());
-		if (Constants.optimzeLandRoutes) {
-			route.addAll(land);
-		}
-		route.addAll(sea);
+		// List<Edge> land = routeController.getRoute();
+		// System.out.println("" + routeController.getRoute().get(1));
+		// List<Edge> sea = routeController.getSeaRoute();
+		// List<Edge> route = new ArrayList<>(land.size() + sea.size());
+		// if (Constants.optimzeLandRoutes) {
+		// route.addAll(land);
+		// }
+		// route.addAll(sea);
 
+		List<List<Edge>> allRoutes = new ArrayList<>();
+		if (Constants.optimzeLandRoutes) {
+			for (int i = 0; i < Constants.ZOOM_LEVEL_COUNT; i++) {
+				allRoutes.add(routeController.getRoute(i));
+			}
+		}
+		allRoutes.add(routeController.getSeaRoute());
+
+		for (int i = 0; i < allRoutes.size() - 1; i++) {
+			List<Edge> route = allRoutes.get(i);
+			generateStreetTasks(i, route);
+		}
+	}
+
+	private void generateStreetTasks(int i, List<Edge> route) {
 		for (Edge edge : route) {
 			pool.invoke(new ForkJoinTask<Edge>() {
 
@@ -477,7 +494,7 @@ public class MainController {
 						highResEdge = getHighRes(edge);
 						logger.info("map edge to street DONE");
 						if (highResEdge != null) {
-							routeController.updateEdge(edge, highResEdge);
+							routeController.updateEdge(edge, highResEdge, i);
 						}
 					}
 					repaint();
