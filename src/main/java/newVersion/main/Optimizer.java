@@ -4,7 +4,11 @@
 package newVersion.main;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,13 +20,27 @@ import org.jxmapviewer.viewer.GeoPosition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.graphhopper.GHRequest;
+import com.graphhopper.GHResponse;
+import com.graphhopper.GraphHopper;
+import com.graphhopper.PathWrapper;
+import com.graphhopper.util.PointList;
+import com.graphhopper.util.shapes.GHPoint;
+
+import main.DijkstraAlgorithm;
 import main.MainController;
 import main.RouteController;
 import models.CapacityWaypoint;
 import models.Constants;
 import models.Edge;
+import models.EdgeType;
+import models.HighResEdge;
+import models.MapRoute;
+import models.MapRoute.MapPoint;
 import newVersion.models.MapNode;
 import newVersion.models.NodeEdge;
+import painter.EntityFlowPainter;
+import sea.SeaController;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
@@ -30,16 +48,38 @@ import newVersion.models.NodeEdge;
  */
 public class Optimizer {
 
+	/**
+	 * used for removing multiple point which are near together, distance in
+	 * lat/lon not pixel
+	 */
+	private static final double reduceEdgeDistance = 0.01075;
+
 	private static final Logger logger = LoggerFactory.getLogger(Optimizer.class);
+	private ExecutorService service;
+	// private CompletionService<Boolean> service;
 
 	/**
 	 * @param routeController
 	 * 
 	 */
 	public Optimizer() {
-		// noop
+		 service = Executors.newCachedThreadPool();
+//		service = Executors.newFixedThreadPool(8);
+		// service = new
+		// ExecutorCompletionService<>(Executors.newCachedThreadPool());
+
 	}
 
+	/**
+	 * Changes the edge structure from simple lists with saved
+	 * {@link GeoPosition}s for the path, to {@link MapNode} based edges. The
+	 * advantage from this is, that edges, which have identical parts, only one
+	 * node is saved. This is also the basis for node coloring for the
+	 * {@link EntityFlowPainter}.
+	 * 
+	 * @param routeController
+	 * @param waypointController
+	 */
 	public void optimize(RouteController routeController, WaypointController waypointController) {
 		routeController.sumRoutePoints();
 		logger.info("optimize v2");
@@ -48,10 +88,7 @@ public class Optimizer {
 		// combine edges & create almost empty map points
 		// Creates MapNodes for each simple point in the list
 		if (Constants.optimzeLandRoutes) {
-
-			List<List<Edge>> routes = routeController.getAllRoutes();
-			for (int i = 0; i < routes.size(); i++) {
-
+			for (int i = 0; i < routeController.getAllRoutes().size(); i++) {
 				routeController.setRoute(optimizeGivenEdges(routeController.getRoute(i)), i);
 			}
 			logger.info("land edges done - now processing sea edges");
@@ -62,7 +99,7 @@ public class Optimizer {
 		PaintController.useNewPainter();
 
 		routeController.sumRoutePoints();
-		logger.info("optimize v2-end + " + (time - System.currentTimeMillis()) + " ms");
+		logger.info("optimize v2-end | " + (System.currentTimeMillis() - time) + " ms");
 	}
 
 	/**
@@ -75,37 +112,37 @@ public class Optimizer {
 
 		for (int level = 1; level < Constants.ZOOM_LEVEL_COUNT; level++) {
 			logger.info("Run - " + level);
+			List<Edge> route = new ArrayList<>(routeController.getRoute());
+			routeController.setRoute(route, level - 1);
+
 			List<CapacityWaypoint> savedNodes = new ArrayList<>();
 			for (CapacityWaypoint waypoint : waypointController.getWaypoints()) {
-				CapacityWaypoint node = getNearWaypoint(waypoint.getPosition(), savedNodes,
-						Constants.ZOOM_LEVEL_DISTANCE_GEO / level);
+				CapacityWaypoint node = getNearWaypoint(waypoint.getPosition(), savedNodes, Constants.ZOOM_LEVEL_DISTANCE_GEO / level);
 				if (node == null) {
 					savedNodes.add(waypoint);
 				} else {
-					List<Edge> route = new ArrayList<>(routeController.getRoute(Constants.ZOOM_LEVEL_COUNT - 1));
 					for (int i = 0; i < route.size(); i++) {
 						Edge edge = route.get(i);
 						Edge newEdge = new Edge(edge);
+
 						if (edge.getStart().equals(waypoint.getPosition())) {
+							if (edge.id == 5) {
+								System.out.println("Ping");
+							}
 							newEdge.setStart(node.getPosition());
 						}
 						if (edge.getDest().equals(waypoint.getPosition())) {
+							if (edge.id == 5) {
+								System.out.println("Ping");
+							}
 							newEdge.setDest(node.getPosition());
 						}
-						route.set(i, newEdge);
+						if (!newEdge.getStart().equals(newEdge.getDest())) {
+							route.set(i, newEdge);
+						}
+						routeController.updateEdge(edge, newEdge, level - 1);
 					}
-					routeController.setRoute(route, level - 1);
 
-					// for (Edge edge : routeController.getRoute()) {
-					// Edge newEdge = new Edge(edge);
-					// if (edge.getStart().equals(waypoint.getPosition())) {
-					// newEdge.setStart(node.getPosition());
-					// }
-					// if (edge.getDest().equals(waypoint.getPosition())) {
-					// newEdge.setDest(node.getPosition());
-					// }
-					// routeController.updateEdge(edge, newEdge);
-					// }
 					for (Edge edge : routeController.getSeaRoute()) {
 						Edge newEdge = new Edge(edge);
 						if (edge.getStart().equals(waypoint.getPosition())) {
@@ -117,14 +154,18 @@ public class Optimizer {
 						routeController.updateSeaEdge(edge, newEdge);
 					}
 				}
+
 			}
 			waypointController.setWaypoints(savedNodes, level - 1);
 		}
-		waypointController.setWaypoints(waypointController.getWaypoints(), Constants.ZOOM_LEVEL_COUNT - 1);
+
 		logger.info("Aggregate waypoints end - " + (System.currentTimeMillis() - time) + " ms");
 	}
 
 	private List<Edge> optimizeGivenEdges(List<Edge> edges) {
+		if (edges == null || edges.isEmpty()) {
+			return Collections.emptyList();
+		}
 		List<Edge> savedEdges = new ArrayList<>();
 		List<MapNode> savedNodes = new ArrayList<>();
 		for (int i = 0; i < edges.size(); i++) {
@@ -145,44 +186,169 @@ public class Optimizer {
 				savedEdges.add(mapEdge);
 			}
 			logger.info("Edge " + i + " from " + edges.size() + " processed : " + mapEdge.nodes.size() + " Nodes - "
-					+ (System.currentTimeMillis() - time) + " ms");
+					+ (System.currentTimeMillis() - time) + " ms | Added: " + (mapEdge.nodes.size() > 5));
 		}
-
 		logger.info("Precalculate Capacity and Workload");
-		ExecutorService service = // Executors.newCachedThreadPool();
-				Executors.newFixedThreadPool(10);
-		// for each map point, calc work&cap
-		final int timesteps = edges.get(0).getCapacites().length;
-		List<Future<?>> futures = new ArrayList<>();
-		for (MapNode mapNode : savedNodes) {
-			futures.add(service.submit(() -> {
-				mapNode.calcCapacityAndWorkload(timesteps);
-			}));
-		}
-		logger.info("Futures generated, wait for completition");
+		// for each map point, calculate work&cap
+		final int timesteps = savedEdges.get(0).getCapacites().length;
+
+		List<Callable<Boolean>> callables = new ArrayList<>();
+		savedNodes.forEach((mapNode) -> callables.add(() -> {
+			mapNode.calcCapacityAndWorkload(timesteps);
+			return true;
+		}));
+		createFuturesForCallables(callables);
+		return savedEdges;
+	}
+
+	private void createFuturesForCallables(List<Callable<Boolean>> runnables) {
+		createFuturesForCallables(runnables, 200000);
+	}
+
+	private void createFuturesForCallables(List<Callable<Boolean>> runnables, int maxTimeout) {
+		List<Future<Boolean>> list = null;
 		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
+			list = service.invokeAll(runnables, maxTimeout, TimeUnit.MILLISECONDS);
+			for (Future<Boolean> future : list) {
+				future.get(maxTimeout, TimeUnit.MILLISECONDS);
+			}
+		} catch (InterruptedException | ExecutionException | TimeoutException e1) {
 			e1.printStackTrace();
 		}
-		for (int i = 0; i < futures.size(); i++) {
-			Future<?> future = futures.get(i);
-			try {
 
-				future.get(200, TimeUnit.MILLISECONDS);
-				if (i % 500 == 0) {
-					logger.info("Computed CapWork for Point " + i + " from " + futures.size());
-				}
-			} catch (InterruptedException | ExecutionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (TimeoutException e) {
-				// TODO Auto-generated catch block
-				logger.error("Future Timeout" + e.getMessage());
+	}
+
+	public void mapEdgesToStreets(GraphHopper graphHopper, RouteController routeController,
+			SeaController seaController) {
+		if (Constants.optimzeLandRoutes) {
+			for (int i = 0; i < Constants.ZOOM_LEVEL_COUNT; i++) {
+				generateStreetTasks(graphHopper, routeController, seaController, routeController.getRoute(i), i);
 			}
 		}
-		return savedEdges;
+		generateStreetTasks(graphHopper, routeController, seaController, routeController.getSeaRoute(), 0);
+
+	}
+
+	private void generateStreetTasks(GraphHopper graphHopper, RouteController routeController,
+			SeaController seaController, List<Edge> route, int i) {
+		List<Callable<Boolean>> callables = new ArrayList<>();
+		route.forEach((edge) -> callables.add(() -> {
+			HighResEdge highResEdge;
+			if (edge.getType().equals(EdgeType.VESSEL)) {
+
+				DijkstraAlgorithm dijkstraAlgorithm;
+				dijkstraAlgorithm = new DijkstraAlgorithm(seaController.getEdges());
+				dijkstraAlgorithm.execute(edge.getStart());
+				List<GeoPosition> steps = dijkstraAlgorithm.getPath(edge.getDest());
+				highResEdge = new HighResEdge(edge);
+				highResEdge.addPositions(steps);
+				logger.info("map edge to sea route DONE - " + steps.size());
+				return routeController.updateSeaEdge(edge, highResEdge);
+			} else {
+				highResEdge = getHighRes(graphHopper, edge);
+				logger.info("map edge to street DONE");
+				return routeController.updateEdge(edge, highResEdge, i);
+			}
+		}));
+		createFuturesForCallables(callables);
+
+	}
+
+	private HighResEdge getHighRes(GraphHopper graphHopper, Edge edge) {
+		GHPoint start = new GHPoint(edge.getStart().getLatitude(), edge.getStart().getLongitude());
+		GHPoint dest = new GHPoint(edge.getDest().getLatitude(), edge.getDest().getLongitude());
+
+		GHRequest ghRequest = new GHRequest(start, dest);
+		GHResponse response = graphHopper.route(ghRequest);
+
+		if (response.hasErrors() || response.getAll().isEmpty()) {
+			logger.info("Could not find solution for edge with start: " + edge.getStart().toString());
+			return null;
+		}
+		PathWrapper path = response.getBest();
+		PointList points = path.getPoints();
+
+		// XXX Instructions contain GPX Data, for saving the optimized graph see
+		// Method:
+		// path.getInstructions().createGPX()
+
+		HighResEdge highResEdge = new HighResEdge(edge);
+
+		highResEdge.addGhPositions(points.toGeoJson());
+		return highResEdge;
+	}
+
+	public void reducePointCount(RouteController routeController, int factor) {
+		logger.info("Reduce point resolution per edge; before - after");
+		routeController.sumRoutePoints();
+
+		// for (List<Edge> edges : routeController.getAllRoutes()) {
+		List<List<Edge>> routes = routeController.getAllRoutes();
+		for (int i = 0; i < routes.size(); i++) {
+			List<Edge> edges = routes.get(i);
+			// }
+			if (edges.get(0) instanceof MapRoute) {
+				for (Edge edge : edges) {
+					MapRoute mapEdge = (MapRoute) edge;
+					routeController.updateEdge(mapEdge, reduceEdgePoints(mapEdge, factor), i);
+				}
+			} else {
+				for (Edge edge : edges) {
+					routeController.updateEdge(edge, reduceEdgePoints(edge, factor), i);
+				}
+			}
+		}
+		// repaint();
+		routeController.sumRoutePoints();
+	}
+
+	public void reducePointCount(RouteController routeController) {
+		reducePointCount(routeController, 1);
+	}
+
+	/**
+	 * Checks if an {@link Edge} has multiple nearby points and only leaves one
+	 * point at this position.
+	 * 
+	 * Create new Edge with old parameters. Iterate trough all points from the
+	 * old edge but add the current point only if it do not have any near points
+	 * in the new savedPoint list.
+	 * 
+	 * @param edge
+	 * @return
+	 */
+	private Edge reduceEdgePoints(Edge refEdge, int factor) {
+		HighResEdge edge = new HighResEdge(refEdge);
+		for (GeoPosition point : refEdge.getPositions()) {
+			boolean flag = true;
+			for (GeoPosition savedPoint : edge.getPositions()) {
+				if (isNear(point, savedPoint, factor * reduceEdgeDistance)) {
+					flag = false;
+					break;
+				}
+			}
+			if (flag) {
+				edge.getPositions().add(point);
+			}
+		}
+		return edge;
+	}
+
+	private Edge reduceEdgePoints(MapRoute mapedge, int factor) {
+		MapRoute edge = new MapRoute(mapedge);
+		for (MapPoint point : mapedge.getPoints()) {
+			boolean flag = true;
+			for (GeoPosition savedPoint : edge.getPositions()) {
+				if (isNear(point.getPosition(), savedPoint, factor * reduceEdgeDistance)) {
+					flag = false;
+					break;
+				}
+			}
+			if (flag) {
+				edge.addPoint(point);
+			}
+		}
+		return edge;
 	}
 
 	/**
@@ -197,7 +363,7 @@ public class Optimizer {
 	 */
 	private MapNode getNearestNode(GeoPosition point, List<MapNode> nodes) {
 		for (MapNode mapNode : nodes) {
-			if (MainController.isNear(mapNode.getPosition(), point, MainController.combinePointsDistance)) {
+			if (isNear(mapNode.getPosition(), point, MainController.combinePointsDistance)) {
 				return mapNode;
 			}
 		}
@@ -206,11 +372,43 @@ public class Optimizer {
 
 	private static CapacityWaypoint getNearWaypoint(GeoPosition point, List<CapacityWaypoint> nodes, double distance) {
 		for (CapacityWaypoint waypoint : nodes) {
-			if (MainController.isNear(waypoint.getPosition(), point, distance)) {
+			if (isNear(waypoint.getPosition(), point, distance)) {
 				return waypoint;
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * @param point
+	 * @return
+	 */
+	public static Map<Edge, GeoPosition> getNearEdges(GeoPosition refPoint, List<Edge> edges, double distance) {
+		Map<Edge, GeoPosition> nearEdges = new HashMap<>();
+
+		for (int i = 0; i < edges.size(); i++) {
+			for (GeoPosition point : edges.get(i).getPositions()) {
+				if (isNear(refPoint, point, distance)) {
+					nearEdges.put(edges.get(i), point);
+					continue;
+				}
+			}
+		}
+		return nearEdges;
+	}
+
+	public static boolean isNear(GeoPosition refPoint, GeoPosition point, double distance) {
+		if (getDistance(refPoint, point) < distance) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static double getDistance(GeoPosition refPoint, GeoPosition point) {
+		double deltaX = Math.abs(refPoint.getLatitude() - point.getLatitude());
+		double deltaY = Math.abs(refPoint.getLongitude() - point.getLongitude());
+		return deltaX + deltaY;
 	}
 
 }

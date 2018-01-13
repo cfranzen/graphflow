@@ -1,50 +1,24 @@
 package main;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinTask;
-
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLayeredPane;
-import javax.swing.JPanel;
 
 import org.apache.log4j.xml.DOMConfigurator;
-import org.jxmapviewer.viewer.GeoPosition;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.graphhopper.GHRequest;
-import com.graphhopper.GHResponse;
 import com.graphhopper.GraphHopper;
-import com.graphhopper.PathWrapper;
 import com.graphhopper.reader.osm.GraphHopperOSM;
 import com.graphhopper.routing.util.CarFlagEncoder;
 import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.util.CmdArgs;
-import com.graphhopper.util.PointList;
-import com.graphhopper.util.shapes.GHPoint;
 
+import gui.MainFrame;
 import gui.MyMap;
-import gui.RunButton;
 import models.Constants;
-import models.Edge;
-import models.EdgeType;
-import models.HighResEdge;
-import models.MapRoute;
-import models.MapRoute.MapPoint;
 import models.ModelLoader;
 import newVersion.main.Optimizer;
 import newVersion.main.WaypointController;
@@ -77,28 +51,27 @@ public class MainController {
 
 	public cliInput cliInput;
 
-	private ForkJoinPool pool;
 	private MyMap mapViewer;
 	private ModelLoader input;
 	private GraphHopper graphHopper;
 	private int currentTime = 0;
 
-	private JFrame frame;
-
-	private RouteController routeController = new RouteController();
-	private WaypointController waypointController = new WaypointController();
+	private RouteController routeController;
+	private WaypointController waypointController;
 	private SeaController seaController;
+
+	private MainFrame mainFrame;
 
 	/**
 	 * used to search for contact points with other edges, distance in lat/lon
 	 * not pixel
 	 */
 	public final static double contactSearchDistance = 0.021;
-	/**
-	 * used for removing multiple point which are near together, distance in
-	 * lat/lon not pixel
-	 */
-	public final static double reduceEdgeDistance = 0.01075;
+//	/**
+//	 * used for removing multiple point which are near together, distance in
+//	 * lat/lon not pixel
+//	 */
+//	public final static double reduceEdgeDistance = 0.01075;
 	/**
 	 * used for combining points and summarizing workload and capacity, distance
 	 * in lat/lon not pixel
@@ -123,7 +96,6 @@ public class MainController {
 	 * pattern.
 	 */
 	private MainController() {
-		pool = new ForkJoinPool();
 		initializeLogging();
 		cliInput = new cliInput();
 	}
@@ -131,7 +103,10 @@ public class MainController {
 	/**
 	 * Main method.
 	 */
-	public void run() {
+	private void run() {
+
+		writeInputToConstants();
+		initControllers();
 		initGui();
 
 		// Load sea data
@@ -142,12 +117,29 @@ public class MainController {
 		loadSolution();
 
 		routeController.importEdges(input.edges);
-
+		routeController.getAllRoutes();
 		waypointController.createWaypointsFromGeo(input.nodes);
 		Optimizer.aggregateWaypoints(routeController, waypointController);
 		mapViewer.setWaypoints(new HashSet<>(waypointController.getWaypoints(mapViewer.getZoom())));
 
 		optimize();
+	}
+
+	private void initControllers() {
+		routeController = new RouteController();
+		waypointController = new WaypointController();
+	}
+
+	private void writeInputToConstants() {
+		if (cliInput.zoomLevel != 0) {
+			Constants.ZOOM_LEVEL_COUNT = cliInput.zoomLevel;
+		}
+		if (cliInput.timeStepDelay != 0) {
+			Constants.TIME_STEP_DELAY = cliInput.timeStepDelay;
+		}
+		if (cliInput.paintStepCount != 0) {
+			Constants.PAINT_STEPS_COUNT = cliInput.paintStepCount;
+		}
 	}
 
 	private void loadSolution() {
@@ -167,35 +159,33 @@ public class MainController {
 	}
 
 	public void incTime() {
-		incTime(Constants.PAINT_STEPS);
+		incTime(Constants.PAINT_STEPS_COUNT);
 	}
 
 	private void incTime(int steps) {
 		currentTime += steps;
-		if (currentTime >= input.timesteps * Constants.PAINT_STEPS) {
+		if (currentTime >= input.timesteps * Constants.PAINT_STEPS_COUNT) {
 			currentTime = 0;
 		}
-		if (Constants.debugInfos && currentTime > Constants.MAX_TIME_STEPS * Constants.PAINT_STEPS) {
+		if (Constants.debugInfos && currentTime > Constants.MAX_TIME_STEPS * Constants.PAINT_STEPS_COUNT) {
 			currentTime = 0;
 		}
-		if (currentTime % Constants.PAINT_STEPS == 0 && Constants.showTimesteps) {
-			logger.info("Timestep: " + currentTime / Constants.PAINT_STEPS);
+		if (currentTime % Constants.PAINT_STEPS_COUNT == 0 && Constants.showTimesteps) {
+			logger.info("Timestep: " + currentTime / Constants.PAINT_STEPS_COUNT);
 		}
 
 		mapViewer.setTime(currentTime);
+		mainFrame.updateTimeText(currentTime);
 	}
 
-	/**
-	 * 
-	 */
-	protected void reduceTime() {
-		currentTime -= Constants.PAINT_STEPS;
+	public void reduceTime() {
+		currentTime -= Constants.PAINT_STEPS_COUNT;
 		if (currentTime <= 0) {
 			currentTime = input.timesteps;
 		}
-		System.out.println("Timestep: " + currentTime / Constants.PAINT_STEPS);
+		System.out.println("Timestep: " + currentTime / Constants.PAINT_STEPS_COUNT);
 		mapViewer.setTime(currentTime);
-
+		mainFrame.updateTimeText(currentTime);
 	}
 
 	/**
@@ -217,67 +207,11 @@ public class MainController {
 	}
 
 	private void initGui() {
-		// Display the viewer in a JFrame
-		frame = new JFrame("Graphstream");
-		frame.setSize(1600, 800);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(new BorderLayout());
-		frame.setBackground(Color.YELLOW);
-		frame.getContentPane().setBackground(Color.RED);
-
-		JLayeredPane layeredPane = new JLayeredPane();
-		layeredPane.setBackground(Color.BLUE);
-		frame.getContentPane().add(layeredPane, BorderLayout.CENTER);
-
-		logger.debug(frame.getSize().toString());
-		// layeredPane.setSize(frame.getSize());
-		logger.debug(layeredPane.getSize().toString());
-
-		// TODO Add Layout to layeredPane, to order Buttons etc
-
-		JButton btn = new RunButton(this);
-		btn.setSize(150, 50);
-		layeredPane.add(btn, new Integer(20));
-
-		JButton plusBtn = new JButton();
-		plusBtn.setText("+");
-		plusBtn.setSize(80, 25);
-		plusBtn.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				MainController.getInstance().incTime();
-			}
-		});
-		layeredPane.add(plusBtn, new Integer(30));
-		JButton minusBtn = new JButton();
-		minusBtn.setText("-");
-		minusBtn.setSize(40, 25);
-		minusBtn.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				MainController.getInstance().reduceTime();
-			}
-		});
-
-		layeredPane.add(minusBtn, new Integer(40));
-
-		// Add input to viewer
 		mapViewer = new MyMap(this, routeController, waypointController);
 
-		JPanel p = new JPanel();
-		p.setLayout(new BorderLayout());
-		p.add(mapViewer, BorderLayout.CENTER);
-		mapViewer.setSize(frame.getSize());
-		p.setSize(frame.getSize());
-		p.setBackground(Color.RED);
-
-		layeredPane.add(p, new Integer(10));
-
-		// TODO resize components on frame resize
-		frame.setResizable(true);
-		frame.setVisible(true);
+		mainFrame = new MainFrame(this, mapViewer);
+		mainFrame.setResizable(true);
+		mainFrame.setVisible(true);
 	}
 
 	private void optimize() {
@@ -285,247 +219,29 @@ public class MainController {
 		long time = System.currentTimeMillis();
 		logger.info("Start GH");
 		initGraphhopper();
-		// optimize GH edges
-		mapEdgesToStreets();
-		logger.info("End GH - " + (System.currentTimeMillis() - time));
-
-		reducePointCount();
-
-		// if (true) return;
-
+		
 		// own thread so that the main thread is not blocked
 		Thread t = new Thread(new Runnable() {
 
 			@Override
 			public void run() {
 				Optimizer optimizer = new Optimizer();
-				optimizer.optimize(routeController, waypointController);
+				optimizer.mapEdgesToStreets(graphHopper, routeController, seaController);
+				repaint();
+				// optimize GH edges
+				optimizer.reducePointCount(routeController);
+				repaint();
+				routeController.getAllRoutes();
+				logger.info("End GH - " + (System.currentTimeMillis() - time));
+				if (Constants.OPTIMIZE) {
+					optimizer.optimize(routeController, waypointController);
+				}
 				mapViewer.setWaypoints(new HashSet<>(waypointController.getWaypoints(mapViewer.getZoom())));
+				repaint();
 			}
 		});
 		t.start();
 
-	}
-
-	/**
-	 * @param factor
-	 */
-	private void reducePointCount(int factor) {
-		logger.info("Reduce point resolution per edge; before - after");
-		routeController.sumRoutePoints();
-
-		for (List<Edge> edges : routeController.getAllRoutes()) {
-			if (edges.get(0) instanceof MapRoute) {
-				for (Edge edge : edges) {
-					MapRoute mapEdge = (MapRoute) edge;
-					routeController.updateEdge(mapEdge, reduceEdgePoints(mapEdge, factor));
-				}
-			} else {
-				for (Edge edge : edges) {
-					routeController.updateEdge(edge, reduceEdgePoints(edge, factor));
-				}
-			}
-		}
-		repaint();
-		routeController.sumRoutePoints();
-
-	}
-
-	private void reducePointCount() {
-		reducePointCount(1);
-	}
-
-	/**
-	 * @param point
-	 * @return
-	 */
-	public static Map<Edge, GeoPosition> getNearEdges(GeoPosition refPoint, List<Edge> edges, double distance) {
-		Map<Edge, GeoPosition> nearEdges = new HashMap<>();
-
-		for (int i = 0; i < edges.size(); i++) {
-			for (GeoPosition point : edges.get(i).getPositions()) {
-				if (isNear(refPoint, point, distance)) {
-					nearEdges.put(edges.get(i), point);
-					continue;
-				}
-			}
-		}
-		return nearEdges;
-	}
-
-	/**
-	 * Returns if the given {@link GeoPosition} has any near point in the given
-	 * {@link List} of {@link Edge}s.
-	 * 
-	 * @param refPoint
-	 *            point to check
-	 * @param savedEdges
-	 *            {@link List} of {@link Edge}s which points are to compare
-	 * @return <code>true</code> if the point has a near point </br>
-	 *         <code>false</code> otherwise
-	 */
-	public static boolean hasAnyNearPoint(GeoPosition refPoint, List<Edge> savedEdges) {
-		for (int i = 0; i < savedEdges.size(); i++) {
-			for (GeoPosition point : savedEdges.get(i).getPositions()) {
-				if (isNear(refPoint, point, combinePointsDistance)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Checks if an {@link Edge} has multiple nearby points and only leaves one
-	 * point at this position.
-	 * 
-	 * Create new Edge with old parameters. Iterate trough all points from the
-	 * old edge but add the current point only if it do not have any near points
-	 * in the new savedPoint list.
-	 * 
-	 * @param edge
-	 * @return
-	 */
-	private Edge reduceEdgePoints(Edge refEdge, int factor) {
-		HighResEdge edge = new HighResEdge(refEdge);
-		for (GeoPosition point : refEdge.getPositions()) {
-			boolean flag = true;
-			for (GeoPosition savedPoint : edge.getPositions()) {
-				if (isNear(point, savedPoint, factor * reduceEdgeDistance)) {
-					flag = false;
-					break;
-				}
-			}
-			if (flag) {
-				edge.getPositions().add(point);
-			}
-		}
-		return edge;
-	}
-
-	private Edge reduceEdgePoints(MapRoute mapedge, int factor) {
-		MapRoute edge = new MapRoute(mapedge);
-		for (MapPoint point : mapedge.getPoints()) {
-			boolean flag = true;
-			for (GeoPosition savedPoint : edge.getPositions()) {
-				if (isNear(point.getPosition(), savedPoint, factor * reduceEdgeDistance)) {
-					flag = false;
-					break;
-				}
-			}
-			if (flag) {
-				edge.addPoint(point);
-			}
-		}
-		return edge;
-	}
-
-	public static boolean isNear(GeoPosition refPoint, GeoPosition point, double distance) {
-		if (getDistance(refPoint, point) < distance) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public static double getDistance(GeoPosition refPoint, GeoPosition point) {
-		double deltaX = Math.abs(refPoint.getLatitude() - point.getLatitude());
-		double deltaY = Math.abs(refPoint.getLongitude() - point.getLongitude());
-		return deltaX + deltaY;
-	}
-
-	private void mapEdgesToStreets() {
-		// List<Edge> land = routeController.getRoute();
-		// System.out.println("" + routeController.getRoute().get(1));
-		// List<Edge> sea = routeController.getSeaRoute();
-		// List<Edge> route = new ArrayList<>(land.size() + sea.size());
-		// if (Constants.optimzeLandRoutes) {
-		// route.addAll(land);
-		// }
-		// route.addAll(sea);
-
-		List<List<Edge>> allRoutes = new ArrayList<>();
-		if (Constants.optimzeLandRoutes) {
-			for (int i = 0; i < Constants.ZOOM_LEVEL_COUNT; i++) {
-				allRoutes.add(routeController.getRoute(i));
-			}
-		}
-		allRoutes.add(routeController.getSeaRoute());
-
-		for (int i = 0; i < allRoutes.size() - 1; i++) {
-			List<Edge> route = allRoutes.get(i);
-			generateStreetTasks(i, route);
-		}
-	}
-
-	private void generateStreetTasks(int i, List<Edge> route) {
-		for (Edge edge : route) {
-			pool.invoke(new ForkJoinTask<Edge>() {
-
-				private static final long serialVersionUID = 1475668164109020735L;
-
-				@Override
-				public Edge getRawResult() {
-					// noop
-					return null;
-				}
-
-				@Override
-				protected void setRawResult(Edge value) {
-					// noop
-				}
-
-				@Override
-				protected boolean exec() {
-					HighResEdge highResEdge;
-					if (edge.getType().equals(EdgeType.VESSEL)) {
-
-						DijkstraAlgorithm dijkstraAlgorithm;
-						dijkstraAlgorithm = new DijkstraAlgorithm(seaController.getEdges());
-						dijkstraAlgorithm.execute(edge.getStart());
-						List<GeoPosition> steps = dijkstraAlgorithm.getPath(edge.getDest());
-						highResEdge = new HighResEdge(edge);
-						highResEdge.addPositions(steps);
-						logger.info("map edge to sea route DONE - " + steps.size());
-						if (highResEdge != null) {
-							routeController.updateSeaEdge(edge, highResEdge);
-						}
-					} else {
-						highResEdge = getHighRes(edge);
-						logger.info("map edge to street DONE");
-						if (highResEdge != null) {
-							routeController.updateEdge(edge, highResEdge, i);
-						}
-					}
-					repaint();
-					return true;
-				}
-			});
-		}
-	}
-
-	private HighResEdge getHighRes(Edge edge) {
-		GHPoint start = new GHPoint(edge.getStart().getLatitude(), edge.getStart().getLongitude());
-		GHPoint dest = new GHPoint(edge.getDest().getLatitude(), edge.getDest().getLongitude());
-
-		GHRequest ghRequest = new GHRequest(start, dest);
-		GHResponse response = graphHopper.route(ghRequest);
-
-		if (response.hasErrors() || response.getAll().isEmpty()) {
-			logger.info("Could not find solution for edge with start: " + edge.getStart().toString());
-			return null;
-		}
-		PathWrapper path = response.getBest();
-		PointList points = path.getPoints();
-
-		// XXX Instructions contain GPX Data, for saving the optimized graph see
-		// Method:
-		// path.getInstructions().createGPX()
-
-		HighResEdge highResEdge = new HighResEdge(edge);
-
-		highResEdge.addGhPositions(points.toGeoJson());
-		return highResEdge;
 	}
 
 	private void initGraphhopper() {
@@ -564,4 +280,5 @@ public class MainController {
 	public void repaint() {
 		mapViewer.repaint();
 	}
+
 }

@@ -42,7 +42,7 @@ public class SimpleFlowRoutePainter implements IRoutePainter {
 	public void drawRoute(Graphics2D g, MyMap map) {
 		List<Edge> route = routeController.getRoute();
 		for (Edge edge : route) {
-			int entityStepCurrent = timeStep / Constants.PAINT_STEPS;
+			int entityStepCurrent = timeStep / Constants.PAINT_STEPS_COUNT;
 			int entityStepNext = entityStepCurrent + 1;
 			long currentWorkload = edge.getWorkload(entityStepCurrent);
 			long currentCapacity = edge.getCapacity(entityStepCurrent);
@@ -50,7 +50,7 @@ public class SimpleFlowRoutePainter implements IRoutePainter {
 			long nextCapacity = edge.getCapacity(entityStepNext);
 
 			List<GeoPosition> points = edge.getPositions();
-			double stepFactor = timeStep % Constants.PAINT_STEPS / (double) Constants.PAINT_STEPS;
+			double stepFactor = timeStep % Constants.PAINT_STEPS_COUNT / (double) Constants.PAINT_STEPS_COUNT;
 			drawRoutePart(g, map, nextWorkload, nextCapacity, points, 0, points.size() * stepFactor);
 
 			drawRoutePart(g, map, currentWorkload, currentCapacity, points, (int) (points.size() * stepFactor),

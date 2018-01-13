@@ -165,14 +165,13 @@ public class SeaController {
 	public void loadSeaNodes(String seaNodes) {
 		String path = seaNodes;
 		if (null == path || "".equals(path)) {
-			logger.info("use default seanodes path");
+			logger.warn("no sea nodes file given, try to use default sea nodes path...");
 			path = DEFAULT_SEA_NODES_FILE;
 		}
 		points = addEdgesFromFile(path);
 		idCounter = points.size(); // Works only if size = latest id
-		logger.info("Set IDCounter to: " + idCounter);
+		logger.debug("Set IDCounter to: " + idCounter);
 		edges = createEdges();
-		logger.info(edges.toString());
 	}
 
 	public class SeaNode {

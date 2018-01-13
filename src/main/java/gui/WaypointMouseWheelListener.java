@@ -35,6 +35,7 @@ public class WaypointMouseWheelListener implements MouseWheelListener {
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		map.setWaypoints(new HashSet<>(waypointController.getWaypoints(map.getZoom())));
+		
 	}
 
 }

@@ -108,7 +108,7 @@ public class DefaultRoutePainter implements IRoutePainter {
 		long nextWorkload = 0;
 		long nextCapacity = 0;
 
-		int entityStepCurrent = currentTimeStep / Constants.PAINT_STEPS;
+		int entityStepCurrent = currentTimeStep / Constants.PAINT_STEPS_COUNT;
 		int entityStepNext = entityStepCurrent + 1;
 
 		if (MapRoute.class.isInstance(edge)) {
@@ -126,7 +126,7 @@ public class DefaultRoutePainter implements IRoutePainter {
 			nextCapacity = edge.getCapacity(entityStepNext);
 		}
 
-		double stepFactor = currentTimeStep % Constants.PAINT_STEPS / (double) Constants.PAINT_STEPS;
+		double stepFactor = currentTimeStep % Constants.PAINT_STEPS_COUNT / (double) Constants.PAINT_STEPS_COUNT;
 
 		long valCapacity = (long) (nextCapacity * stepFactor + currentCapacity * (1 - stepFactor));
 		long valWorkload = (long) (nextWorkload * stepFactor + currentWorkload * (1 - stepFactor));

@@ -60,20 +60,11 @@ public class SeaRoutePainter {
 	}
 
 	public static List<SeaEdge> calcDrawEdges(List<NodeEdge> seaRoute) {
-		map = MainController.getInstance().getMapViewer();
-
-//		drawEdges.clear();
-		
 		initCircleDiameter(map);
-		// int currentTimeStep = this.currentTimeStep / Constants.PAINT_STEPS;
 
-		// XXX does not need to run every frame
 		if (drawEdges.get(map.getZoom()-1).isEmpty()) {
 			drawEdges.set(map.getZoom()-1,  calcSeaLines(seaRoute));
 		}
-		// logger.info("Sea-Edge count: " + drawEdges.size());
-		// drawEdges = optimzeSeaLines(seaRoute);
-		// logger.info("Sea-Edge count: " + drawEdges.size());
 
 		return drawEdges.get(map.getZoom()-1);
 	}

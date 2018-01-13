@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import org.jxmapviewer.viewer.GeoPosition;
 
 import main.MainController;
+import newVersion.main.Optimizer;
 
 /**
  * Represents a visible Edge
@@ -173,7 +174,7 @@ public class MapRoute extends Edge {
 	 */
 	public void addNewPoint(GeoPosition point, List<Edge> edges) {
 		MapPoint mp = new MapPoint(point,
-				MainController.getNearEdges(point, edges, MainController.combinePointsDistance));
+				Optimizer.getNearEdges(point, edges, MainController.combinePointsDistance));
 		addPoint(mp);
 		serviceTimes.clear();
 	}

@@ -16,7 +16,7 @@ import models.Constants;
  */
 public class WaypointController {
 
-	private List<CapacityWaypoint> waypoints = new ArrayList<>();
+	// private List<CapacityWaypoint> waypoints = new ArrayList<>();
 	private List<List<CapacityWaypoint>> zoomWaypoints = new ArrayList<>();
 
 	/**
@@ -53,7 +53,7 @@ public class WaypointController {
 				waypoints.add(waypoint);
 			}
 		}
-		this.waypoints = waypoints;
+		setWaypoints(waypoints);
 	}
 
 	public void setWaypoints(List<CapacityWaypoint> savedNodes, int zoomlevel) {
@@ -61,16 +61,21 @@ public class WaypointController {
 	}
 
 	public List<CapacityWaypoint> getWaypoints(int zoomlevel) {
-		if (Constants.debugInfos) {
-			System.out.println( (Constants.ZOOM_LEVEL_COUNT*2 / (float) (Constants.MAX_ZOOM_LEVEL)
-					* (Constants.MAX_ZOOM_LEVEL - zoomlevel)));
-		}
-		return zoomWaypoints.get(Math.min(Constants.ZOOM_LEVEL_COUNT, Math.max(0,(int) (Constants.ZOOM_LEVEL_COUNT*2 / (float) (Constants.MAX_ZOOM_LEVEL)
-				* (Constants.MAX_ZOOM_LEVEL - zoomlevel)))));
+		final int ZOOM_LIMIT = Constants.MAX_ZOOM_LEVEL - 3;
+		float zoomIndex = (Constants.ZOOM_LEVEL_COUNT - (Constants.ZOOM_LEVEL_COUNT
+				/ (float) (Math.min(Constants.MAX_ZOOM_LEVEL, ZOOM_LIMIT) - Math.min(zoomlevel, ZOOM_LIMIT - 1))));
+
+		System.out.println(zoomIndex);
+		return zoomWaypoints.get((int) zoomIndex);
+
+		// return zoomWaypoints.get(Math.min(Constants.ZOOM_LEVEL_COUNT,
+		// Math.max(0, (int) (Constants.ZOOM_LEVEL_COUNT * 2
+		// / (float) (Constants.MAX_ZOOM_LEVEL) * (Constants.MAX_ZOOM_LEVEL -
+		// zoomlevel)))));
 	}
 
-	public void setWaypoints(List<CapacityWaypoint> savedNodes) {
-		this.waypoints = savedNodes;
+	public void setWaypoints(List<CapacityWaypoint> waypoints) {
+		zoomWaypoints.set(Constants.ZOOM_LEVEL_COUNT - 1, waypoints);
 	}
 
 	public List<GeoPosition> getWaypointPositions(int zoomlevel) {
@@ -85,7 +90,7 @@ public class WaypointController {
 	 * @return the {@link Waypoint} as {@link List}
 	 */
 	public List<CapacityWaypoint> getWaypoints() {
-		return waypoints;
+		return zoomWaypoints.get(Constants.ZOOM_LEVEL_COUNT - 1);
 	}
 
 }

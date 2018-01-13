@@ -12,10 +12,10 @@ import java.util.Map.Entry;
 import org.jxmapviewer.beans.AbstractBean;
 import org.jxmapviewer.viewer.GeoPosition;
 
-import main.MainController;
 import main.RouteController;
 import models.CapacityWaypoint;
 import models.Constants;
+import newVersion.main.Optimizer;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
@@ -50,7 +50,7 @@ public class WaypointClickMouseListener extends AbstractBean implements MouseLis
 		double precision = 0.25 * map.getZoom() / 3;
 		for (CapacityWaypoint waypoint : map.getWaypoints()) {
 			GeoPosition wp = waypoint.getPosition();
-			double distance = MainController.getDistance(gp, wp);
+			double distance = Optimizer.getDistance(gp, wp);
 			if (distance < precision) {
 				distanceMap.put(waypoint, distance);
 				// System.out.println(wp.toString() + " - DIST: " +

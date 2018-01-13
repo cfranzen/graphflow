@@ -28,7 +28,6 @@ import org.jxmapviewer.viewer.LocalResponseCache;
 import org.jxmapviewer.viewer.TileFactoryInfo;
 import org.jxmapviewer.viewer.WaypointPainter;
 
-import interactiveWaypoints.SwingWaypointOverlayPainter;
 import main.MainController;
 import main.RouteController;
 import models.CapacityWaypoint;
@@ -132,7 +131,7 @@ public class MyMap extends JXMapViewer implements PropertyChangeListener {
 		addMouseListener(mia);
 		addMouseMotionListener(mia);
 		addMouseListener(new CenterMapListener(this));
-		mia = new InfoMouseInputListener(controller);
+		mia = new InfoMouseInputListener(this);
 		addMouseListener(mia);
 		addMouseMotionListener(mia);
 		addMouseWheelListener(new ZoomMouseWheelListenerCenter(this));
@@ -166,7 +165,8 @@ public class MyMap extends JXMapViewer implements PropertyChangeListener {
 		routePaintController.setRouteController(routeController);
 
 		// Create a waypoint painter that takes all the waypoints
-		waypointPainter = new SwingWaypointOverlayPainter();
+//		waypointPainter = new SwingWaypointOverlayPainter();
+		waypointPainter = new WaypointPainter<>();
 		waypointPainter.setRenderer(new CapacityWaypointRenderer());
 
 		// Create a compound painter that uses both the route-painter and the
@@ -199,7 +199,6 @@ public class MyMap extends JXMapViewer implements PropertyChangeListener {
 		if (Constants.EVENT_NAME_WAYPOINT_FROM.equals(propertyName)
 				|| Constants.EVENT_NAME_WAYPOINT_TO.equals(propertyName)) {
 			repaint();
-			// TODO Remove running entities
 		}
 	}
 

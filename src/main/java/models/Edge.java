@@ -27,8 +27,8 @@ public class Edge {
 	protected GeoPosition start;
 	protected GeoPosition dest;
 	protected int[] serviceTimes = new int[0];
-	private long[] capacites = new long[0];
-	private long[] workloads = new long[0];
+	protected long[] capacites = new long[0];
+	protected long[] workloads = new long[0];
 	private int maxServiceTime = 0;
 
 	private EdgeType type = EdgeType.TRUCK;

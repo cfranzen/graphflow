@@ -38,6 +38,8 @@ public class NodeEdge extends Edge {
 		this.start = e.getStart();
 		this.dest = e.getDest();
 		this.serviceTimes = e.getServiceTimes();
+		this.capacites = e.getCapacites();
+		this.workloads = e.getWorkloads();
 	}
 
 	/**

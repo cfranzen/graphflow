@@ -63,7 +63,6 @@ public class NewEntityFlowPainter implements IRoutePainter {
 	 */
 	@Override
 	public void drawRoute(Graphics2D g, MyMap map) {
-	
 		// Manipulate the graphics object one time before the loop instead of
 		// every run, because it is a resource consuming operation
 		g.setColor(Color.GRAY);
@@ -73,14 +72,16 @@ public class NewEntityFlowPainter implements IRoutePainter {
 			drawGreyEdgeLine(g, map, edge);
 		}
 		if (Constants.optimzeLandRoutes) {
-			for (Edge edge : routeController.getPaintRoute()) {
+//			for (Edge edge : routeController.getPaintRoute()) {
+				// FIXME use paint route
+			for (Edge edge : routeController.getRouteByZoom(map.getZoom())) {
 				drawGreyEdgeLine(g, map, (NodeEdge) edge);
 			}
 		}
 
 		// Every bigger time step new entities are starting from the nodes
-		int timeStepBig = timeStep / Constants.PAINT_STEPS;
-		if (timeStep % Constants.PAINT_STEPS == 0) {
+		int timeStepBig = timeStep / Constants.PAINT_STEPS_COUNT;
+		if (timeStep % Constants.PAINT_STEPS_COUNT == 0) {
 
 			// Create land entities
 			if (Constants.optimzeLandRoutes) {
@@ -187,9 +188,9 @@ public class NewEntityFlowPainter implements IRoutePainter {
 								// relation to the
 		// edge point count
 		double pointsPerTimeStep = (double) (entity.edge.getPathSize()) / entity.getMaxServiceTimeSteps()
-				/ Constants.PAINT_STEPS;
-		int max = (int) Math.ceil((pointsPerTimeStep * (timeStep % Constants.PAINT_STEPS)
-				+ ((entity.getCurrentServiceTimeStep() - 1) * (pointsPerTimeStep * Constants.PAINT_STEPS))));
+				/ Constants.PAINT_STEPS_COUNT;
+		int max = (int) Math.ceil((pointsPerTimeStep * (timeStep % Constants.PAINT_STEPS_COUNT)
+				+ ((entity.getCurrentServiceTimeStep() - 1) * (pointsPerTimeStep * Constants.PAINT_STEPS_COUNT))));
 		int min = (int) Math.floor(max - pointsPerTimeStep * LENGTH);
 
 		min = (int) ((min >= entity.edge.getPathSize()) ? entity.edge.getPathSize() - 1 : (min < 0) ? 0 : min);

@@ -1,6 +1,5 @@
 package main;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
@@ -63,7 +62,7 @@ public class RouteController implements PropertyChangeListener {
 	public List<List<Edge>> getAllRoutes() {
 		return routes;
 	}
-	
+
 	/**
 	 * @return the route
 	 */
@@ -72,12 +71,23 @@ public class RouteController implements PropertyChangeListener {
 	}
 
 	public List<Edge> getRoute(int index) {
+		logger.debug("Got route: " + index);
 		return routes.get(index);
 	}
 
 	public List<Edge> getRouteByZoom(int zoomlevel) {
-		return getRoute(Math.min(Constants.ZOOM_LEVEL_COUNT, Math.max(0, (int) (Constants.ZOOM_LEVEL_COUNT * 2
-				/ (float) (Constants.MAX_ZOOM_LEVEL) * (Constants.MAX_ZOOM_LEVEL - zoomlevel)))));
+		final int ZOOM_LIMIT = Constants.MAX_ZOOM_LEVEL - 3;
+		float zoomIndex = (Constants.ZOOM_LEVEL_COUNT - (Constants.ZOOM_LEVEL_COUNT
+				/ (float) (Math.min(Constants.MAX_ZOOM_LEVEL, ZOOM_LIMIT) - Math.min(zoomlevel, ZOOM_LIMIT - 1))));
+		if (Constants.debugInfos) {
+			logger.info("ZoomLevelBasis: " + zoomIndex);
+		}
+		return getRoute((int) zoomIndex);
+
+		// return getRoute(Math.min(Constants.ZOOM_LEVEL_COUNT - 1, Math.max(0,
+		// (int) (Constants.ZOOM_LEVEL_COUNT * 2
+		// / (float) (Constants.MAX_ZOOM_LEVEL) * (Constants.MAX_ZOOM_LEVEL -
+		// zoomlevel)))));
 	}
 
 	/**
@@ -138,13 +148,13 @@ public class RouteController implements PropertyChangeListener {
 			int index = route.indexOf(oldEdge);
 			if (index != -1) {
 				route.set(index, newEdge);
-				setRoute(route);
+				setRoute(route, i);
 				return true;
 			}
 		} else {
 			// if newEdge = Emtpy -> remove old edge instead null update
 			route.remove(oldEdge);
-			setRoute(route);
+			setRoute(route, i);
 		}
 		return false;
 	}
@@ -203,7 +213,6 @@ public class RouteController implements PropertyChangeListener {
 				}
 			}
 		} else {
-			// for (Edge edge : edges) {
 			for (int i = 0; i < edges.size(); i++) {
 				Edge edge = edges.get(i);
 				edge.id = i;
@@ -238,8 +247,8 @@ public class RouteController implements PropertyChangeListener {
 	 * @param viewportStart
 	 * @param viewportEnd
 	 */
-	public void excludeNonVisiblePointFromPaintRoutes(GeoPosition viewportStart, GeoPosition viewportEnd) {
-		excludeNonVisiblePointFromPaintRoutes(viewportStart, viewportEnd, getRoute());
+	public void excludeNonVisiblePointFromPaintRoutes(MyMap map) {
+		excludeNonVisiblePointFromPaintRoutes(map, getRoute());
 	}
 
 	/**
@@ -249,9 +258,13 @@ public class RouteController implements PropertyChangeListener {
 	 * @param viewportEnd
 	 *            {@link GeoPosition} at last bottom-right pixel of the viewport
 	 */
-	public void excludeNonVisiblePointFromPaintRoutes(GeoPosition viewportStart, GeoPosition viewportEnd,
-			List<Edge> route) {
+	public void excludeNonVisiblePointFromPaintRoutes(MyMap map, List<Edge> route) {
 		if (Constants.drawOnlyViewport) {
+
+			Rectangle rect = map.getViewportBounds();
+			GeoPosition viewportStart = map.getGeoPos(rect.getMinX(), rect.getMinY());
+			GeoPosition viewportEnd = map.getGeoPos(rect.getMaxX(), rect.getMaxY());
+
 			// Land routes
 			List<Edge> result = new ArrayList<>();
 			for (Edge edge : route) {
@@ -262,16 +275,19 @@ public class RouteController implements PropertyChangeListener {
 			}
 			paintRoute = result;
 
-			// Sea routes
-			result = new ArrayList<>();
-			for (Edge edge : seaRoute) {
-
-				if ((edge.getStart() != null && pointOnScreen(edge.getStart(), viewportStart, viewportEnd))
-						|| (edge.getDest() != null && pointOnScreen(edge.getDest(), viewportStart, viewportEnd))) {
-					result.add(edge);
-				}
-			}
-			paintSeaRoute = result;
+			// Sea routes - show always all edges,
+			// result = new ArrayList<>();
+			// for (Edge edge : seaRoute) {
+			//
+			// if ((edge.getStart() != null && pointOnScreen(edge.getStart(),
+			// viewportStart, viewportEnd))
+			// || (edge.getDest() != null && pointOnScreen(edge.getDest(),
+			// viewportStart, viewportEnd))) {
+			// result.add(edge);
+			// }
+			// }
+			// paintSeaRoute = result;
+			paintSeaRoute = seaRoute;
 		} else {
 			paintRoute = route;
 			paintSeaRoute = seaRoute;
@@ -301,17 +317,8 @@ public class RouteController implements PropertyChangeListener {
 
 	}
 
-	private void calcOnlyVisibleEdges(Graphics2D g, MyMap map) {
-		Rectangle rect = map.getViewportBounds();
-		GeoPosition viewportStart = map.getGeoPos(rect.getMinX(), rect.getMinY());
-		GeoPosition viewportEnd = map.getGeoPos(rect.getMaxX(), rect.getMaxY());
-		excludeNonVisiblePointFromPaintRoutes(viewportStart, viewportEnd, getRouteByZoom(map.getZoom()));
-		if (Constants.debugInfos && Constants.drawOnlyViewport) {
-			g.setColor(Color.MAGENTA);
-			g.drawRect((int) rect.getMinX() + 300, (int) rect.getMinY() + 150,
-					(int) rect.getMaxX() - 300 - ((int) rect.getMinX() + 300),
-					(int) rect.getMaxY() - 150 - ((int) rect.getMinY() + 150));
-		}
+	private void calcOnlyVisibleEdges(Graphics2D g, MyMap map, List<Edge> route) {
+		excludeNonVisiblePointFromPaintRoutes(map, route);
 	}
 
 	/**
@@ -320,9 +327,14 @@ public class RouteController implements PropertyChangeListener {
 	 */
 	public void updatePaintRoute(Graphics2D g, MyMap map) {
 		calculateSeaEdges(map);
-		calcOnlyVisibleEdges(g, map);
+		List<Edge> route = getRouteByZoom(map.getZoom());
+
+		// route = routes.get(1);
+
+		calcOnlyVisibleEdges(g, map, route);
+		route = paintRoute;
 		if (highlightedWaypointFrom != null || highlightedWaypointTo != null) {
-			showOnlyWaypointEdges(getRouteByZoom(map.getZoom()), getSeaRoute());
+			showOnlyWaypointEdges(route, getSeaRoute());
 		}
 	}
 
@@ -336,8 +348,7 @@ public class RouteController implements PropertyChangeListener {
 		}
 		List<SeaEdge> seaEdges = SeaRoutePainter.calcDrawEdges(seaRoute);
 		for (NodeEdge nodeEdge : seaRoute) {
-			nodeEdge.setPath(new ArrayList<>(), 0);
-			nodeEdge.setPathZoom(map.getZoom());
+			nodeEdge.setPath(new ArrayList<>(), map.getZoom());
 			for (SeaEdge seaEdge : seaEdges) {
 				if (seaEdge.edgeIds.contains(nodeEdge.id)) {
 					nodeEdge.addToPath(seaEdge.getPath());
@@ -371,7 +382,6 @@ public class RouteController implements PropertyChangeListener {
 			}
 		}
 		paintSeaRoute = result;
-		paintSeaRoute = seaRoute;
 	}
 
 	/*

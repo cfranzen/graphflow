@@ -42,28 +42,9 @@ public class EntityFlowPainter implements IRoutePainter {
 	 */
 	@Override
 	public void drawRoute(Graphics2D g, MyMap map) {
-		Rectangle rect = map.getViewportBounds();
-		// XXX Magic Numbers for Debug
-		GeoPosition viewportStart = map.getGeoPos(rect.getMinX() + 300, rect.getMinY() + 150);
-		GeoPosition viewportEnd = map.getGeoPos(rect.getMaxX() - 300, rect.getMaxY() - 150);
-		routeController.excludeNonVisiblePointFromPaintRoutes(viewportStart, viewportEnd);
-
-		if (Constants.debugInfos) {
-//			int size = 0;
-//			for (Edge edge : routeController.getPaintRoute()) {
-//				size += edge.getPositions().size();
-//			}
-			// System.out.println("Edge: " +
-			// routeController.getPaintRoute().size() + " - Points: " + size);
-			g.setColor(Color.MAGENTA);
-			g.fillOval((int) rect.getMinX() + 300, (int) rect.getMinY() + 150, 10, 10);
-			g.fillOval((int) rect.getMinX() + 300, (int) rect.getMaxY() - 150, 10, 10);
-			g.fillOval((int) rect.getMaxX() - 300, (int) rect.getMaxY() - 150, 10, 10);
-			g.fillOval((int) rect.getMaxX() - 300, (int) rect.getMinY() + 150, 10, 10);
-		}
 
 		for (Edge edge : routeController.getPaintRoute()) {
-			int entityStepCurrent = timeStep / Constants.PAINT_STEPS;
+			int entityStepCurrent = timeStep / Constants.PAINT_STEPS_COUNT;
 			List<GeoPosition> points = edge.getPositions();
 			double serviceTimeSteps = edge.getServiceTime(entityStepCurrent);
 			serviceTimeSteps = serviceTimeSteps < 1 ? 1 : serviceTimeSteps;
@@ -72,13 +53,11 @@ public class EntityFlowPainter implements IRoutePainter {
 			int from = 0;
 			int to = pointsPerStep;
 
-			// if (true) return;
-
 			for (int i = 0; i < serviceTimeSteps; i++) {
 				if (i > 2)
 					return;
 
-				double stepFactor = timeStep % Constants.PAINT_STEPS / (double) Constants.PAINT_STEPS;
+				double stepFactor = timeStep % Constants.PAINT_STEPS_COUNT / (double) Constants.PAINT_STEPS_COUNT;
 				from = (int) (pointsPerStep * i);
 				to = (int) (from + (pointsPerStep * stepFactor) + 1);
 
@@ -124,7 +103,7 @@ public class EntityFlowPainter implements IRoutePainter {
 	 */
 	private void mapRoutePainter(Graphics2D g, MyMap map, MapRoute edge, int currentTimeStep, int serviceTimeStep,
 			int pointsPerStep) {
-		double stepFactor = timeStep % Constants.PAINT_STEPS / (double) Constants.PAINT_STEPS;
+		double stepFactor = timeStep % Constants.PAINT_STEPS_COUNT / (double) Constants.PAINT_STEPS_COUNT;
 		int from = (int) (pointsPerStep * serviceTimeStep);
 		int to = (int) (from + (pointsPerStep * stepFactor) + 1);
 
