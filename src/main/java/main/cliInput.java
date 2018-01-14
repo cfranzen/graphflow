@@ -34,7 +34,7 @@ public class cliInput{
 	@Option(name = "-zoomAggregation", usage = "If true, waypoints will be aggregated when zooming out of the map")
 	public boolean zoomAggregation;
 	
-	@Option(name = "-logLevel", usage="Shows a seperate logger window if one option is given. Options:'ALL', 'DEBUG', 'INFO', 'WARN', 'ERROR'")
+	@Option(name = "-logLevel", usage="Shows a separate logger window if one option is given. Options:'ALL', 'DEBUG', 'INFO', 'WARN', 'ERROR'")
 	public String logLevel;
 	
 }
