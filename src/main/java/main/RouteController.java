@@ -54,7 +54,11 @@ public class RouteController implements PropertyChangeListener {
 	private List<Edge> paintSeaRoute = new ArrayList<>();
 
 	RouteController() {
-		for (int i = 0; i < Constants.ZOOM_LEVEL_COUNT; i++) {
+		if (Constants.zoomAggregation) {
+			for (int i = 0; i < Constants.ZOOM_LEVEL_COUNT; i++) {
+				routes.add(new ArrayList<>());
+			}
+		} else {
 			routes.add(new ArrayList<>());
 		}
 	}
@@ -67,10 +71,11 @@ public class RouteController implements PropertyChangeListener {
 	 * @return the route
 	 */
 	public List<Edge> getRoute() {
-		return routes.get(Constants.ZOOM_LEVEL_COUNT - 1);
+		return routes.get(routes.size() - 1);
 	}
 
 	public List<Edge> getRoute(int index) {
+		index = index >= routes.size() ? routes.size() - 1 : index;
 		logger.debug("Got route: " + index);
 		return routes.get(index);
 	}
@@ -82,6 +87,7 @@ public class RouteController implements PropertyChangeListener {
 		if (Constants.debugInfos) {
 			logger.info("ZoomLevelBasis: " + zoomIndex);
 		}
+		
 		return getRoute((int) zoomIndex);
 
 		// return getRoute(Math.min(Constants.ZOOM_LEVEL_COUNT - 1, Math.max(0,
@@ -112,10 +118,11 @@ public class RouteController implements PropertyChangeListener {
 	 *            the route to set
 	 */
 	public void setRoute(List<Edge> route) {
-		routes.set(Constants.ZOOM_LEVEL_COUNT - 1, route);
+		routes.set(routes.size() - 1, route);
 	}
 
 	public void setRoute(List<Edge> route, int index) {
+		index = index >= routes.size() ? routes.size() - 1 : index;
 		routes.set(index, route);
 	}
 

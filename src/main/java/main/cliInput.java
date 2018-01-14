@@ -30,5 +30,8 @@ public class cliInput{
 	
 	@Option(name = "-paintStepCount", usage = "number of frames which has every time unit")
 	public int paintStepCount;
+
+	@Option(name = "-zoomAggregation", usage = "If true, waypoints will be aggregated when zooming out of the map")
+	public boolean zoomAggregation;
 	
 }

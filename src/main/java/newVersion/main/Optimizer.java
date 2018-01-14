@@ -282,12 +282,10 @@ public class Optimizer {
 		logger.info("Reduce point resolution per edge; before - after");
 		routeController.sumRoutePoints();
 
-		// for (List<Edge> edges : routeController.getAllRoutes()) {
 		List<List<Edge>> routes = routeController.getAllRoutes();
 		for (int i = 0; i < routes.size(); i++) {
 			List<Edge> edges = routes.get(i);
-			// }
-			if (edges.get(0) instanceof MapRoute) {
+			if (!edges.isEmpty() && edges.get(0) instanceof MapRoute) {
 				for (Edge edge : edges) {
 					MapRoute mapEdge = (MapRoute) edge;
 					routeController.updateEdge(mapEdge, reduceEdgePoints(mapEdge, factor), i);

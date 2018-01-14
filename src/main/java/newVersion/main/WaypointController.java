@@ -23,7 +23,11 @@ public class WaypointController {
 	 * 
 	 */
 	public WaypointController() {
-		for (int i = 0; i < Constants.ZOOM_LEVEL_COUNT; i++) {
+		if (Constants.zoomAggregation) {
+			for (int i = 0; i < Constants.ZOOM_LEVEL_COUNT; i++) {
+				zoomWaypoints.add(new ArrayList<>());
+			}
+		} else {
 			zoomWaypoints.add(new ArrayList<>());
 		}
 	}
@@ -57,6 +61,7 @@ public class WaypointController {
 	}
 
 	public void setWaypoints(List<CapacityWaypoint> savedNodes, int zoomlevel) {
+		zoomlevel = zoomlevel >= zoomWaypoints.size() ? zoomWaypoints.size() - 1 : zoomlevel;
 		zoomWaypoints.set(zoomlevel, savedNodes);
 	}
 
@@ -64,8 +69,7 @@ public class WaypointController {
 		final int ZOOM_LIMIT = Constants.MAX_ZOOM_LEVEL - 3;
 		float zoomIndex = (Constants.ZOOM_LEVEL_COUNT - (Constants.ZOOM_LEVEL_COUNT
 				/ (float) (Math.min(Constants.MAX_ZOOM_LEVEL, ZOOM_LIMIT) - Math.min(zoomlevel, ZOOM_LIMIT - 1))));
-
-		System.out.println(zoomIndex);
+		zoomIndex = zoomIndex >= zoomWaypoints.size() ? zoomWaypoints.size() - 1 : zoomIndex;
 		return zoomWaypoints.get((int) zoomIndex);
 
 		// return zoomWaypoints.get(Math.min(Constants.ZOOM_LEVEL_COUNT,
@@ -75,7 +79,7 @@ public class WaypointController {
 	}
 
 	public void setWaypoints(List<CapacityWaypoint> waypoints) {
-		zoomWaypoints.set(Constants.ZOOM_LEVEL_COUNT - 1, waypoints);
+		zoomWaypoints.set(zoomWaypoints.size() - 1, waypoints);
 	}
 
 	public List<GeoPosition> getWaypointPositions(int zoomlevel) {
@@ -90,7 +94,7 @@ public class WaypointController {
 	 * @return the {@link Waypoint} as {@link List}
 	 */
 	public List<CapacityWaypoint> getWaypoints() {
-		return zoomWaypoints.get(Constants.ZOOM_LEVEL_COUNT - 1);
+		return zoomWaypoints.get(zoomWaypoints.size() - 1);
 	}
 
 }

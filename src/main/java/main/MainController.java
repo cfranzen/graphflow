@@ -67,11 +67,11 @@ public class MainController {
 	 * not pixel
 	 */
 	public final static double contactSearchDistance = 0.021;
-//	/**
-//	 * used for removing multiple point which are near together, distance in
-//	 * lat/lon not pixel
-//	 */
-//	public final static double reduceEdgeDistance = 0.01075;
+	// /**
+	// * used for removing multiple point which are near together, distance in
+	// * lat/lon not pixel
+	// */
+	// public final static double reduceEdgeDistance = 0.01075;
 	/**
 	 * used for combining points and summarizing workload and capacity, distance
 	 * in lat/lon not pixel
@@ -119,7 +119,9 @@ public class MainController {
 		routeController.importEdges(input.edges);
 		routeController.getAllRoutes();
 		waypointController.createWaypointsFromGeo(input.nodes);
-		Optimizer.aggregateWaypoints(routeController, waypointController);
+		if (Constants.zoomAggregation) {
+			Optimizer.aggregateWaypoints(routeController, waypointController);
+		}
 		mapViewer.setWaypoints(new HashSet<>(waypointController.getWaypoints(mapViewer.getZoom())));
 
 		optimize();
@@ -140,6 +142,7 @@ public class MainController {
 		if (cliInput.paintStepCount != 0) {
 			Constants.PAINT_STEPS_COUNT = cliInput.paintStepCount;
 		}
+		Constants.zoomAggregation = cliInput.zoomAggregation;
 	}
 
 	private void loadSolution() {
@@ -219,7 +222,7 @@ public class MainController {
 		long time = System.currentTimeMillis();
 		logger.info("Start GH");
 		initGraphhopper();
-		
+
 		// own thread so that the main thread is not blocked
 		Thread t = new Thread(new Runnable() {
 

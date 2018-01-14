@@ -3,12 +3,13 @@ package models;
 public class Constants {
 
 	public static boolean onlyGermany = false;
-	public static boolean debugInfos = true;
+	public static boolean debugInfos = false;
 	public static boolean debugInfosSeaEdges = false;
 	public static boolean drawOnlyViewport = true;
 	public static boolean optimzeLandRoutes = true;
 	public static boolean showTimesteps = true;
 	public static boolean drawLineWhenEnitityStarts = true;
+	public static boolean zoomAggregation = false;
 	
 	/**
 	 * Anzahl der Zoom-Stufen auf denen aggregiert wird.
