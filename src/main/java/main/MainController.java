@@ -122,7 +122,9 @@ public class MainController {
 		if (Constants.zoomAggregation) {
 			Optimizer.aggregateWaypoints(routeController, waypointController);
 		}
+
 		mapViewer.setWaypoints(new HashSet<>(waypointController.getWaypoints(mapViewer.getZoom())));
+		mainFrame.maxTimeSlider(input.timesteps * Constants.PAINT_STEPS_COUNT);
 
 		optimize();
 	}
@@ -177,8 +179,15 @@ public class MainController {
 			logger.info("Timestep: " + currentTime / Constants.PAINT_STEPS_COUNT);
 		}
 
+		setTime(currentTime);
+	}
+
+	public void setTime(int value) {
+		currentTime = value;
 		mapViewer.setTime(currentTime);
-		mainFrame.updateTimeText(currentTime);
+		if (mainFrame != null) {
+			mainFrame.updateTimeText(currentTime);
+		}
 	}
 
 	public void reduceTime() {
@@ -186,9 +195,7 @@ public class MainController {
 		if (currentTime <= 0) {
 			currentTime = input.timesteps;
 		}
-		System.out.println("Timestep: " + currentTime / Constants.PAINT_STEPS_COUNT);
-		mapViewer.setTime(currentTime);
-		mainFrame.updateTimeText(currentTime);
+		setTime(currentTime);
 	}
 
 	/**
@@ -215,6 +222,8 @@ public class MainController {
 		mainFrame = new MainFrame(this, mapViewer);
 		mainFrame.setResizable(true);
 		mainFrame.setVisible(true);
+
+		routeController.addPropertyChangeListener(mapViewer);
 	}
 
 	private void optimize() {
@@ -234,13 +243,13 @@ public class MainController {
 				// optimize GH edges
 				optimizer.reducePointCount(routeController);
 				repaint();
-				routeController.getAllRoutes();
 				logger.info("End GH - " + (System.currentTimeMillis() - time));
 				if (Constants.OPTIMIZE) {
 					optimizer.optimize(routeController, waypointController);
 				}
 				mapViewer.setWaypoints(new HashSet<>(waypointController.getWaypoints(mapViewer.getZoom())));
 				repaint();
+				mainFrame.updateProgessBar(100);
 			}
 		});
 		t.start();

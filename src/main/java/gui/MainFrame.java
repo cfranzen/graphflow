@@ -15,7 +15,12 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
+import junit.awtui.ProgressBar;
 import main.MainController;
 
 /**
@@ -28,10 +33,12 @@ public class MainFrame extends JFrame {
 
 	private static final long serialVersionUID = 4522268379182400290L;
 	private static final String FRAME_NAME = "Graphstream";
-//	private JFrame mainFrame;
+	// private JFrame mainFrame;
 	private JLabel timeTextLabel = new JLabel();
 	private String timeText = "Time: 0";
-	
+	private JProgressBar progressBar;
+	private JSlider timeSlider;
+
 	/**
 	 * 
 	 */
@@ -54,7 +61,8 @@ public class MainFrame extends JFrame {
 			@Override
 			public void componentResized(ComponentEvent e) {
 				mapViewer.setSize(getSize());
-
+				progressBar.setBounds(0, (int) (getSize().getHeight() - 55), getSize().width - 15, 10);
+				timeSlider.setBounds(1, (int) (getSize().getHeight() - 97), getSize().width - 15, 43);
 			}
 
 			@Override
@@ -107,12 +115,59 @@ public class MainFrame extends JFrame {
 
 		// Add viewer to frame
 		layeredPane.add(mapViewer, new Integer(10));
+
+		timeSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 0);
+		timeSlider.addChangeListener(new ChangeListener() {
+
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				JSlider source = (JSlider) e.getSource();
+				if (!source.getValueIsAdjusting()) {
+					int time = (int) source.getValue();
+					controller.setTime(time);
+				}
+			}
+		});
+		timeSlider.setMajorTickSpacing(100);
+		timeSlider.setMaximum(3000);
+		timeSlider.setPaintTicks(true);
+		timeSlider.setPaintLabels(true);
+		timeSlider.setBounds(0, (int) (getSize().getHeight() - 155), getSize().width, 15);
+		layeredPane.add(timeSlider, new Integer(30));
+
+		progressBar = new JProgressBar();
+		progressBar.setIndeterminate(true);
+		progressBar.setBounds(0, (int) (getSize().getHeight() - 55), getSize().width, 10);
+		progressBar.setMaximum(100);
+		layeredPane.add(progressBar, new Integer(30));
 	}
 
-	
 	public void updateTimeText(int currentTime) {
 		timeText = "Time: " + currentTime;
 		timeTextLabel.setText(timeText);
 	}
-	
+
+	/**
+	 * New value of the {@link ProgressBar} in percent
+	 * 
+	 * @param value
+	 */
+	public void updateProgessBar(int value) {
+		if (value == -1) {
+			progressBar.setIndeterminate(true);
+		} else if (value >= 0 && value <= 100) {
+			progressBar.setValue(value);
+			progressBar.setIndeterminate(false);
+		}
+	}
+
+	public void updateTimeSlider(int value) {
+		timeSlider.setValue(value);
+	}
+
+	public void maxTimeSlider(int value) {
+		timeSlider.setMajorTickSpacing(value / 20);
+		timeSlider.setMaximum(value);
+	}
+
 }

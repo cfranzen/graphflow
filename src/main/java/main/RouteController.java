@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jxmapviewer.beans.AbstractBean;
 import org.jxmapviewer.viewer.GeoPosition;
 import org.jxmapviewer.viewer.Waypoint;
 import org.slf4j.Logger;
@@ -32,7 +33,7 @@ import painter.SeaRoutePainter;
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */
-public class RouteController implements PropertyChangeListener {
+public class RouteController extends AbstractBean implements PropertyChangeListener {
 
 	static final Logger logger = LoggerFactory.getLogger(RouteController.class);
 
@@ -61,6 +62,7 @@ public class RouteController implements PropertyChangeListener {
 		} else {
 			routes.add(new ArrayList<>());
 		}
+		
 	}
 
 	public List<List<Edge>> getAllRoutes() {
@@ -156,6 +158,7 @@ public class RouteController implements PropertyChangeListener {
 			if (index != -1) {
 				route.set(index, newEdge);
 				setRoute(route, i);
+				firePropertyChange(Constants.EVENT_NAME_EDGE_CHANGE, oldEdge, newEdge);
 				return true;
 			}
 		} else {
@@ -165,6 +168,10 @@ public class RouteController implements PropertyChangeListener {
 		}
 		return false;
 	}
+
+	/**
+	 * 
+	 */
 
 	/**
 	 * Updates the old {@link Edge} with a new {@link Edge}. Used to update a

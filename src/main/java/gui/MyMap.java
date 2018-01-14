@@ -197,7 +197,8 @@ public class MyMap extends JXMapViewer implements PropertyChangeListener {
 	public void propertyChange(PropertyChangeEvent evt) {
 		String propertyName = evt.getPropertyName();
 		if (Constants.EVENT_NAME_WAYPOINT_FROM.equals(propertyName)
-				|| Constants.EVENT_NAME_WAYPOINT_TO.equals(propertyName)) {
+				|| Constants.EVENT_NAME_WAYPOINT_TO.equals(propertyName)
+				|| Constants.EVENT_NAME_EDGE_CHANGE.equals(propertyName)) {
 			repaint();
 		}
 	}

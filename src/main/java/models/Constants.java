@@ -2,7 +2,7 @@ package models;
 
 public class Constants {
 
-	public static boolean onlyGermany = false;
+	public static boolean onlyGermany = true;
 	public static boolean debugInfos = false;
 	public static boolean debugInfosSeaEdges = false;
 	public static boolean drawOnlyViewport = true;
@@ -41,6 +41,7 @@ public class Constants {
 
 	public static final String EVENT_NAME_WAYPOINT_FROM = "highlightedWaypointFrom";
 	public static final String EVENT_NAME_WAYPOINT_TO = "highlightedWaypointTo";
+	public static final String EVENT_NAME_EDGE_CHANGE = "edgeChanged";
 	public static final boolean OPTIMIZE = true;
 	
 }

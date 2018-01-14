@@ -76,7 +76,7 @@ public class CapacityWaypointRenderer implements WaypointRenderer<CapacityWaypoi
 
 		switch (colorFlag) {
 		case 1:
-			return Color.RED;
+			return Color.GREEN;
 		case 2:
 			return Color.BLUE;
 		case 3:

@@ -45,7 +45,6 @@ public class WaypointClickMouseListener extends AbstractBean implements MouseLis
 	public void mouseClicked(MouseEvent e) {
 		GeoPosition gp = map.getCoordsForMouse(e);
 		// System.out.println("ClickPos:" + gp.toString() + " | Zoom: " +
-		System.out.println(map.getZoom());
 		Map<CapacityWaypoint, Double> distanceMap = new HashMap<>();
 		double precision = 0.25 * map.getZoom() / 3;
 		for (CapacityWaypoint waypoint : map.getWaypoints()) {
@@ -68,8 +67,6 @@ public class WaypointClickMouseListener extends AbstractBean implements MouseLis
 			CapacityWaypoint oldValue = getWaypointFrom();
 
 			if (minEntry != null) {
-				// JOptionPane.showMessageDialog(map, "Nearest node:\n" +
-				// minEntry.getKey().toString());
 				this.waypointFrom = minEntry.getKey();
 			} else {
 				this.waypointFrom = null;

@@ -72,9 +72,9 @@ public class NewEntityFlowPainter implements IRoutePainter {
 			drawGreyEdgeLine(g, map, edge);
 		}
 		if (Constants.optimzeLandRoutes) {
-//			for (Edge edge : routeController.getPaintRoute()) {
+			for (Edge edge : routeController.getPaintRoute()) {
 				// FIXME use paint route
-			for (Edge edge : routeController.getRouteByZoom(map.getZoom())) {
+//			for (Edge edge : routeController.getRouteByZoom(map.getZoom())) {
 				drawGreyEdgeLine(g, map, (NodeEdge) edge);
 			}
 		}
