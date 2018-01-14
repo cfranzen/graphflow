@@ -2,11 +2,13 @@ package newVersion.models;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.jxmapviewer.viewer.GeoPosition;
 
 import models.Edge;
+import models.HighResEdge;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
@@ -14,16 +16,20 @@ import models.Edge;
  */
 public class MapNode {
 
-	private GeoPosition posi;
-	private List<Edge> edgeMap = new ArrayList<>(); 
 	public GeoPosition contactPoint = null;
 	public Long[][] capWork;
-
+	private GeoPosition posi;
+//	private List<Edge> edgeMap = new ArrayList<>();
+	private List<Integer> edgeMap = new ArrayList<>();
+	private Function<Integer, HighResEdge> searchEdge;
+	
+	
 	/**
 	 * 
 	 */
-	public MapNode(GeoPosition posi) {
+	public MapNode(GeoPosition posi, Function<Integer, HighResEdge> func) {
 		this.posi = posi;
+		this.searchEdge = func;
 	}
 
 	public GeoPosition getPosition() {
@@ -34,9 +40,9 @@ public class MapNode {
 	 * @param edge
 	 */
 	public void addEdge(Edge edge) {
-		if (!edgeMap.contains(edge)) {
+		if (!edgeMap.contains(edge.id)) {
 			// So we get an unique list
-			edgeMap.add(edge);
+			edgeMap.add(edge.id);
 		}
 	}
 
@@ -45,7 +51,8 @@ public class MapNode {
 		for (int currentTimeStep = 0; currentTimeStep < timesteps; currentTimeStep++) {
 			long cap = 0;
 			long work = 0;
-			for (Edge edge : edgeMap) {
+			for (int edgeID : edgeMap) {
+				HighResEdge edge = searchEdge.apply(edgeID);
 				cap += edge.getCapacity(currentTimeStep);
 				work += edge.getWorkload(currentTimeStep);
 			}

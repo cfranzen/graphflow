@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
 
 import org.jxmapviewer.viewer.GeoPosition;
 import org.slf4j.Logger;
@@ -89,12 +90,12 @@ public class Optimizer {
 		// Creates MapNodes for each simple point in the list
 		if (Constants.optimzeLandRoutes) {
 			for (int i = 0; i < routeController.getAllRoutes().size(); i++) {
-				routeController.setRoute(optimizeGivenEdges(routeController.getRoute(i)), i);
+				routeController.setRoute(optimizeGivenEdges(routeController.getRoute(i), routeController::searchEdgeById), i);
 			}
 			logger.info("land edges done - now processing sea edges");
 		}
 
-		List<Edge> seaRoute = optimizeGivenEdges(routeController.getSeaRoute());
+		List<Edge> seaRoute = optimizeGivenEdges(routeController.getSeaRoute(), routeController::searchEdgeById);
 		routeController.setSeaRoute(seaRoute);
 		PaintController.useNewPainter();
 
@@ -162,7 +163,7 @@ public class Optimizer {
 		logger.info("Aggregate waypoints end - " + (System.currentTimeMillis() - time) + " ms");
 	}
 
-	private List<Edge> optimizeGivenEdges(List<Edge> edges) {
+	private List<Edge> optimizeGivenEdges(List<Edge> edges, Function<Integer, HighResEdge> searchFunc) {
 		if (edges == null || edges.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -175,7 +176,7 @@ public class Optimizer {
 			for (GeoPosition point : currentEdge.getPositions()) {
 				MapNode node = getNearestNode(point, savedNodes);
 				if (node == null) {
-					node = new MapNode(point);
+					node = new MapNode(point, searchFunc);
 					savedNodes.add(node);
 				}
 				node.addEdge(currentEdge);
@@ -247,6 +248,7 @@ public class Optimizer {
 			} else {
 				highResEdge = getHighRes(graphHopper, edge);
 				logger.info("map edge to street DONE");
+				routeController.saveHighResEdge(highResEdge);
 				return routeController.updateEdge(edge, highResEdge, i);
 			}
 		}));

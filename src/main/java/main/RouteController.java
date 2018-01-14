@@ -5,8 +5,10 @@ import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jxmapviewer.beans.AbstractBean;
@@ -39,6 +41,8 @@ public class RouteController extends AbstractBean implements PropertyChangeListe
 
 	// private List<Edge> route = new ArrayList<>();
 	private List<List<Edge>> routes = new ArrayList<>();
+	
+	private Map<Integer, HighResEdge> highResEdgeMap;
 
 	private List<Edge> seaRoute = new ArrayList<>();
 	private CapacityWaypoint highlightedWaypointFrom = null;
@@ -62,7 +66,7 @@ public class RouteController extends AbstractBean implements PropertyChangeListe
 		} else {
 			routes.add(new ArrayList<>());
 		}
-		
+		highResEdgeMap = new HashMap<>();
 	}
 
 	public List<List<Edge>> getAllRoutes() {
@@ -414,6 +418,17 @@ public class RouteController extends AbstractBean implements PropertyChangeListe
 			highlightedWaypointTo = (CapacityWaypoint) evt.getNewValue();
 		}
 
+	}
+
+	/**
+	 * @param highResEdge
+	 */
+	public void saveHighResEdge(HighResEdge highResEdge) {
+		highResEdgeMap.put(highResEdge.id, highResEdge);
+	}
+	
+	public HighResEdge searchEdgeById(int id) {
+		return highResEdgeMap.get(id);
 	}
 
 }

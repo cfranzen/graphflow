@@ -5,8 +5,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -302,36 +300,17 @@ public class MainController {
 	 * a footprint of the input files for recognizing and reloading.
 	 */
 	private void saveCurrentEdgeState() {
-		String savenameRouteController = "routeControllerSave_";
-		
-// Streaming
-//		JsonWriter writer;
-//		writer = new JsonWriter(new FileWriter(savenameRouteController));
-//		writer.beginObject();
-//		
-//		writer.
-//		
-//		writer.endObject();
-		
-		
+		String savenameRouteController = "routeControllerSave";
 		Gson gson = new Gson();
-		
-		
-		List<List<Edge>> routes = routeController.getAllRoutes();
-		
-//		for (List<Edge> route : routeController.getAllRoutes()) {
-			for (int i = 0; i < routes.size(); i++) {
-				List<Edge> route = routes.get(i);
-				
-				String json = gson.toJson(route);
-		
-		
-		try (FileWriter writer = new FileWriter(new File(savenameRouteController + i +".json" ))){
+
+		String json = gson.toJson(routeController);
+		try (FileWriter writer = new FileWriter(new File(savenameRouteController))) {
 			writer.write(json);
 		} catch (IOException e) {
 			logger.error("State could not be saved");
 			e.printStackTrace();
-		} }
+		}
+		
 	}
 
 	private void initGraphhopper() {
