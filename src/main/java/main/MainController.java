@@ -2,8 +2,15 @@ package main;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.HashSet;
 
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -18,6 +25,7 @@ import com.graphhopper.util.CmdArgs;
 
 import gui.MainFrame;
 import gui.MyMap;
+import gui.TextAreaOutputStream;
 import models.Constants;
 import models.ModelLoader;
 import newVersion.main.Optimizer;
@@ -37,6 +45,7 @@ public class MainController {
 	private static MainController controller;
 
 	public static void main(String[] args) {
+
 		MainController controller = getInstance();
 		CmdLineParser parser = new CmdLineParser(controller.cliInput);
 		try {
@@ -145,6 +154,7 @@ public class MainController {
 			Constants.PAINT_STEPS_COUNT = cliInput.paintStepCount;
 		}
 		Constants.zoomAggregation = cliInput.zoomAggregation;
+		Constants.LOGGER_LEVEL = Level.toLevel(cliInput.logLevel, Constants.LOGGER_LEVEL);
 	}
 
 	private void loadSolution() {
@@ -217,6 +227,10 @@ public class MainController {
 	}
 
 	private void initGui() {
+		if (Constants.LOGGER_LEVEL != Level.OFF) {
+			createLoggerFrame();
+		}
+
 		mapViewer = new MyMap(this, routeController, waypointController);
 
 		mainFrame = new MainFrame(this, mapViewer);
@@ -224,6 +238,20 @@ public class MainController {
 		mainFrame.setVisible(true);
 
 		routeController.addPropertyChangeListener(mapViewer);
+	}
+
+	private void createLoggerFrame() {
+		JFrame frame = new JFrame("Logger Output");
+		JTextArea ta = new JTextArea();
+		TextAreaOutputStream taos = new TextAreaOutputStream(ta, 60);
+		PrintStream ps = new PrintStream(taos);
+		System.setOut(ps);
+		System.setErr(ps);
+		frame.add(new JScrollPane(ta));
+		frame.pack();
+		frame.setVisible(true);
+		frame.setSize(800, 600);
+		LogManager.getRootLogger().addAppender(taos.getAppender());
 	}
 
 	private void optimize() {

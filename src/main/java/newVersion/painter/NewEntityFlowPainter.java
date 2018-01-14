@@ -66,7 +66,7 @@ public class NewEntityFlowPainter implements IRoutePainter {
 		// Manipulate the graphics object one time before the loop instead of
 		// every run, because it is a resource consuming operation
 		g.setColor(Color.GRAY);
-		g.setStroke(new BasicStroke(1.2f));
+		g.setStroke(new BasicStroke(1.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		for (int i = 0; i < routeController.getPaintSeaRoute().size(); i++) {
 			NodeEdge edge = (NodeEdge) routeController.getPaintSeaRoute().get(i);
 			drawGreyEdgeLine(g, map, edge);
@@ -123,7 +123,7 @@ public class NewEntityFlowPainter implements IRoutePainter {
 		for (FlowEntity flowEntity : entities) {
 			if (Constants.debugInfos) {
 				g.setColor(Color.BLUE);
-				g.setStroke(new BasicStroke(2f));
+				g.setStroke(new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 				double pSize = flowEntity.edge.getPoints().size() - 1;
 				double ppStep = (pSize) / flowEntity.getMaxServiceTimeSteps();
 
@@ -227,7 +227,7 @@ public class NewEntityFlowPainter implements IRoutePainter {
 			if (isShip) {
 				scale /= Constants.SHIP_SCALE_FACTOR;
 			}
-			g.setStroke(new BasicStroke(scale));
+			g.setStroke(new BasicStroke(scale, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		}
 	}
 

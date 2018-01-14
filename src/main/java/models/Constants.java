@@ -1,5 +1,7 @@
 package models;
 
+import org.apache.log4j.Level;
+
 public class Constants {
 
 	public static boolean onlyGermany = true;
@@ -26,7 +28,8 @@ public class Constants {
 	 */
 //	public static final int TIME_STEP_DELAY = 75;
 	public static int TIME_STEP_DELAY = 30; // Faster for debug
-	
+	public static String LOGGER_CONVERSION_PATTERN ="%d{HH:mm:ss,SSS} %-5p [%c{1}] - %m%n";
+	public static Level LOGGER_LEVEL = Level.OFF;
 
 
 	/**
