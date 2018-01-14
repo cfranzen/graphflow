@@ -78,7 +78,6 @@ public class ModelLoader {
 					model);
 			solution = solutionReader.readSolution();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return solution;

@@ -15,7 +15,7 @@ import models.Edge;
 public class MapNode {
 
 	private GeoPosition posi;
-	private List<Edge> edgeMap = new ArrayList<>(); //TODO Has to be unique 
+	private List<Edge> edgeMap = new ArrayList<>(); 
 	public GeoPosition contactPoint = null;
 	public Long[][] capWork;
 

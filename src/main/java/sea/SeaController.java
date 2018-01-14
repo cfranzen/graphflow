@@ -42,7 +42,8 @@ public class SeaController {
 	private int idCounter = 0;
 
 	
-	private SeaRoutePainter seaRoutePainter; // TODO move used methods in this class
+	private SeaRoutePainter seaRoutePainter; // TODO move used methods in this
+												// class
 	
 	private SeaController(MyMap map) {
 		seaRoutePainter = new SeaRoutePainter(map);

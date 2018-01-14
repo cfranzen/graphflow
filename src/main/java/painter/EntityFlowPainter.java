@@ -4,7 +4,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.List;
 
@@ -143,7 +142,7 @@ public class EntityFlowPainter implements IRoutePainter {
 
 	public void drawRoutePart(Graphics2D g, MyMap map, long workload, long capacity, List<GeoPosition> points,
 			int fromIndex, double toIndex) {
-		if (capacity == 0) { // TODO Gradient
+		if (capacity == 0) {
 			g.setColor(Color.GRAY);
 			g.setStroke(new BasicStroke(1.2f));
 		} else {
@@ -151,8 +150,6 @@ public class EntityFlowPainter implements IRoutePainter {
 			g.setColor(lineColor);
 
 			g.setStroke(new BasicStroke(4f));
-			// g.setStroke(new BasicStroke((float) (capacity / 75)));
-			// TODO Gradient
 		}
 		GeoPosition last = null;
 		for (int i = fromIndex; i < toIndex && i < points.size(); i++) {

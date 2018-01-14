@@ -73,8 +73,6 @@ public class NewEntityFlowPainter implements IRoutePainter {
 		}
 		if (Constants.optimzeLandRoutes) {
 			for (Edge edge : routeController.getPaintRoute()) {
-				// FIXME use paint route
-//			for (Edge edge : routeController.getRouteByZoom(map.getZoom())) {
 				drawGreyEdgeLine(g, map, (NodeEdge) edge);
 			}
 		}
@@ -185,8 +183,7 @@ public class NewEntityFlowPainter implements IRoutePainter {
 
 	public static int[] calcMinMaxIndex(FlowEntity entity) {
 		final int LENGTH = 8; // TODO Change: Length of the entity line in
-								// relation to the
-		// edge point count
+								// relation to the edge point count
 		double pointsPerTimeStep = (double) (entity.edge.getPathSize()) / entity.getMaxServiceTimeSteps()
 				/ Constants.PAINT_STEPS_COUNT;
 		int max = (int) Math.ceil((pointsPerTimeStep * (timeStep % Constants.PAINT_STEPS_COUNT)

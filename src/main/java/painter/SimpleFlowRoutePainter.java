@@ -62,14 +62,13 @@ public class SimpleFlowRoutePainter implements IRoutePainter {
 
 	public void drawRoutePart(Graphics2D g, MyMap map, long workload, long capacity, List<GeoPosition> points,
 			int fromIndex, double toIndex) {
-		if (capacity == 0) { // TODO Gradient
+		if (capacity == 0) { 
 			g.setColor(Color.GRAY);
 			g.setStroke(new BasicStroke(1.2f));
 		} else {
 			Color lineColor = DefaultRoutePainter.calculateColor(workload, capacity);
 			g.setColor(lineColor);
-			g.setStroke(new BasicStroke((float) (capacity / 75)));// TODO
-																	// Gradient
+			g.setStroke(new BasicStroke((float) (capacity / 75)));
 		}
 		GeoPosition last = null;
 		for (int i = fromIndex; i < toIndex; i++) {

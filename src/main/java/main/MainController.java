@@ -1,9 +1,12 @@
 package main;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -17,6 +20,7 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
 import com.graphhopper.GraphHopper;
 import com.graphhopper.reader.osm.GraphHopperOSM;
 import com.graphhopper.routing.util.CarFlagEncoder;
@@ -27,6 +31,7 @@ import gui.MainFrame;
 import gui.MyMap;
 import gui.TextAreaOutputStream;
 import models.Constants;
+import models.Edge;
 import models.ModelLoader;
 import newVersion.main.Optimizer;
 import newVersion.main.WaypointController;
@@ -275,13 +280,58 @@ public class MainController {
 				if (Constants.OPTIMIZE) {
 					optimizer.optimize(routeController, waypointController);
 				}
-				mapViewer.setWaypoints(new HashSet<>(waypointController.getWaypoints(mapViewer.getZoom())));
-				repaint();
-				mainFrame.updateProgessBar(100);
+				finishedEdgeOptimizing();
 			}
 		});
 		t.start();
 
+	}
+
+	private void finishedEdgeOptimizing() {
+		mapViewer.setWaypoints(new HashSet<>(waypointController.getWaypoints(mapViewer.getZoom())));
+		repaint();
+		mainFrame.updateProgessBar(100);
+		logger.info("Finished edge optimizing");
+		logger.info("Try to save current edge state to working directory");
+		saveCurrentEdgeState();
+		logger.info("Running Completed");
+	}
+
+	/**
+	 * Saves the current {@link Edge} state to the working directory. Also saves
+	 * a footprint of the input files for recognizing and reloading.
+	 */
+	private void saveCurrentEdgeState() {
+		String savenameRouteController = "routeControllerSave_";
+		
+// Streaming
+//		JsonWriter writer;
+//		writer = new JsonWriter(new FileWriter(savenameRouteController));
+//		writer.beginObject();
+//		
+//		writer.
+//		
+//		writer.endObject();
+		
+		
+		Gson gson = new Gson();
+		
+		
+		List<List<Edge>> routes = routeController.getAllRoutes();
+		
+//		for (List<Edge> route : routeController.getAllRoutes()) {
+			for (int i = 0; i < routes.size(); i++) {
+				List<Edge> route = routes.get(i);
+				
+				String json = gson.toJson(route);
+		
+		
+		try (FileWriter writer = new FileWriter(new File(savenameRouteController + i +".json" ))){
+			writer.write(json);
+		} catch (IOException e) {
+			logger.error("State could not be saved");
+			e.printStackTrace();
+		} }
 	}
 
 	private void initGraphhopper() {
