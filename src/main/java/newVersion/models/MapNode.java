@@ -7,8 +7,6 @@ import java.util.function.Function;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.jxmapviewer.viewer.GeoPosition;
 
-import main.MainController;
-import main.RouteController;
 import models.Edge;
 import models.HighResEdge;
 
@@ -56,9 +54,7 @@ public class MapNode {
 				if (edge != null) { // happens when not all edges are calculated
 					cap += edge.getCapacity(currentTimeStep);
 					work += edge.getWorkload(currentTimeStep);
-				} else {
-					System.out.println("PING");
-				}
+				} 
 			}
 			capWork[currentTimeStep][0] = cap;
 			capWork[currentTimeStep][1] = work;

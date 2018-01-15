@@ -3,7 +3,6 @@ package dto;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import main.RouteController;
@@ -25,13 +24,13 @@ public class RouteControllerDTO {
 		this.routes = routeController.getAllRoutes().stream()
 				.map(e -> e.stream().map(n -> (NodeEdge) n).collect(Collectors.toList())).collect(Collectors.toList());
 		this.highResEdgeMap = routeController.getHighResEdgeMap();
-		this.seaRoute = routeController.getSeaRoute();
+		this.seaRoute = routeController.getSeaRoute().stream().map(e -> (NodeEdge)e).collect(Collectors.toList());
 	}
 
 	public List<List<NodeEdge>> routes = new ArrayList<>();
 
 	public HashMap<Integer, HighResEdge> highResEdgeMap;
 
-	public List<Edge> seaRoute = new ArrayList<>();
+	public List<NodeEdge> seaRoute = new ArrayList<>();
 
 }

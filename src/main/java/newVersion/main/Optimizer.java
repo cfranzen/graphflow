@@ -64,8 +64,8 @@ public class Optimizer {
 	 * 
 	 */
 	public Optimizer() {
-		// service = Executors.newCachedThreadPool();
-		service = Executors.newFixedThreadPool(3);
+		service = Executors.newCachedThreadPool();
+		// service = Executors.newFixedThreadPool(3);
 		// service = new
 		// ExecutorCompletionService<>(Executors.newCachedThreadPool());
 
@@ -128,15 +128,9 @@ public class Optimizer {
 						Edge newEdge = new Edge(edge);
 
 						if (edge.getStart().equals(waypoint.getPosition())) {
-							if (edge.id == 5) {
-								System.out.println("Ping");
-							}
 							newEdge.setStart(node.getPosition());
 						}
 						if (edge.getDest().equals(waypoint.getPosition())) {
-							if (edge.id == 5) {
-								System.out.println("Ping");
-							}
 							newEdge.setDest(node.getPosition());
 						}
 						if (!newEdge.getStart().equals(newEdge.getDest())) {
@@ -190,7 +184,7 @@ public class Optimizer {
 			logger.info("Edge " + i + " from " + edges.size() + " processed : " + mapEdge.nodes.size() + " Nodes - "
 					+ (System.currentTimeMillis() - time) + " ms | Added: " + (mapEdge.nodes.size() > 5));
 		}
-		calcCapacityWorkload(savedNodes, savedEdges.get(0).getCapacites().length, searchFunc);
+		calcCapacityWorkload(savedNodes, Constants.timesteps, searchFunc);
 		return savedEdges;
 	}
 
@@ -208,7 +202,7 @@ public class Optimizer {
 	}
 
 	private void createFuturesForCallables(List<Callable<Boolean>> runnables) {
-		createFuturesForCallables(runnables, 200000);
+		createFuturesForCallables(runnables, 300000);
 	}
 
 	private void createFuturesForCallables(List<Callable<Boolean>> runnables, int maxTimeout) {
@@ -224,6 +218,43 @@ public class Optimizer {
 
 	}
 
+//	public void mapEdgesToStreets(GraphHopper graphHopper, RouteController routeController,
+//			SeaController seaController) {
+//		if (Constants.optimzeLandRoutes) {
+//			for (int i = 0; i < Constants.ZOOM_LEVEL_COUNT; i++) {
+//				generateStreetTasks(graphHopper, routeController, seaController, routeController.getRoute(i), i);
+//			}
+//		}
+//		routeController.saveHighResEdge(routeController.getRoute());
+//		generateStreetTasks(graphHopper, routeController, seaController, routeController.getSeaRoute(), 0);
+//
+//	}
+//
+//	private void generateStreetTasks(GraphHopper graphHopper, RouteController routeController,
+//			SeaController seaController, List<Edge> route, int i) {
+//		List<Callable<Boolean>> callables = new ArrayList<>();
+//		route.forEach((edge) -> callables.add(() -> {
+//			HighResEdge highResEdge;
+//			if (edge.getType().equals(EdgeType.VESSEL)) {
+//				DijkstraAlgorithm dijkstraAlgorithm;
+//				dijkstraAlgorithm = new DijkstraAlgorithm(seaController.getEdges());
+//				dijkstraAlgorithm.execute(edge.getStart());
+//				List<GeoPosition> steps = dijkstraAlgorithm.getPath(edge.getDest());
+//				highResEdge = new HighResEdge(edge);
+//				highResEdge.addPositions(steps);
+//				logger.info("map edge to sea route DONE - " + highResEdge.id);
+//				return routeController.updateSeaEdge(edge, highResEdge);
+//			} else {
+//				highResEdge = getHighRes(graphHopper, edge);
+//				logger.info("map edge to street DONE - " + highResEdge.id);
+//				return routeController.updateEdge(edge, highResEdge, i);
+//			}
+//		}));
+//
+//	
+//	}
+//-------------------------
+	
 	public void mapEdgesToStreets(GraphHopper graphHopper, RouteController routeController,
 			SeaController seaController) {
 		if (Constants.optimzeLandRoutes) {
@@ -232,30 +263,8 @@ public class Optimizer {
 			}
 		}
 		routeController.saveHighResEdge(routeController.getRoute());
-		generateSeaTasks(graphHopper, routeController, seaController, routeController.getSeaRoute());
-
-	}
-
-	private void generateSeaTasks(GraphHopper graphHopper, RouteController routeController, SeaController seaController,
-			List<Edge> route) {
-		List<Callable<Boolean>> callables = new ArrayList<>();
-		route.forEach((edge) -> callables.add(() -> {
-			HighResEdge highResEdge;
-			if (edge.getType().equals(EdgeType.VESSEL)) {
-				DijkstraAlgorithm dijkstraAlgorithm;
-				dijkstraAlgorithm = new DijkstraAlgorithm(seaController.getEdges());
-				dijkstraAlgorithm.execute(edge.getStart());
-				List<GeoPosition> steps = dijkstraAlgorithm.getPath(edge.getDest());
-				highResEdge = new HighResEdge(edge);
-				highResEdge.addPositions(steps);
-				logger.info("map edge to sea route DONE - " + highResEdge.id);
-				return routeController.updateSeaEdge(edge, highResEdge);
-			} else {
-				logger.error("Edge is no sea edge!!! : " + edge.toString());
-				routeController.updateEdge(edge, null);
-			}
-			return false;
-		}));
+		generateStreetTasks(graphHopper, routeController, seaController, routeController.getSeaRoute(), 0);
+		routeController.saveHighResEdge(routeController.getSeaRoute());
 
 	}
 
@@ -264,21 +273,51 @@ public class Optimizer {
 		List<Callable<Boolean>> callables = new ArrayList<>();
 		route.forEach((edge) -> callables.add(() -> {
 			HighResEdge highResEdge;
-			if (edge.getType().equals(EdgeType.TRUCK)) {
-				highResEdge = getHighRes(graphHopper, edge);
-				logger.info("map edge to street DONE - " + highResEdge.id);
-				return routeController.updateEdge(edge, highResEdge, i);
-			} else {
-				logger.error("Edge is no street edge!!!");
-				logger.error(edge.toString());
-				routeController.updateEdge(edge, null, i);
-			}
-			return false;
-		}));
+			if (edge.getType().equals(EdgeType.VESSEL)) {
 
+				DijkstraAlgorithm dijkstraAlgorithm;
+				dijkstraAlgorithm = new DijkstraAlgorithm(seaController.getEdges());
+				dijkstraAlgorithm.execute(edge.getStart());
+				List<GeoPosition> steps = dijkstraAlgorithm.getPath(edge.getDest());
+				highResEdge = new HighResEdge(edge);
+				highResEdge.addPositions(steps);
+				logger.info("map edge to sea route DONE - " + edge.id);
+				return routeController.updateSeaEdge(edge, highResEdge);
+			} else {
+				highResEdge = getHighRes(graphHopper, edge);
+				logger.info("map edge to street DONE - " + edge.id);
+				return routeController.updateEdge(edge, highResEdge, i);
+			}
+		}));
 		createFuturesForCallables(callables);
 
 	}
+	
+//-------------------------
+	
+	
+
+	// private void generateStreetTasks(GraphHopper graphHopper, RouteController
+	// routeController,
+	// SeaController seaController, List<Edge> route, int i) {
+	// List<Callable<Boolean>> callables = new ArrayList<>();
+	// route.forEach((edge) -> callables.add(() -> {
+	// HighResEdge highResEdge;
+	// if (edge.getType().equals(EdgeType.TRUCK)) {
+	// highResEdge = getHighRes(graphHopper, edge);
+	// logger.info("map edge to street DONE - " + highResEdge.id);
+	// return routeController.updateEdge(edge, highResEdge, i);
+	// } else {
+	// logger.error("Edge is no street edge!!!");
+	// logger.error(edge.toString());
+	// routeController.updateEdge(edge, null, i);
+	// }
+	// return false;
+	// }));
+	//
+	// createFuturesForCallables(callables);
+	//
+	// }
 
 	private HighResEdge getHighRes(GraphHopper graphHopper, Edge edge) {
 		GHPoint start = new GHPoint(edge.getStart().getLatitude(), edge.getStart().getLongitude());
@@ -288,7 +327,8 @@ public class Optimizer {
 		GHResponse response = graphHopper.route(ghRequest);
 
 		if (response.hasErrors() || response.getAll().isEmpty()) {
-			logger.info("Could not find solution for edge with start: " + edge.getStart().toString());
+			logger.info("Could not find solution for edge with ID & Start: " + edge.id + " - "
+					+ edge.getStart().toString());
 			return null;
 		}
 		PathWrapper path = response.getBest();

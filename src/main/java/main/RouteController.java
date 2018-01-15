@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -43,7 +42,7 @@ public class RouteController extends AbstractBean implements PropertyChangeListe
 
 	// private List<Edge> route = new ArrayList<>();
 	private List<List<Edge>> routes = new ArrayList<>();
-	
+
 	private HashMap<Integer, HighResEdge> highResEdgeMap;
 
 	private List<Edge> seaRoute = new ArrayList<>();
@@ -76,10 +75,10 @@ public class RouteController extends AbstractBean implements PropertyChangeListe
 	 */
 	public RouteController(RouteControllerDTO routeControllerDTO) {
 		this.routes = routeControllerDTO.routes.stream()
-				.map(e -> e.stream().map(n -> (Edge)n).collect(Collectors.toList())).collect(Collectors.toList());
-		
+				.map(e -> e.stream().map(n -> (Edge) n).collect(Collectors.toList())).collect(Collectors.toList());
+
 		this.highResEdgeMap = routeControllerDTO.highResEdgeMap;
-		this.seaRoute = routeControllerDTO.seaRoute;
+		this.seaRoute = routeControllerDTO.seaRoute.stream().map(e -> (Edge) e).collect(Collectors.toList());
 	}
 
 	public List<List<Edge>> getAllRoutes() {
@@ -106,7 +105,7 @@ public class RouteController extends AbstractBean implements PropertyChangeListe
 		if (Constants.debugInfos) {
 			logger.info("ZoomLevelBasis: " + zoomIndex);
 		}
-		
+
 		return getRoute((int) zoomIndex);
 
 		// return getRoute(Math.min(Constants.ZOOM_LEVEL_COUNT - 1, Math.max(0,
@@ -438,10 +437,12 @@ public class RouteController extends AbstractBean implements PropertyChangeListe
 	 */
 	public void saveHighResEdge(List<Edge> list) {
 		for (Edge e : list) {
-			highResEdgeMap.put(e.id, (HighResEdge) e);
+			if (e instanceof HighResEdge) {
+				highResEdgeMap.put(e.id, (HighResEdge) e);
+			}
 		}
 	}
-	
+
 	public HighResEdge searchEdgeById(int id) {
 		return highResEdgeMap.get(id);
 	}

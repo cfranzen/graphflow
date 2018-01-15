@@ -5,9 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.HashSet;
-import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -40,7 +38,6 @@ import models.ModelLoader;
 import newVersion.main.Optimizer;
 import newVersion.main.PaintController;
 import newVersion.main.WaypointController;
-import newVersion.models.NodeEdge;
 import sea.SeaController;
 
 /**
@@ -76,8 +73,7 @@ public class MainController {
 	private GraphHopper graphHopper;
 	private int currentTime = 0;
 
-	// FIXME for debug public
-	public RouteController routeController;
+	private RouteController routeController;
 	private WaypointController waypointController;
 	private SeaController seaController;
 
@@ -133,7 +129,9 @@ public class MainController {
 
 		// Processing input to own classes
 		loadSolution();
-
+		
+		Constants.timesteps = input.timesteps;
+		
 		// Load sea data
 		seaController = SeaController.getInstance(mapViewer);
 		seaController.loadSeaNodes(cliInput.seaNodes);
@@ -142,7 +140,7 @@ public class MainController {
 
 		if (lastLoaded) {
 			mapViewer.setWaypoints(new HashSet<>(waypointController.getWaypoints(mapViewer.getZoom())));
-			mainFrame.maxTimeSlider(input.timesteps * Constants.PAINT_STEPS_COUNT);
+			mainFrame.maxTimeSlider(Constants.timesteps * Constants.PAINT_STEPS_COUNT);
 			finishedEdgeOptimizing();
 			return;
 		}
@@ -158,7 +156,7 @@ public class MainController {
 		}
 
 		mapViewer.setWaypoints(new HashSet<>(waypointController.getWaypoints(mapViewer.getZoom())));
-		mainFrame.maxTimeSlider(input.timesteps * Constants.PAINT_STEPS_COUNT);
+		mainFrame.maxTimeSlider(Constants.timesteps * Constants.PAINT_STEPS_COUNT);
 
 		optimize();
 	}
@@ -210,9 +208,7 @@ public class MainController {
 	}
 
 	private void writeInputToConstants() {
-		if (cliInput.zoomLevel != 0) {
-			Constants.ZOOM_LEVEL_COUNT = cliInput.zoomLevel;
-		}
+		
 		if (cliInput.timeStepDelay != 0) {
 			Constants.TIME_STEP_DELAY = cliInput.timeStepDelay;
 		}
@@ -220,6 +216,11 @@ public class MainController {
 			Constants.PAINT_STEPS_COUNT = cliInput.paintStepCount;
 		}
 		Constants.zoomAggregation = cliInput.zoomAggregation;
+		if (Constants.zoomAggregation) {
+			if (cliInput.zoomLevel != 0) {
+				Constants.ZOOM_LEVEL_COUNT = cliInput.zoomLevel;
+			}
+		}
 		Constants.LOGGER_LEVEL = Level.toLevel(cliInput.logLevel, Constants.LOGGER_LEVEL);
 	}
 
@@ -309,10 +310,11 @@ public class MainController {
 	private void createLoggerFrame() {
 		JFrame frame = new JFrame("Logger Output");
 		JTextArea ta = new JTextArea();
+		@SuppressWarnings("resource")
 		TextAreaOutputStream taos = new TextAreaOutputStream(ta, 60);
-		PrintStream ps = new PrintStream(taos);
-		System.setOut(ps);
-		System.setErr(ps);
+//		PrintStream ps = new PrintStream(taos);
+//		System.setOut(ps);
+//		System.setErr(ps);
 		frame.add(new JScrollPane(ta));
 		frame.pack();
 		frame.setVisible(true);

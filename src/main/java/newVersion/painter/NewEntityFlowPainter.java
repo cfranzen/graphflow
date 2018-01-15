@@ -68,8 +68,10 @@ public class NewEntityFlowPainter implements IRoutePainter {
 		g.setColor(Color.GRAY);
 		g.setStroke(new BasicStroke(1.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		for (int i = 0; i < routeController.getPaintSeaRoute().size(); i++) {
-			NodeEdge edge = (NodeEdge) routeController.getPaintSeaRoute().get(i);
-			drawGreyEdgeLine(g, map, edge);
+			Edge edge = routeController.getPaintSeaRoute().get(i);
+			if (edge instanceof NodeEdge) {
+				drawGreyEdgeLine(g, map, (NodeEdge) edge);
+			}
 		}
 		if (Constants.optimzeLandRoutes) {
 			for (Edge edge : routeController.getPaintRoute()) {
@@ -176,7 +178,7 @@ public class NewEntityFlowPainter implements IRoutePainter {
 		if (Constants.debugInfos) {
 			Point2D p = map.getPixelPos(last);
 			g.setColor(Color.red);
-			g.drawString("Id: " + entity.edge.id, (int)p.getX(), (int)p.getY());
+			g.drawString("Id: " + entity.edge.id, (int) p.getX(), (int) p.getY());
 		}
 
 	}
@@ -227,7 +229,5 @@ public class NewEntityFlowPainter implements IRoutePainter {
 			g.setStroke(new BasicStroke(scale, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		}
 	}
-
-	
 
 }
