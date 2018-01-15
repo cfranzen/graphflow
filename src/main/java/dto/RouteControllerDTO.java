@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import main.RouteController;
-import models.Edge;
 import models.HighResEdge;
 import newVersion.models.NodeEdge;
 
@@ -24,7 +23,7 @@ public class RouteControllerDTO {
 		this.routes = routeController.getAllRoutes().stream()
 				.map(e -> e.stream().map(n -> (NodeEdge) n).collect(Collectors.toList())).collect(Collectors.toList());
 		this.highResEdgeMap = routeController.getHighResEdgeMap();
-		this.seaRoute = routeController.getSeaRoute().stream().map(e -> (NodeEdge)e).collect(Collectors.toList());
+		this.seaRoute = routeController.getSeaRoute().stream().map(e -> (NodeEdge) e).collect(Collectors.toList());
 	}
 
 	public List<List<NodeEdge>> routes = new ArrayList<>();
