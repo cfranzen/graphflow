@@ -7,6 +7,8 @@ import java.util.function.Function;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.jxmapviewer.viewer.GeoPosition;
 
+import main.MainController;
+import main.RouteController;
 import models.Edge;
 import models.HighResEdge;
 
@@ -21,15 +23,13 @@ public class MapNode {
 	private GeoPosition posi;
 //	private List<Edge> edgeMap = new ArrayList<>();
 	private List<Integer> edgeMap = new ArrayList<>();
-	private Function<Integer, HighResEdge> searchEdge;
 	
 	
 	/**
 	 * 
 	 */
-	public MapNode(GeoPosition posi, Function<Integer, HighResEdge> func) {
+	public MapNode(GeoPosition posi) {
 		this.posi = posi;
-		this.searchEdge = func;
 	}
 
 	public GeoPosition getPosition() {
@@ -46,15 +46,19 @@ public class MapNode {
 		}
 	}
 
-	public void calcCapacityAndWorkload(int timesteps) {
+	public void calcCapacityAndWorkload(int timesteps, Function<Integer, HighResEdge> searchEdge) {
 		capWork = new Long[timesteps][2];
 		for (int currentTimeStep = 0; currentTimeStep < timesteps; currentTimeStep++) {
 			long cap = 0;
 			long work = 0;
 			for (int edgeID : edgeMap) {
 				HighResEdge edge = searchEdge.apply(edgeID);
-				cap += edge.getCapacity(currentTimeStep);
-				work += edge.getWorkload(currentTimeStep);
+				if (edge != null) { // happens when not all edges are calculated
+					cap += edge.getCapacity(currentTimeStep);
+					work += edge.getWorkload(currentTimeStep);
+				} else {
+					System.out.println("PING");
+				}
 			}
 			capWork[currentTimeStep][0] = cap;
 			capWork[currentTimeStep][1] = work;

@@ -34,8 +34,6 @@ import com.syncrotess.pathfinder.util.tokenizer.CharacterStreamTokenizer;
 
 public class ModelLoader {
 
-	public static boolean printDebug = false;
-
 	public static void main(final String[] args) {
 		final String FILE_PATH_MODEL = "src/main/resources/examples/testModel.txt.gz";
 		final String FILE_PATH_SOLUTION = "src/main/resources/examples/testModelSolution.sol";
@@ -145,7 +143,7 @@ public class ModelLoader {
 	}
 
 	private static void debugOut(SortedSet<Node> allNodes, SortedSet<Service> allEdges) {
-		if (printDebug) {
+		if (models.Constants.debugInfos) {
 			System.out.println("All nodes of network:");
 			for (Node node : allNodes) {
 				System.out.println(node.getName() + " [" + node.getLatitude() + ", " + node.getLongitude() + "]");

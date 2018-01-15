@@ -1,10 +1,13 @@
 package main;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashSet;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -19,12 +22,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
 import com.graphhopper.GraphHopper;
 import com.graphhopper.reader.osm.GraphHopperOSM;
 import com.graphhopper.routing.util.CarFlagEncoder;
 import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.util.CmdArgs;
 
+import dto.RouteControllerDTO;
 import gui.MainFrame;
 import gui.MyMap;
 import gui.TextAreaOutputStream;
@@ -32,7 +38,9 @@ import models.Constants;
 import models.Edge;
 import models.ModelLoader;
 import newVersion.main.Optimizer;
+import newVersion.main.PaintController;
 import newVersion.main.WaypointController;
+import newVersion.models.NodeEdge;
 import sea.SeaController;
 
 /**
@@ -61,14 +69,15 @@ public class MainController {
 		}
 	}
 
-	public cliInput cliInput;
+	public CliInput cliInput;
 
 	private MyMap mapViewer;
 	private ModelLoader input;
 	private GraphHopper graphHopper;
 	private int currentTime = 0;
 
-	private RouteController routeController;
+	// FIXME for debug public
+	public RouteController routeController;
 	private WaypointController waypointController;
 	private SeaController seaController;
 
@@ -109,27 +118,40 @@ public class MainController {
 	 */
 	private MainController() {
 		initializeLogging();
-		cliInput = new cliInput();
+		cliInput = new CliInput();
 	}
 
 	/**
 	 * Main method.
 	 */
 	private void run() {
-
 		writeInputToConstants();
+
 		initControllers();
+		boolean lastLoaded = loadLastRun();
 		initGui();
+
+		// Processing input to own classes
+		loadSolution();
 
 		// Load sea data
 		seaController = SeaController.getInstance(mapViewer);
 		seaController.loadSeaNodes(cliInput.seaNodes);
 
+		mainFrame.setVisible(true);
+
+		if (lastLoaded) {
+			mapViewer.setWaypoints(new HashSet<>(waypointController.getWaypoints(mapViewer.getZoom())));
+			mainFrame.maxTimeSlider(input.timesteps * Constants.PAINT_STEPS_COUNT);
+			finishedEdgeOptimizing();
+			return;
+		}
+		logger.info("No last run file found or params file is not identical");
+
 		// Processing input to own classes
 		loadSolution();
 
 		routeController.importEdges(input.edges);
-		routeController.getAllRoutes();
 		waypointController.createWaypointsFromGeo(input.nodes);
 		if (Constants.zoomAggregation) {
 			Optimizer.aggregateWaypoints(routeController, waypointController);
@@ -139,6 +161,47 @@ public class MainController {
 		mainFrame.maxTimeSlider(input.timesteps * Constants.PAINT_STEPS_COUNT);
 
 		optimize();
+	}
+
+	/**
+	 * @return
+	 */
+	private boolean loadLastRun() {
+		logger.info("Try to load last run");
+		CliInput cliLoaded = (CliInput) load(Constants.SAVENAME_PARAMS, CliInput.class);
+		if (cliLoaded != null && cliLoaded.equals(cliInput)) {
+			RouteControllerDTO routeControllerDTO = (RouteControllerDTO) load(Constants.SAVENAME_ROUTE_CONTROLLER,
+					RouteControllerDTO.class);
+			routeController = new RouteController(routeControllerDTO);
+			waypointController = (WaypointController) load(Constants.SAVENAME_WAYPOINT_CONTROLLER,
+					WaypointController.class);
+			seaController = (SeaController) load(Constants.SAVENAME_SEA_CONTROLLER, SeaController.class);
+			// mapViewer = (MyMap) load(Constants.SAVENAME_MAP, MyMap.class);
+			logger.info("Loading successfully");
+			return true;
+		}
+		logger.info("Loading failed");
+		return false;
+	}
+
+	/**
+	 * @param savenameRouteController
+	 * @param class1
+	 * @param class2
+	 * @return
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private Object load(String saveName, Class classname) {
+		Gson gson = new Gson();
+		try {
+			logger.info("  try to load " + saveName + " ...");
+			Object object = gson.fromJson(new FileReader(saveName), classname);
+			logger.info("  loading finished: " + saveName);
+			return object;
+		} catch (JsonSyntaxException | JsonIOException | FileNotFoundException e) {
+			logger.error("Loading from " + saveName + " failed");
+		}
+		return null;
 	}
 
 	private void initControllers() {
@@ -238,7 +301,7 @@ public class MainController {
 
 		mainFrame = new MainFrame(this, mapViewer);
 		mainFrame.setResizable(true);
-		mainFrame.setVisible(true);
+		// mainFrame.setVisible(true);
 
 		routeController.addPropertyChangeListener(mapViewer);
 	}
@@ -278,6 +341,9 @@ public class MainController {
 				if (Constants.OPTIMIZE) {
 					optimizer.optimize(routeController, waypointController);
 				}
+				logger.info("Finished edge optimizing");
+				logger.info("Try to save current edge state to working directory");
+				saveCurrentEdgeState();
 				finishedEdgeOptimizing();
 			}
 		});
@@ -286,13 +352,13 @@ public class MainController {
 	}
 
 	private void finishedEdgeOptimizing() {
+		PaintController.useNewPainter();
 		mapViewer.setWaypoints(new HashSet<>(waypointController.getWaypoints(mapViewer.getZoom())));
 		repaint();
 		mainFrame.updateProgessBar(100);
-		logger.info("Finished edge optimizing");
-		logger.info("Try to save current edge state to working directory");
-		saveCurrentEdgeState();
-		logger.info("Running Completed");
+		logger.info("_____________________");
+		logger.info("| Running Completed |");
+		logger.info("̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅");
 	}
 
 	/**
@@ -300,17 +366,23 @@ public class MainController {
 	 * a footprint of the input files for recognizing and reloading.
 	 */
 	private void saveCurrentEdgeState() {
-		String savenameRouteController = "routeControllerSave";
-		Gson gson = new Gson();
+		save(new RouteControllerDTO(routeController), Constants.SAVENAME_ROUTE_CONTROLLER);
 
-		String json = gson.toJson(routeController);
-		try (FileWriter writer = new FileWriter(new File(savenameRouteController))) {
-			writer.write(json);
+		save(waypointController, Constants.SAVENAME_WAYPOINT_CONTROLLER);
+		save(seaController, Constants.SAVENAME_SEA_CONTROLLER);
+		save(cliInput, Constants.SAVENAME_PARAMS);
+		// save(mapViewer, Constants.SAVENAME_MAP);
+	}
+
+	private void save(Object object, String name) {
+		Gson gson = new Gson();
+		try (FileWriter writer = new FileWriter(new File(name))) {
+			writer.write(gson.toJson(object));
+			logger.info("  saved " + name);
 		} catch (IOException e) {
 			logger.error("State could not be saved");
 			e.printStackTrace();
 		}
-		
 	}
 
 	private void initGraphhopper() {

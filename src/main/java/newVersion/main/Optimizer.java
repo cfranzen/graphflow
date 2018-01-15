@@ -64,8 +64,8 @@ public class Optimizer {
 	 * 
 	 */
 	public Optimizer() {
-		 service = Executors.newCachedThreadPool();
-//		service = Executors.newFixedThreadPool(8);
+		// service = Executors.newCachedThreadPool();
+		service = Executors.newFixedThreadPool(3);
 		// service = new
 		// ExecutorCompletionService<>(Executors.newCachedThreadPool());
 
@@ -90,14 +90,14 @@ public class Optimizer {
 		// Creates MapNodes for each simple point in the list
 		if (Constants.optimzeLandRoutes) {
 			for (int i = 0; i < routeController.getAllRoutes().size(); i++) {
-				routeController.setRoute(optimizeGivenEdges(routeController.getRoute(i), routeController::searchEdgeById), i);
+				routeController
+						.setRoute(optimizeGivenEdges(routeController.getRoute(i), routeController::searchEdgeById), i);
 			}
 			logger.info("land edges done - now processing sea edges");
 		}
 
 		List<Edge> seaRoute = optimizeGivenEdges(routeController.getSeaRoute(), routeController::searchEdgeById);
 		routeController.setSeaRoute(seaRoute);
-		PaintController.useNewPainter();
 
 		routeController.sumRoutePoints();
 		logger.info("optimize v2-end | " + (System.currentTimeMillis() - time) + " ms");
@@ -118,7 +118,8 @@ public class Optimizer {
 
 			List<CapacityWaypoint> savedNodes = new ArrayList<>();
 			for (CapacityWaypoint waypoint : waypointController.getWaypoints()) {
-				CapacityWaypoint node = getNearWaypoint(waypoint.getPosition(), savedNodes, Constants.ZOOM_LEVEL_DISTANCE_GEO / level);
+				CapacityWaypoint node = getNearWaypoint(waypoint.getPosition(), savedNodes,
+						Constants.ZOOM_LEVEL_DISTANCE_GEO / level);
 				if (node == null) {
 					savedNodes.add(waypoint);
 				} else {
@@ -176,7 +177,7 @@ public class Optimizer {
 			for (GeoPosition point : currentEdge.getPositions()) {
 				MapNode node = getNearestNode(point, savedNodes);
 				if (node == null) {
-					node = new MapNode(point, searchFunc);
+					node = new MapNode(point);
 					savedNodes.add(node);
 				}
 				node.addEdge(currentEdge);
@@ -189,17 +190,21 @@ public class Optimizer {
 			logger.info("Edge " + i + " from " + edges.size() + " processed : " + mapEdge.nodes.size() + " Nodes - "
 					+ (System.currentTimeMillis() - time) + " ms | Added: " + (mapEdge.nodes.size() > 5));
 		}
+		calcCapacityWorkload(savedNodes, savedEdges.get(0).getCapacites().length, searchFunc);
+		return savedEdges;
+	}
+
+	private void calcCapacityWorkload(List<MapNode> savedNodes, int timesteps,
+			Function<Integer, HighResEdge> searchFunc) {
 		logger.info("Precalculate Capacity and Workload");
 		// for each map point, calculate work&cap
-		final int timesteps = savedEdges.get(0).getCapacites().length;
 
 		List<Callable<Boolean>> callables = new ArrayList<>();
 		savedNodes.forEach((mapNode) -> callables.add(() -> {
-			mapNode.calcCapacityAndWorkload(timesteps);
+			mapNode.calcCapacityAndWorkload(timesteps, searchFunc);
 			return true;
 		}));
 		createFuturesForCallables(callables);
-		return savedEdges;
 	}
 
 	private void createFuturesForCallables(List<Callable<Boolean>> runnables) {
@@ -226,7 +231,31 @@ public class Optimizer {
 				generateStreetTasks(graphHopper, routeController, seaController, routeController.getRoute(i), i);
 			}
 		}
-		generateStreetTasks(graphHopper, routeController, seaController, routeController.getSeaRoute(), 0);
+		routeController.saveHighResEdge(routeController.getRoute());
+		generateSeaTasks(graphHopper, routeController, seaController, routeController.getSeaRoute());
+
+	}
+
+	private void generateSeaTasks(GraphHopper graphHopper, RouteController routeController, SeaController seaController,
+			List<Edge> route) {
+		List<Callable<Boolean>> callables = new ArrayList<>();
+		route.forEach((edge) -> callables.add(() -> {
+			HighResEdge highResEdge;
+			if (edge.getType().equals(EdgeType.VESSEL)) {
+				DijkstraAlgorithm dijkstraAlgorithm;
+				dijkstraAlgorithm = new DijkstraAlgorithm(seaController.getEdges());
+				dijkstraAlgorithm.execute(edge.getStart());
+				List<GeoPosition> steps = dijkstraAlgorithm.getPath(edge.getDest());
+				highResEdge = new HighResEdge(edge);
+				highResEdge.addPositions(steps);
+				logger.info("map edge to sea route DONE - " + highResEdge.id);
+				return routeController.updateSeaEdge(edge, highResEdge);
+			} else {
+				logger.error("Edge is no sea edge!!! : " + edge.toString());
+				routeController.updateEdge(edge, null);
+			}
+			return false;
+		}));
 
 	}
 
@@ -235,23 +264,18 @@ public class Optimizer {
 		List<Callable<Boolean>> callables = new ArrayList<>();
 		route.forEach((edge) -> callables.add(() -> {
 			HighResEdge highResEdge;
-			if (edge.getType().equals(EdgeType.VESSEL)) {
-
-				DijkstraAlgorithm dijkstraAlgorithm;
-				dijkstraAlgorithm = new DijkstraAlgorithm(seaController.getEdges());
-				dijkstraAlgorithm.execute(edge.getStart());
-				List<GeoPosition> steps = dijkstraAlgorithm.getPath(edge.getDest());
-				highResEdge = new HighResEdge(edge);
-				highResEdge.addPositions(steps);
-				logger.info("map edge to sea route DONE - " + steps.size());
-				return routeController.updateSeaEdge(edge, highResEdge);
-			} else {
+			if (edge.getType().equals(EdgeType.TRUCK)) {
 				highResEdge = getHighRes(graphHopper, edge);
-				logger.info("map edge to street DONE");
-				routeController.saveHighResEdge(highResEdge);
+				logger.info("map edge to street DONE - " + highResEdge.id);
 				return routeController.updateEdge(edge, highResEdge, i);
+			} else {
+				logger.error("Edge is no street edge!!!");
+				logger.error(edge.toString());
+				routeController.updateEdge(edge, null, i);
 			}
+			return false;
 		}));
+
 		createFuturesForCallables(callables);
 
 	}

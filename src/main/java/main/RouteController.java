@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.jxmapviewer.beans.AbstractBean;
 import org.jxmapviewer.viewer.GeoPosition;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import com.graphhopper.util.PointList;
 
+import dto.RouteControllerDTO;
 import gui.MyMap;
 import models.CapacityWaypoint;
 import models.Constants;
@@ -42,7 +44,7 @@ public class RouteController extends AbstractBean implements PropertyChangeListe
 	// private List<Edge> route = new ArrayList<>();
 	private List<List<Edge>> routes = new ArrayList<>();
 	
-	private Map<Integer, HighResEdge> highResEdgeMap;
+	private HashMap<Integer, HighResEdge> highResEdgeMap;
 
 	private List<Edge> seaRoute = new ArrayList<>();
 	private CapacityWaypoint highlightedWaypointFrom = null;
@@ -67,6 +69,17 @@ public class RouteController extends AbstractBean implements PropertyChangeListe
 			routes.add(new ArrayList<>());
 		}
 		highResEdgeMap = new HashMap<>();
+	}
+
+	/**
+	 * @param routeControllerDTO
+	 */
+	public RouteController(RouteControllerDTO routeControllerDTO) {
+		this.routes = routeControllerDTO.routes.stream()
+				.map(e -> e.stream().map(n -> (Edge)n).collect(Collectors.toList())).collect(Collectors.toList());
+		
+		this.highResEdgeMap = routeControllerDTO.highResEdgeMap;
+		this.seaRoute = routeControllerDTO.seaRoute;
 	}
 
 	public List<List<Edge>> getAllRoutes() {
@@ -225,8 +238,8 @@ public class RouteController extends AbstractBean implements PropertyChangeListe
 					lon = edge.getStart().getLongitude();
 				}
 
-				// Only Germany
-				if ((6 < lon && lon < 14) && (45 < lat && lat < 55)) {
+				// Only central europe
+				if ((-13 < lon && lon < 15) && (40 < lat && lat < 60)) {
 					route.add(edge);
 				}
 			}
@@ -421,14 +434,23 @@ public class RouteController extends AbstractBean implements PropertyChangeListe
 	}
 
 	/**
-	 * @param highResEdge
+	 * @param list
 	 */
-	public void saveHighResEdge(HighResEdge highResEdge) {
-		highResEdgeMap.put(highResEdge.id, highResEdge);
+	public void saveHighResEdge(List<Edge> list) {
+		for (Edge e : list) {
+			highResEdgeMap.put(e.id, (HighResEdge) e);
+		}
 	}
 	
 	public HighResEdge searchEdgeById(int id) {
 		return highResEdgeMap.get(id);
+	}
+
+	/**
+	 * @return
+	 */
+	public HashMap<Integer, HighResEdge> getHighResEdgeMap() {
+		return highResEdgeMap;
 	}
 
 }

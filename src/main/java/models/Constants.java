@@ -41,7 +41,13 @@ public class Constants {
 	public static final double SEA_NODE_MAX_DISTANCE = 300000;
 	public static final float SHIP_SCALE_FACTOR = 1.95f;
 	public static final int CIRCLE_DIAMETER = 10;
-
+	public static final String SAVENAME_PARAMS = "params.json";
+	public static final String SAVENAME_ROUTE_CONTROLLER = "routeControllerSave.json";
+	public static final String SAVENAME_WAYPOINT_CONTROLLER = "waypointControllerSave.json";
+	public static final String SAVENAME_SEA_CONTROLLER = "seaControllerSave.json";
+	public static final String SAVENAME_MAP = "mapSave.json";
+	
+	
 	public static final String EVENT_NAME_WAYPOINT_FROM = "highlightedWaypointFrom";
 	public static final String EVENT_NAME_WAYPOINT_TO = "highlightedWaypointTo";
 	public static final String EVENT_NAME_EDGE_CHANGE = "edgeChanged";

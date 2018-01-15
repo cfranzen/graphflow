@@ -46,8 +46,8 @@ public class WaypointController {
 			for (GeoPosition geoPos : nodes) {
 				double lat = geoPos.getLatitude();
 				double lon = geoPos.getLongitude();
-				// Rectangle aroung Germany
-				if ((6 < lon && lon < 14) && (45 < lat && lat < 55)) {
+				// Only central europe
+				if ((-13 < lon && lon < 15) && (40 < lat && lat < 60)) {
 					waypoints.add(new CapacityWaypoint(lat, lon, 0));
 				}
 			}
