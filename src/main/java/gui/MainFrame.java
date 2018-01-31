@@ -17,6 +17,7 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JSlider;
+import javax.swing.JTextArea;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -137,7 +138,6 @@ public class MainFrame extends JFrame {
 //		ta.setBounds(5, (int) (getSize().getHeight() - 180), getSize().width, 48);
 //		ta.setOpaque(false);
 //		layeredPane.add(ta, new Integer(30));
-		
 		
 		timeSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 0);
 		timeSlider.addChangeListener(new ChangeListener() {

@@ -4,6 +4,7 @@ import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -119,6 +120,7 @@ public class RouteController extends AbstractBean implements PropertyChangeListe
 	public List<Edge> getPaintRoute() {
 		return paintRoute;
 	}
+	
 
 	public List<Edge> getPaintSeaRoute() {
 		return paintSeaRoute;

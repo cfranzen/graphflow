@@ -137,11 +137,11 @@ public class DefaultRoutePainter implements IRoutePainter {
 
 		if (valCapacity == 0) {
 			g.setColor(Color.GRAY);
-			g.setStroke(new BasicStroke(1.2f));
+			g.setStroke(new BasicStroke(1.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		} else {
 			Color lineColor = calculateColor(valWorkload, valCapacity);
 			g.setColor(lineColor);
-			g.setStroke(new BasicStroke((float) (valCapacity / 75)));
+			g.setStroke(new BasicStroke((float) (valCapacity / 75), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		}
 	}
 

@@ -90,6 +90,17 @@ public class LinePicturePainter implements IRoutePainter {
 			g.setColor(colorMap.get(edge.id));
 			DefaultRoutePainter.drawNormalLine(g, map, edge.getStart(), edge.getDest());
 		}
+		
+		route = routeController.getPaintSeaRoute();
+		for (int i = 0; i < route.size(); i++) {
+			Edge edge = route.get(i);
+			Stroke dashed = new BasicStroke((int) (1.2 * Constants.MAX_ZOOM_LEVEL - map.getZoom() + 1),
+					BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0,
+					new float[] { (float) (1.2 * Constants.MAX_ZOOM_LEVEL - map.getZoom() + 1), 20 }, 0);
+			g.setStroke(dashed);
+			g.setColor(colorMap.get(edge.id));
+			DefaultRoutePainter.drawNormalLine(g, map, edge.getStart(), edge.getDest());
+		}
 	}
 
 	private void nodeBasedColoring(Graphics2D g, MyMap map) {

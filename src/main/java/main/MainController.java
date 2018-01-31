@@ -295,6 +295,7 @@ public class MainController {
 		mapViewer.setTime(currentTime);
 		if (mainFrame != null) {
 			mainFrame.updateTimeText(currentTime);
+			mainFrame.updateTimeSlider(currentTime);
 		}
 	}
 
