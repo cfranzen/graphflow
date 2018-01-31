@@ -1,6 +1,5 @@
 package main;
 
-import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -28,7 +27,7 @@ import models.EdgeType;
 import models.HighResEdge;
 import models.SeaEdge;
 import newVersion.models.NodeEdge;
-import painter.SeaRoutePainter;
+import painter.SeaRouteController;
 
 /**
  * Contains the route which is to be painted from multiple sources
@@ -105,13 +104,7 @@ public class RouteController extends AbstractBean implements PropertyChangeListe
 		if (Constants.debugInfos) {
 			logger.info("ZoomLevelBasis: " + zoomIndex);
 		}
-
 		return getRoute((int) zoomIndex);
-
-		// return getRoute(Math.min(Constants.ZOOM_LEVEL_COUNT - 1, Math.max(0,
-		// (int) (Constants.ZOOM_LEVEL_COUNT * 2
-		// / (float) (Constants.MAX_ZOOM_LEVEL) * (Constants.MAX_ZOOM_LEVEL -
-		// zoomlevel)))));
 	}
 
 	/**
@@ -252,7 +245,6 @@ public class RouteController extends AbstractBean implements PropertyChangeListe
 					route.add(edge);
 				}
 			}
-
 		}
 		setRoute(route);
 	}
@@ -306,6 +298,7 @@ public class RouteController extends AbstractBean implements PropertyChangeListe
 			paintRoute = result;
 
 			// Sea routes - show always all edges,
+			//
 			// result = new ArrayList<>();
 			// for (Edge edge : seaRoute) {
 			//
@@ -347,21 +340,15 @@ public class RouteController extends AbstractBean implements PropertyChangeListe
 
 	}
 
-	private void calcOnlyVisibleEdges(Graphics2D g, MyMap map, List<Edge> route) {
-		excludeNonVisiblePointFromPaintRoutes(map, route);
-	}
 
 	/**
 	 * @param g
 	 * @param map
 	 */
-	public void updatePaintRoute(Graphics2D g, MyMap map) {
+	public void updatePaintRoute(MyMap map) {
 		calculateSeaEdges(map);
 		List<Edge> route = getRouteByZoom(map.getZoom());
-
-		// route = routes.get(1);
-
-		calcOnlyVisibleEdges(g, map, route);
+		excludeNonVisiblePointFromPaintRoutes(map, route);
 		route = paintRoute;
 		if (highlightedWaypointFrom != null || highlightedWaypointTo != null) {
 			showOnlyWaypointEdges(route, getSeaRoute());
@@ -376,8 +363,9 @@ public class RouteController extends AbstractBean implements PropertyChangeListe
 			}
 			seaRoute.add((NodeEdge) edge);
 		}
-		List<SeaEdge> seaEdges = SeaRoutePainter.calcDrawEdges(seaRoute);
+		List<SeaEdge> seaEdges = SeaRouteController.calcDrawEdges(seaRoute);
 		for (NodeEdge nodeEdge : seaRoute) {
+			// Clear saved paths, Node edge consists of different edges for different zoom levels
 			nodeEdge.setPath(new ArrayList<>(), map.getZoom());
 			for (SeaEdge seaEdge : seaEdges) {
 				if (seaEdge.edgeIds.contains(nodeEdge.id)) {

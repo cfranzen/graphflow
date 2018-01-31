@@ -41,7 +41,7 @@ import models.MapRoute.MapPoint;
 import newVersion.models.MapNode;
 import newVersion.models.NodeEdge;
 import painter.EntityFlowPainter;
-import sea.SeaController;
+import sea.SeaNodeFactory;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
@@ -218,45 +218,8 @@ public class Optimizer {
 
 	}
 
-//	public void mapEdgesToStreets(GraphHopper graphHopper, RouteController routeController,
-//			SeaController seaController) {
-//		if (Constants.optimzeLandRoutes) {
-//			for (int i = 0; i < Constants.ZOOM_LEVEL_COUNT; i++) {
-//				generateStreetTasks(graphHopper, routeController, seaController, routeController.getRoute(i), i);
-//			}
-//		}
-//		routeController.saveHighResEdge(routeController.getRoute());
-//		generateStreetTasks(graphHopper, routeController, seaController, routeController.getSeaRoute(), 0);
-//
-//	}
-//
-//	private void generateStreetTasks(GraphHopper graphHopper, RouteController routeController,
-//			SeaController seaController, List<Edge> route, int i) {
-//		List<Callable<Boolean>> callables = new ArrayList<>();
-//		route.forEach((edge) -> callables.add(() -> {
-//			HighResEdge highResEdge;
-//			if (edge.getType().equals(EdgeType.VESSEL)) {
-//				DijkstraAlgorithm dijkstraAlgorithm;
-//				dijkstraAlgorithm = new DijkstraAlgorithm(seaController.getEdges());
-//				dijkstraAlgorithm.execute(edge.getStart());
-//				List<GeoPosition> steps = dijkstraAlgorithm.getPath(edge.getDest());
-//				highResEdge = new HighResEdge(edge);
-//				highResEdge.addPositions(steps);
-//				logger.info("map edge to sea route DONE - " + highResEdge.id);
-//				return routeController.updateSeaEdge(edge, highResEdge);
-//			} else {
-//				highResEdge = getHighRes(graphHopper, edge);
-//				logger.info("map edge to street DONE - " + highResEdge.id);
-//				return routeController.updateEdge(edge, highResEdge, i);
-//			}
-//		}));
-//
-//	
-//	}
-//-------------------------
-	
 	public void mapEdgesToStreets(GraphHopper graphHopper, RouteController routeController,
-			SeaController seaController) {
+			SeaNodeFactory seaController) {
 		if (Constants.optimzeLandRoutes) {
 			for (int i = 0; i < Constants.ZOOM_LEVEL_COUNT; i++) {
 				generateStreetTasks(graphHopper, routeController, seaController, routeController.getRoute(i), i);
@@ -269,7 +232,7 @@ public class Optimizer {
 	}
 
 	private void generateStreetTasks(GraphHopper graphHopper, RouteController routeController,
-			SeaController seaController, List<Edge> route, int i) {
+			SeaNodeFactory seaController, List<Edge> route, int i) {
 		List<Callable<Boolean>> callables = new ArrayList<>();
 		route.forEach((edge) -> callables.add(() -> {
 			HighResEdge highResEdge;
@@ -292,32 +255,6 @@ public class Optimizer {
 		createFuturesForCallables(callables);
 
 	}
-	
-//-------------------------
-	
-	
-
-	// private void generateStreetTasks(GraphHopper graphHopper, RouteController
-	// routeController,
-	// SeaController seaController, List<Edge> route, int i) {
-	// List<Callable<Boolean>> callables = new ArrayList<>();
-	// route.forEach((edge) -> callables.add(() -> {
-	// HighResEdge highResEdge;
-	// if (edge.getType().equals(EdgeType.TRUCK)) {
-	// highResEdge = getHighRes(graphHopper, edge);
-	// logger.info("map edge to street DONE - " + highResEdge.id);
-	// return routeController.updateEdge(edge, highResEdge, i);
-	// } else {
-	// logger.error("Edge is no street edge!!!");
-	// logger.error(edge.toString());
-	// routeController.updateEdge(edge, null, i);
-	// }
-	// return false;
-	// }));
-	//
-	// createFuturesForCallables(callables);
-	//
-	// }
 
 	private HighResEdge getHighRes(GraphHopper graphHopper, Edge edge) {
 		GHPoint start = new GHPoint(edge.getStart().getLatitude(), edge.getStart().getLongitude());
@@ -334,12 +271,7 @@ public class Optimizer {
 		PathWrapper path = response.getBest();
 		PointList points = path.getPoints();
 
-		// XXX Instructions contain GPX Data, for saving the optimized graph see
-		// Method:
-		// path.getInstructions().createGPX()
-
 		HighResEdge highResEdge = new HighResEdge(edge);
-
 		highResEdge.addGhPositions(points.toGeoJson());
 		return highResEdge;
 	}

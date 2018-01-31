@@ -7,7 +7,7 @@ import org.kohsuke.args4j.Option;
  *
  */
 public class CliInput{
-	@Option(name = "-osmFile", usage = "filepath with OSM data, only needed on first initialization")
+	@Option(name = "-osmFile", required=true, usage = "filepath with OSM data, only needed on first initialization")
 	public String osmFilePath = "";
 
 	@Option(name = "-modelFile", required=true, usage = "file path to the model")
@@ -37,6 +37,9 @@ public class CliInput{
 	@Option(name = "-logLevel", usage="Shows a separate logger window if one option is given. Options:'ALL', 'DEBUG', 'INFO', 'WARN', 'ERROR'")
 	public String logLevel;
 
+	@Option(name ="-clearRun", usage="If present, clears the existend saved routes to process the edges new")
+	public boolean clearRun;
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */

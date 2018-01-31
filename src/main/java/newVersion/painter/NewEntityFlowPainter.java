@@ -22,7 +22,7 @@ import newVersion.models.NodeEdge;
 import newVersion.models.SeaFlowEntity;
 import painter.DefaultRoutePainter;
 import painter.IRoutePainter;
-import painter.SeaRoutePainter;
+import painter.SeaRouteController;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
@@ -118,7 +118,7 @@ public class NewEntityFlowPainter implements IRoutePainter {
 			entities = newEntityList;
 		}
 		if (Constants.debugInfosSeaEdges) {
-			SeaRoutePainter.drawPossibleSeaEdges(g);
+			SeaRouteController.drawPossibleSeaEdges(g);
 		}
 		for (FlowEntity flowEntity : entities) {
 			if (Constants.debugInfos) {

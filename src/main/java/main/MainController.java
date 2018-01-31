@@ -5,7 +5,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashSet;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -38,7 +41,8 @@ import models.ModelLoader;
 import newVersion.main.Optimizer;
 import newVersion.main.PaintController;
 import newVersion.main.WaypointController;
-import sea.SeaController;
+import painter.SeaRouteController;
+import sea.SeaNodeFactory;
 
 /**
  * Main class from the program
@@ -75,7 +79,7 @@ public class MainController {
 
 	private RouteController routeController;
 	private WaypointController waypointController;
-	private SeaController seaController;
+	private SeaNodeFactory seaController;
 
 	private MainFrame mainFrame;
 
@@ -123,18 +127,21 @@ public class MainController {
 	private void run() {
 		writeInputToConstants();
 
+		if (Constants.LOGGER_LEVEL != Level.OFF) {
+			createLoggerFrame();
+		}
+		
 		initControllers();
 		boolean lastLoaded = loadLastRun();
 		initGui();
 
 		// Processing input to own classes
 		loadSolution();
-		
+
 		Constants.timesteps = input.timesteps;
-		
+
 		// Load sea data
-		seaController = SeaController.getInstance(mapViewer);
-		seaController.loadSeaNodes(cliInput.seaNodes);
+		List<Edge> seaNodes = SeaNodeFactory.loadSeaNodes(cliInput.seaNodes);
 
 		mainFrame.setVisible(true);
 
@@ -146,8 +153,8 @@ public class MainController {
 		}
 		logger.info("No last run file found or params file is not identical");
 
-		// Processing input to own classes
-		loadSolution();
+		// // Processing input to own classes
+		// loadSolution();
 
 		routeController.importEdges(input.edges);
 		waypointController.createWaypointsFromGeo(input.nodes);
@@ -165,21 +172,44 @@ public class MainController {
 	 * @return
 	 */
 	private boolean loadLastRun() {
-		logger.info("Try to load last run");
-		CliInput cliLoaded = (CliInput) load(Constants.SAVENAME_PARAMS, CliInput.class);
-		if (cliLoaded != null && cliLoaded.equals(cliInput)) {
-			RouteControllerDTO routeControllerDTO = (RouteControllerDTO) load(Constants.SAVENAME_ROUTE_CONTROLLER,
-					RouteControllerDTO.class);
-			routeController = new RouteController(routeControllerDTO);
-			waypointController = (WaypointController) load(Constants.SAVENAME_WAYPOINT_CONTROLLER,
-					WaypointController.class);
-			seaController = (SeaController) load(Constants.SAVENAME_SEA_CONTROLLER, SeaController.class);
-			// mapViewer = (MyMap) load(Constants.SAVENAME_MAP, MyMap.class);
-			logger.info("Loading successfully");
-			return true;
+		if (cliInput.clearRun) {
+			logger.info("Clear save files");
+			try {
+				deleteFile(Constants.SAVENAME_PARAMS);
+				deleteFile(Constants.SAVENAME_WAYPOINT_CONTROLLER);
+				deleteFile(Constants.SAVENAME_SEA_CONTROLLER);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			CliInput cliLoaded = (CliInput) load(Constants.SAVENAME_PARAMS, CliInput.class);
+			if (cliLoaded != null && cliLoaded.equals(cliInput)) {
+
+				logger.info("Try to load last run");
+				RouteControllerDTO routeControllerDTO = (RouteControllerDTO) load(Constants.SAVENAME_ROUTE_CONTROLLER,
+						RouteControllerDTO.class);
+				routeController = new RouteController(routeControllerDTO);
+				waypointController = (WaypointController) load(Constants.SAVENAME_WAYPOINT_CONTROLLER,
+						WaypointController.class);
+				seaController = (SeaNodeFactory) load(Constants.SAVENAME_SEA_CONTROLLER, SeaNodeFactory.class);
+				// mapViewer = (MyMap) load(Constants.SAVENAME_MAP,
+				// MyMap.class);
+				logger.info("Loading successfully");
+				return true;
+			}
 		}
 		logger.info("Loading failed");
 		return false;
+	}
+
+	/**
+	 * @param fileNamePath
+	 * @throws IOException
+	 */
+	private void deleteFile(String fileNamePath) throws IOException {
+		logger.info("Try to delete file: " + fileNamePath);
+		logger.info("Remove successful: " + Files.deleteIfExists(Paths.get(fileNamePath)));
 	}
 
 	/**
@@ -205,10 +235,11 @@ public class MainController {
 	private void initControllers() {
 		routeController = new RouteController();
 		waypointController = new WaypointController();
+
 	}
 
 	private void writeInputToConstants() {
-		
+
 		if (cliInput.timeStepDelay != 0) {
 			Constants.TIME_STEP_DELAY = cliInput.timeStepDelay;
 		}
@@ -294,31 +325,29 @@ public class MainController {
 	}
 
 	private void initGui() {
-		if (Constants.LOGGER_LEVEL != Level.OFF) {
-			createLoggerFrame();
-		}
-
-		mapViewer = new MyMap(this, routeController, waypointController);
-
 		mainFrame = new MainFrame(this, mapViewer);
 		mainFrame.setResizable(true);
-		// mainFrame.setVisible(true);
+//		mainFrame.setVisible(true);
 
+		mapViewer = new MyMap(this, routeController, waypointController);
+		SeaRouteController.setMap(mapViewer);
+		
 		routeController.addPropertyChangeListener(mapViewer);
 	}
 
 	private void createLoggerFrame() {
 		JFrame frame = new JFrame("Logger Output");
+
 		JTextArea ta = new JTextArea();
 		@SuppressWarnings("resource")
 		TextAreaOutputStream taos = new TextAreaOutputStream(ta, 60);
-//		PrintStream ps = new PrintStream(taos);
-//		System.setOut(ps);
-//		System.setErr(ps);
+		// PrintStream ps = new PrintStream(taos);
+		// System.setOut(ps);
+		// System.setErr(ps);
 		frame.add(new JScrollPane(ta));
 		frame.pack();
-		frame.setVisible(true);
 		frame.setSize(800, 600);
+		frame.setVisible(true);
 		LogManager.getRootLogger().addAppender(taos.getAppender());
 	}
 
@@ -413,7 +442,7 @@ public class MainController {
 	/**
 	 * @return
 	 */
-	public SeaController getSeaController() {
+	public SeaNodeFactory getSeaController() {
 		return seaController;
 	}
 

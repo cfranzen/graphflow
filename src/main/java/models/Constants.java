@@ -9,7 +9,7 @@ public class Constants {
 	public static boolean onlyGermany = false;
 	public static boolean debugInfos = false;
 	public static boolean debugInfosSeaEdges = false;
-	public static boolean drawOnlyViewport = true;
+	public static boolean drawOnlyViewport = false;
 	public static boolean optimzeLandRoutes = true;
 	public static boolean showTimesteps = true;
 	public static boolean drawLineWhenEnitityStarts = true;

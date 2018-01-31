@@ -44,7 +44,7 @@ public class PaintController implements Painter<JXMapViewer> {
 	 */
 	@Override
 	public void paint(Graphics2D g, JXMapViewer map, int w, int h) {
-		routeController.updatePaintRoute(g, (MyMap) map);
+		routeController.updatePaintRoute((MyMap) map);
 		if (useNewPainter) {
 			painter2.paint(g, map, w, h);
 		} else {

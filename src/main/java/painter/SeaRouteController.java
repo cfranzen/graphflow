@@ -26,22 +26,19 @@ import newVersion.models.NodeEdge;
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */
-public class SeaRoutePainter {
+public class SeaRouteController {
 
-	private static final Logger logger = LoggerFactory.getLogger(SeaRoutePainter.class);
+	private static final Logger logger = LoggerFactory.getLogger(SeaRouteController.class);
+	private static MyMap map;
+	private static List<List<SeaEdge>> drawEdges = new ArrayList<>();
 
 	public static int[] circleDiameter = new int[18];
-
-	private static MyMap map;
-
-	private static List<List<SeaEdge>> drawEdges = new ArrayList<>();
-	// private List<Edge> route;
 
 	/**
 	 * Initalizes the circleDiameter/zoomlevel list.
 	 */
-	public SeaRoutePainter(MyMap map) {
-		SeaRoutePainter.map = map;
+	public SeaRouteController(MyMap map) {
+		SeaRouteController.map = map;
 		initCircleDiameter(map);
 
 	}
@@ -62,13 +59,12 @@ public class SeaRoutePainter {
 	public static List<SeaEdge> calcDrawEdges(List<NodeEdge> seaRoute) {
 		initCircleDiameter(map);
 
-		if (drawEdges.get(map.getZoom()-1).isEmpty()) {
-			drawEdges.set(map.getZoom()-1,  calcSeaLines(seaRoute));
+		if (drawEdges.get(map.getZoom() - 1).isEmpty()) {
+			drawEdges.set(map.getZoom() - 1, calcSeaLines(seaRoute));
 		}
 
-		return drawEdges.get(map.getZoom()-1);
+		return drawEdges.get(map.getZoom() - 1);
 	}
-
 
 	/**
 	 * Adds the created {@link PointPath}-Element to the draw edges array as
@@ -84,7 +80,7 @@ public class SeaRoutePainter {
 		seaEdge.setPath(path.getPath());
 
 		seaEdge.edgeIds.add(edge.id);
-		drawEdges.get(map.getZoom()-1).add(seaEdge);
+		drawEdges.get(map.getZoom() - 1).add(seaEdge);
 
 	}
 
@@ -96,7 +92,7 @@ public class SeaRoutePainter {
 	 *         or an empty list if the sea data consists of the wrong type.
 	 */
 	private static List<SeaEdge> calcSeaLines(List<NodeEdge> seaRoute) {
-//		drawEdges.clear();
+		// drawEdges.clear();
 
 		for (int i = 0; i < seaRoute.size(); i++) {
 			NodeEdge edge = seaRoute.get(i);
@@ -168,17 +164,17 @@ public class SeaRoutePainter {
 			path.moveTo(getCirclePoint(convertGeo(edge.getPosition(-1)), convertGeo(edge.getPosition(-2))));
 			path.lineTo(circleP);
 			addDrawEdge(edge, edge.getPosition(-2), edge.getPosition(-1), path);
-			
+
 			path.moveTo(circleP);
 			path.quadTo(convertGeo(edge.getPosition(-1)), getCirclePoint(edge.getDest(), edge.getPosition(-1)));
 			path.lineTo(convertGeo(edge.getDest()));
 			addDrawEdge(edge, edge.getPosition(-1), edge.getDest(), path);
 		}
-		return drawEdges.get(map.getZoom()-1);
+		return drawEdges.get(map.getZoom() - 1);
 	}
 
 	/**
-	 * Draws all possible sea ways on the saved map instance For debugging
+	 * Draws all possible sea ways on the saved map instance. For debugging
 	 */
 	public static void drawPossibleSeaEdges(Graphics2D g) {
 		g.setStroke(new BasicStroke(2));
@@ -250,10 +246,6 @@ public class SeaRoutePainter {
 		return getCirclePoint(p1, p2, circleDiameter[map.getZoom()] / 2);
 	}
 
-	public static Point2D getCirclePoint(GeoPosition p1, GeoPosition p2, double r) {
-		return getCirclePoint(map.getPixelPos(p1), map.getPixelPos(p2), r);
-	}
-	
 	/**
 	 * Calculates the crossing point from the line between p1 and p2, and the
 	 * circle which has p2 as center and the value of the member variable
@@ -267,7 +259,7 @@ public class SeaRoutePainter {
 	 *            radius of the circle
 	 * @return crossing {@link Point2D} of line and circle.
 	 */
-	public static Point2D getCirclePoint(Point2D p1, Point2D p2, double r) {
+	private static Point2D getCirclePoint(Point2D p1, Point2D p2, double r) {
 		// // gerade: y = mg * x + b | mg=y2-y1/x2-x1, b = y1
 
 		double x1 = p1.getX();
@@ -372,21 +364,10 @@ public class SeaRoutePainter {
 	}
 
 	/**
-	 * @param d
-	 * @return
+	 * @param mapViewer
 	 */
-	public static double circleDiameterFaktor(double d) {
-		return circleDiameter[map.getZoom()] * d;
-	}
-
-	/**
-	 * @param pos
-	 * @param pos2
-	 * @param circleDiameterFaktor
-	 * @return
-	 */
-	public static GeoPosition getCirclePointAsGeo(GeoPosition pos, GeoPosition pos2, double r) {
-		return map.getGeoPos(getCirclePoint(pos, pos2, r));
+	public static void setMap(MyMap mapViewer) {
+		SeaRouteController.map = mapViewer;
 	}
 
 }
