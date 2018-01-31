@@ -34,9 +34,9 @@ import models.CapacityWaypoint;
 import models.Constants;
 import newVersion.main.PaintController;
 import newVersion.main.WaypointController;
+import newVersion.painter.IRoutePainter;
 import painter.CapacityWaypointRenderer;
 import painter.DefaultRoutePainter;
-import painter.IRoutePainter;
 
 /**
  * 

@@ -21,7 +21,6 @@ import newVersion.models.MapNode;
 import newVersion.models.NodeEdge;
 import newVersion.models.SeaFlowEntity;
 import painter.DefaultRoutePainter;
-import painter.IRoutePainter;
 import painter.SeaRouteController;
 
 /**
@@ -63,21 +62,7 @@ public class NewEntityFlowPainter implements IRoutePainter {
 	 */
 	@Override
 	public void drawRoute(Graphics2D g, MyMap map) {
-		// Manipulate the graphics object one time before the loop instead of
-		// every run, because it is a resource consuming operation
-		g.setColor(Color.GRAY);
-		g.setStroke(new BasicStroke(1.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-		for (int i = 0; i < routeController.getPaintSeaRoute().size(); i++) {
-			Edge edge = routeController.getPaintSeaRoute().get(i);
-			if (edge instanceof NodeEdge) {
-				drawGreyEdgeLine(g, map, (NodeEdge) edge);
-			}
-		}
-		if (Constants.optimzeLandRoutes) {
-			for (Edge edge : routeController.getPaintRoute()) {
-				drawGreyEdgeLine(g, map, (NodeEdge) edge);
-			}
-		}
+		IRoutePainter.drawUsedEdgesGreyLines(g, map, routeController);
 
 		// Every bigger time step new entities are starting from the nodes
 		int timeStepBig = timeStep / Constants.PAINT_STEPS_COUNT;
@@ -149,6 +134,24 @@ public class NewEntityFlowPainter implements IRoutePainter {
 		}
 	}
 
+//	public static void drawUsedEdgesGreyLines(Graphics2D g, MyMap map, RouteController routeController) {
+//		// Manipulate the graphics object one time before the loop instead of
+//		// every run, because it is a resource consuming operation
+//		g.setColor(Color.GRAY);
+//		g.setStroke(new BasicStroke(1.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+//		for (int i = 0; i < routeController.getPaintSeaRoute().size(); i++) {
+//			Edge edge = routeController.getPaintSeaRoute().get(i);
+//			if (edge instanceof NodeEdge) {
+//				drawGreyEdgeLine(g, map, (NodeEdge) edge);
+//			}
+//		}
+//		if (Constants.optimzeLandRoutes) {
+//			for (Edge edge : routeController.getPaintRoute()) {
+//				drawGreyEdgeLine(g, map, (NodeEdge) edge);
+//			}
+//		}
+//	}
+
 	/**
 	 * Draws a directed line for the given entity with a fixed length which is
 	 * in relation to the point count of the edge.
@@ -198,13 +201,12 @@ public class NewEntityFlowPainter implements IRoutePainter {
 		return new int[] { min, max };
 	}
 
-	private void drawGreyEdgeLine(Graphics2D g, MyMap map, NodeEdge edge) {
-		// Graphic manipulation has to be done before the loop
-		// g.setColor(Color.DARK_GRAY);
-		// g.setStroke(new BasicStroke(1.2f));
-		g.draw(edge.getShape(map));
-
-	}
+//	private static void drawGreyEdgeLine(Graphics2D g, MyMap map, NodeEdge edge) {
+//		// Graphic manipulation has to be done before the loop
+//		// g.setColor(Color.DARK_GRAY);
+//		// g.setStroke(new BasicStroke(1.2f));
+//		g.draw(edge.getShape(map));
+//	}
 
 	private void drawRoutePart(Graphics2D g, MyMap map, GeoPosition from, GeoPosition to, long capacity,
 			long workload) {

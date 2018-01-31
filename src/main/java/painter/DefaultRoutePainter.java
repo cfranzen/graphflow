@@ -17,6 +17,7 @@ import models.Constants;
 import models.Edge;
 import models.EdgeType;
 import models.MapRoute;
+import newVersion.painter.IRoutePainter;
 
 /**
  * Paints a route

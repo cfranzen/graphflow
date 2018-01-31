@@ -14,6 +14,7 @@ import main.RouteController;
 import models.Constants;
 import models.Edge;
 import models.MapRoute;
+import newVersion.painter.IRoutePainter;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
@@ -41,6 +42,7 @@ public class EntityFlowPainter implements IRoutePainter {
 	 */
 	@Override
 	public void drawRoute(Graphics2D g, MyMap map) {
+		
 
 		for (Edge edge : routeController.getPaintRoute()) {
 			int entityStepCurrent = timeStep / Constants.PAINT_STEPS_COUNT;

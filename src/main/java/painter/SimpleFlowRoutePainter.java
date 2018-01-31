@@ -11,6 +11,7 @@ import gui.MyMap;
 import main.RouteController;
 import models.Constants;
 import models.Edge;
+import newVersion.painter.IRoutePainter;
 
 /**
  * Visualizes the current capacity and workload as flow from start to end-point

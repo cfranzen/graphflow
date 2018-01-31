@@ -22,6 +22,7 @@ import javax.swing.event.ChangeListener;
 
 import junit.awtui.ProgressBar;
 import main.MainController;
+import newVersion.main.PaintController;
 
 /**
  * Mainframe for the whole program.
@@ -35,11 +36,13 @@ public class MainFrame extends JFrame {
 	private static final String FRAME_NAME = "Graphstream";
 	// private JFrame mainFrame;
 	private JLabel timeTextLabel = new JLabel();
+	private JLabel lastMessageLabel = new JLabel();
 	private String timeText = "Time: 0";
 	private JProgressBar progressBar;
 	private JSlider timeSlider;
 
 	/**
+	 * @param ta 
 	 * 
 	 */
 	public MainFrame(MainController controller, MyMap mapViewer) {
@@ -105,7 +108,7 @@ public class MainFrame extends JFrame {
 			}
 		});
 		layeredPane.add(minusBtn, new Integer(40));
-
+		
 		// Add time table to frame
 		JPanel timePanel = new JPanel();
 		timePanel.add(timeTextLabel);
@@ -116,6 +119,26 @@ public class MainFrame extends JFrame {
 		// Add viewer to frame
 		layeredPane.add(mapViewer, new Integer(10));
 
+		JButton painterBtn = new JButton();
+		painterBtn.setText("Next Painter");
+		painterBtn.setBounds(0, 115, 142, 25);
+		painterBtn.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				PaintController.getInstance().nextPainter();
+			}
+		});
+		layeredPane.add(painterBtn, new Integer(40));
+		
+// TextArea for in window display, consumes much ressources
+//		JTextArea ta = new JTextArea();
+//		LogManager.getRootLogger().addAppender(new TextAreaOutputStream(ta, 3).getAppender());
+//		ta.setBounds(5, (int) (getSize().getHeight() - 180), getSize().width, 48);
+//		ta.setOpaque(false);
+//		layeredPane.add(ta, new Integer(30));
+		
+		
 		timeSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 0);
 		timeSlider.addChangeListener(new ChangeListener() {
 
@@ -147,6 +170,10 @@ public class MainFrame extends JFrame {
 		timeTextLabel.setText(timeText);
 	}
 
+	public void updateLastMessage(String message) {
+		lastMessageLabel.setText(message);
+	}
+	
 	/**
 	 * New value of the {@link ProgressBar} in percent
 	 * 

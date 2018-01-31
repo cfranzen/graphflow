@@ -130,7 +130,7 @@ public class MainController {
 		if (Constants.LOGGER_LEVEL != Level.OFF) {
 			createLoggerFrame();
 		}
-		
+
 		initControllers();
 		boolean lastLoaded = loadLastRun();
 		initGui();
@@ -325,30 +325,29 @@ public class MainController {
 	}
 
 	private void initGui() {
-		mainFrame = new MainFrame(this, mapViewer);
-		mainFrame.setResizable(true);
-//		mainFrame.setVisible(true);
-
 		mapViewer = new MyMap(this, routeController, waypointController);
 		SeaRouteController.setMap(mapViewer);
-		
+
+		mainFrame = new MainFrame(this, mapViewer);
+		mainFrame.setResizable(true);
+		// mainFrame.setVisible(true);
+
 		routeController.addPropertyChangeListener(mapViewer);
 	}
 
-	private void createLoggerFrame() {
-		JFrame frame = new JFrame("Logger Output");
+	private JTextArea createLoggerFrame() {
 
 		JTextArea ta = new JTextArea();
 		@SuppressWarnings("resource")
 		TextAreaOutputStream taos = new TextAreaOutputStream(ta, 60);
-		// PrintStream ps = new PrintStream(taos);
-		// System.setOut(ps);
-		// System.setErr(ps);
+		LogManager.getRootLogger().addAppender(taos.getAppender());
+
+		JFrame frame = new JFrame("Logger Output");
 		frame.add(new JScrollPane(ta));
 		frame.pack();
 		frame.setSize(800, 600);
 		frame.setVisible(true);
-		LogManager.getRootLogger().addAppender(taos.getAppender());
+		return ta;
 	}
 
 	private void optimize() {
@@ -383,7 +382,7 @@ public class MainController {
 	}
 
 	private void finishedEdgeOptimizing() {
-		PaintController.useNewPainter();
+		PaintController.getInstance().useNewPainter();
 		mapViewer.setWaypoints(new HashSet<>(waypointController.getWaypoints(mapViewer.getZoom())));
 		repaint();
 		mainFrame.updateProgessBar(100);
