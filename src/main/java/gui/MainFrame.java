@@ -48,6 +48,7 @@ public class MainFrame extends JFrame {
 	 */
 	public MainFrame(MainController controller, MyMap mapViewer) {
 		// Display the viewer in a JFrame
+		setTitle(FRAME_NAME);
 		setName(FRAME_NAME);
 		setSize(1600, 800);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

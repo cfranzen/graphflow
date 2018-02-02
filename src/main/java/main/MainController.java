@@ -184,10 +184,10 @@ public class MainController {
 				e.printStackTrace();
 			}
 		} else {
+			logger.info("Load last run");
 			CliInput cliLoaded = (CliInput) load(Constants.SAVENAME_PARAMS, CliInput.class);
 			if (cliLoaded != null && cliLoaded.equals(cliInput)) {
 
-				logger.info("Try to load last run");
 				RouteControllerDTO routeControllerDTO = (RouteControllerDTO) load(Constants.SAVENAME_ROUTE_CONTROLLER,
 						RouteControllerDTO.class);
 				routeController = new RouteController(routeControllerDTO);
@@ -221,7 +221,7 @@ public class MainController {
 	private Object load(String saveName, Class classname) {
 		Gson gson = new Gson();
 		try {
-			logger.info("  try to load " + saveName + " ...");
+			logger.info("  try to load: " + saveName + " ...");
 			Object object = gson.fromJson(new FileReader(saveName), classname);
 			logger.info("  loading finished: " + saveName);
 			return object;

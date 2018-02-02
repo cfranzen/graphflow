@@ -37,7 +37,7 @@ public final class SeaNodeFactory {
 	 * 
 	 * @param coordsForMouse
 	 */
-	private void addNewNode(GeoPosition coordsForMouse) {
+	protected void addNewNode(GeoPosition coordsForMouse) {
 		SeaNode node = createPointFromPos(coordsForMouse);
 		if (points.size() > 1) {
 			node.addEdge(node.id - 1);
