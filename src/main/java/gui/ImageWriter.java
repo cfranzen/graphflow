@@ -41,13 +41,13 @@ public class ImageWriter {
 		}
 		String filename = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date()) + filenamePath;
 		try {
-			ImageIO.write(bi, "png", new File(filename));
+			ImageIO.write(bi, "png", new File(directoryPath + File.separator + filename));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
 		}
-		return directoryPath + " /" + filename;
+		return directoryPath + File.separator + filename;
 	}
 
 	private static BufferedImage createImage(JComponent comp) {
