@@ -10,11 +10,10 @@ import java.util.List;
 import org.jxmapviewer.viewer.GeoPosition;
 
 import gui.MyMap;
+import main.Constants;
 import main.RouteController;
-import models.Constants;
-import models.Edge;
-import models.MapRoute;
-import newVersion.painter.IRoutePainter;
+import models.pointBased.Edge;
+import models.pointBased.MapRoute;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>

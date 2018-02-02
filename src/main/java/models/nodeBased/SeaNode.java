@@ -1,7 +1,7 @@
 /**
  * 
  */
-package newVersion.models;
+package models.nodeBased;
 
 import java.util.ArrayList;
 import java.util.Arrays;

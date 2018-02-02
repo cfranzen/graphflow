@@ -1,4 +1,4 @@
-package models;
+package models.pointBased;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -143,7 +143,7 @@ public class ModelLoader {
 	}
 
 	private static void debugOut(SortedSet<Node> allNodes, SortedSet<Service> allEdges) {
-		if (models.Constants.debugInfos) {
+		if (main.Constants.debugInfos) {
 			System.out.println("All nodes of network:");
 			for (Node node : allNodes) {
 				System.out.println(node.getName() + " [" + node.getLatitude() + ", " + node.getLongitude() + "]");

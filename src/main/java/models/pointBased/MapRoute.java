@@ -1,4 +1,4 @@
-package models;
+package models.pointBased;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,7 +9,7 @@ import java.util.Map.Entry;
 import org.jxmapviewer.viewer.GeoPosition;
 
 import main.MainController;
-import newVersion.main.Optimizer;
+import main.Optimizer;
 
 /**
  * Represents a visible Edge

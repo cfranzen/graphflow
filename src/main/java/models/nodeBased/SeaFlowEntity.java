@@ -1,11 +1,11 @@
-package newVersion.models;
+package models.nodeBased;
 
 import java.awt.geom.Path2D;
 import java.awt.geom.Path2D.Double;
 
-import models.Constants;
-import models.Edge;
-import newVersion.painter.NewEntityFlowPainter;
+import main.Constants;
+import models.pointBased.Edge;
+import painter.NewEntityFlowPainter;
 
 /**
  * Subclass of the {@link FlowEntity}-class, specialized for sea {@link Edge}s

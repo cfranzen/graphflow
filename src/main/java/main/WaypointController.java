@@ -1,4 +1,4 @@
-package newVersion.main;
+package main;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,8 +7,7 @@ import java.util.Set;
 import org.jxmapviewer.viewer.GeoPosition;
 import org.jxmapviewer.viewer.Waypoint;
 
-import models.CapacityWaypoint;
-import models.Constants;
+import models.pointBased.CapacityWaypoint;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>

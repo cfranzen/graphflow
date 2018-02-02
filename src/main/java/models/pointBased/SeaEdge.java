@@ -1,4 +1,4 @@
-package models;
+package models.pointBased;
 
 import java.awt.geom.Path2D;
 import java.util.HashSet;

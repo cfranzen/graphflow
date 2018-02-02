@@ -5,8 +5,8 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 
+import main.Constants;
 import main.MainController;
-import models.Constants;
 
 /**
  * Starts the running of the graph.

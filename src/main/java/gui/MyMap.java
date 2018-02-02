@@ -28,15 +28,15 @@ import org.jxmapviewer.viewer.LocalResponseCache;
 import org.jxmapviewer.viewer.TileFactoryInfo;
 import org.jxmapviewer.viewer.WaypointPainter;
 
+import main.Constants;
 import main.MainController;
+import main.PaintController;
 import main.RouteController;
-import models.CapacityWaypoint;
-import models.Constants;
-import newVersion.main.PaintController;
-import newVersion.main.WaypointController;
-import newVersion.painter.IRoutePainter;
+import main.WaypointController;
+import models.pointBased.CapacityWaypoint;
 import painter.CapacityWaypointRenderer;
 import painter.DefaultRoutePainter;
+import painter.IRoutePainter;
 
 /**
  * 

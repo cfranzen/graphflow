@@ -1,10 +1,10 @@
-package newVersion.models;
+package models.nodeBased;
 
 import java.awt.geom.Path2D;
 import java.util.List;
 
-import models.Edge;
-import newVersion.painter.NewEntityFlowPainter;
+import models.pointBased.Edge;
+import painter.NewEntityFlowPainter;
 
 /**
  * This class should be created for every {@link Edge} on every time step. It

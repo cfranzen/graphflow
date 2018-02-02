@@ -1,4 +1,4 @@
-package newVersion.painter;
+package painter;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -10,10 +10,10 @@ import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.painter.Painter;
 
 import gui.MyMap;
+import main.Constants;
 import main.RouteController;
-import models.Constants;
-import models.Edge;
-import newVersion.models.NodeEdge;
+import models.nodeBased.NodeEdge;
+import models.pointBased.Edge;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>

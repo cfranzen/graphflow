@@ -20,13 +20,12 @@ import com.graphhopper.util.PointList;
 
 import dto.RouteControllerDTO;
 import gui.MyMap;
-import models.CapacityWaypoint;
-import models.Constants;
-import models.Edge;
-import models.EdgeType;
-import models.HighResEdge;
-import models.SeaEdge;
-import newVersion.models.NodeEdge;
+import models.nodeBased.NodeEdge;
+import models.pointBased.CapacityWaypoint;
+import models.pointBased.Edge;
+import models.pointBased.EdgeType;
+import models.pointBased.HighResEdge;
+import models.pointBased.SeaEdge;
 import painter.SeaRouteController;
 
 /**

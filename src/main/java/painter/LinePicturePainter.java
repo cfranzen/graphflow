@@ -1,7 +1,7 @@
 /**
  * 
  */
-package newVersion.painter;
+package painter;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -13,12 +13,11 @@ import java.util.List;
 import java.util.Map;
 
 import gui.MyMap;
+import main.Constants;
 import main.RouteController;
-import models.Constants;
-import models.Edge;
-import newVersion.models.MapNode;
-import newVersion.models.NodeEdge;
-import painter.DefaultRoutePainter;
+import models.nodeBased.MapNode;
+import models.nodeBased.NodeEdge;
+import models.pointBased.Edge;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>

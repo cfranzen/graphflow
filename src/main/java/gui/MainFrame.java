@@ -23,7 +23,7 @@ import javax.swing.event.ChangeListener;
 
 import junit.awtui.ProgressBar;
 import main.MainController;
-import newVersion.main.PaintController;
+import main.PaintController;
 
 /**
  * Mainframe for the whole program.

@@ -7,7 +7,7 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.HashSet;
 
-import newVersion.main.WaypointController;
+import main.WaypointController;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package newVersion.main;
+package main;
 
 import java.awt.Graphics2D;
 
@@ -9,13 +9,11 @@ import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.painter.Painter;
 
 import gui.MyMap;
-import main.MainController;
-import main.RouteController;
-import newVersion.painter.IRoutePainter;
-import newVersion.painter.LinePicturePainter;
-import newVersion.painter.NewEntityFlowPainter;
 import painter.DefaultRoutePainter;
 import painter.EntityFlowPainter;
+import painter.IRoutePainter;
+import painter.LinePicturePainter;
+import painter.NewEntityFlowPainter;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>

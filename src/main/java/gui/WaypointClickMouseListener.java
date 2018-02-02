@@ -11,10 +11,10 @@ import java.util.Map.Entry;
 import org.jxmapviewer.beans.AbstractBean;
 import org.jxmapviewer.viewer.GeoPosition;
 
+import main.Constants;
+import main.Optimizer;
 import main.RouteController;
-import models.CapacityWaypoint;
-import models.Constants;
-import newVersion.main.Optimizer;
+import models.pointBased.CapacityWaypoint;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>

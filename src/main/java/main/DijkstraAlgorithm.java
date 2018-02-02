@@ -13,7 +13,7 @@ import org.jxmapviewer.viewer.GeoPosition;
 
 import com.graphhopper.util.DistanceCalc3D;
 
-import models.Edge;
+import models.pointBased.Edge;
 
 public class DijkstraAlgorithm {
 

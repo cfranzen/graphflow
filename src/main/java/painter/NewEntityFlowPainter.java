@@ -1,4 +1,4 @@
-package newVersion.painter;
+package painter;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -13,15 +13,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gui.MyMap;
+import main.Constants;
 import main.RouteController;
-import models.Constants;
-import models.Edge;
-import newVersion.models.FlowEntity;
-import newVersion.models.MapNode;
-import newVersion.models.NodeEdge;
-import newVersion.models.SeaFlowEntity;
-import painter.DefaultRoutePainter;
-import painter.SeaRouteController;
+import models.nodeBased.FlowEntity;
+import models.nodeBased.MapNode;
+import models.nodeBased.NodeEdge;
+import models.nodeBased.SeaFlowEntity;
+import models.pointBased.Edge;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>

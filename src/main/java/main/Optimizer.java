@@ -1,7 +1,7 @@
 /**
  * 
  */
-package newVersion.main;
+package main;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,20 +28,15 @@ import com.graphhopper.PathWrapper;
 import com.graphhopper.util.PointList;
 import com.graphhopper.util.shapes.GHPoint;
 
-import main.DijkstraAlgorithm;
-import main.MainController;
-import main.RouteController;
-import models.CapacityWaypoint;
-import models.Constants;
-import models.Edge;
-import models.EdgeType;
-import models.HighResEdge;
-import models.MapRoute;
-import models.MapRoute.MapPoint;
-import newVersion.models.MapNode;
-import newVersion.models.NodeEdge;
+import models.nodeBased.MapNode;
+import models.nodeBased.NodeEdge;
+import models.pointBased.CapacityWaypoint;
+import models.pointBased.Edge;
+import models.pointBased.EdgeType;
+import models.pointBased.HighResEdge;
+import models.pointBased.MapRoute;
+import models.pointBased.MapRoute.MapPoint;
 import painter.EntityFlowPainter;
-import sea.SeaNodeFactory;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>

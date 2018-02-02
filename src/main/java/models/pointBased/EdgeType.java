@@ -1,4 +1,4 @@
-package models;
+package models.pointBased;
 
 /**
  * Defines the transportation type for an {@link Edge}.

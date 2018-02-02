@@ -1,4 +1,4 @@
-package newVersion.models;
+package models.nodeBased;
 
 import java.awt.Shape;
 import java.awt.geom.Path2D;
@@ -9,7 +9,7 @@ import java.util.List;
 import org.jxmapviewer.viewer.GeoPosition;
 
 import gui.MyMap;
-import models.Edge;
+import models.pointBased.Edge;
 
 /**
  * Contains informations about which points are on this route/edge and the

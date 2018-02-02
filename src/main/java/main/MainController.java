@@ -34,14 +34,9 @@ import dto.RouteControllerDTO;
 import gui.MainFrame;
 import gui.MyMap;
 import gui.TextAreaOutputStream;
-import models.Constants;
-import models.Edge;
-import models.ModelLoader;
-import newVersion.main.Optimizer;
-import newVersion.main.PaintController;
-import newVersion.main.WaypointController;
+import models.pointBased.Edge;
+import models.pointBased.ModelLoader;
 import painter.SeaRouteController;
-import sea.SeaNodeFactory;
 
 /**
  * Main class from the program

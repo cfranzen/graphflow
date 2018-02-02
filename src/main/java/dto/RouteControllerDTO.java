@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import main.RouteController;
-import models.HighResEdge;
-import newVersion.models.NodeEdge;
+import models.nodeBased.NodeEdge;
+import models.pointBased.HighResEdge;
 
 /**
  * Special cloned class for storing and loading to disk

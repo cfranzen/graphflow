@@ -15,12 +15,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gui.MyMap;
+import main.Constants;
 import main.MainController;
-import models.Constants;
-import models.Edge;
-import models.PointPath;
-import models.SeaEdge;
-import newVersion.models.NodeEdge;
+import models.nodeBased.NodeEdge;
+import models.pointBased.Edge;
+import models.pointBased.PointPath;
+import models.pointBased.SeaEdge;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>

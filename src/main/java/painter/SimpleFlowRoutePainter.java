@@ -8,10 +8,9 @@ import java.util.List;
 import org.jxmapviewer.viewer.GeoPosition;
 
 import gui.MyMap;
+import main.Constants;
 import main.RouteController;
-import models.Constants;
-import models.Edge;
-import newVersion.painter.IRoutePainter;
+import models.pointBased.Edge;
 
 /**
  * Visualizes the current capacity and workload as flow from start to end-point

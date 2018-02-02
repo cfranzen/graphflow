@@ -1,4 +1,4 @@
-package models;
+package models.pointBased;
 
 import java.util.ArrayList;
 import java.util.List;

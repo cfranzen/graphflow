@@ -14,7 +14,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.LoggingEvent;
 
-import models.Constants;
+import main.Constants;
 
 public class TextAreaOutputStream extends OutputStream {
 

@@ -1,4 +1,4 @@
-package sea;
+package main;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,8 +14,8 @@ import org.slf4j.LoggerFactory;
 
 import com.syncrotess.pathfinder.model.entity.ServiceType;
 
-import models.Edge;
-import newVersion.models.SeaNode;
+import models.nodeBased.SeaNode;
+import models.pointBased.Edge;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>

@@ -17,8 +17,8 @@ import org.jxmapviewer.viewer.DefaultWaypointRenderer;
 import org.jxmapviewer.viewer.Waypoint;
 import org.jxmapviewer.viewer.WaypointRenderer;
 
-import models.CapacityWaypoint;
-import models.Constants;
+import main.Constants;
+import models.pointBased.CapacityWaypoint;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>

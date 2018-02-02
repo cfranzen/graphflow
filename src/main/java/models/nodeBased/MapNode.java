@@ -1,4 +1,4 @@
-package newVersion.models;
+package models.nodeBased;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,8 +7,8 @@ import java.util.function.Function;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.jxmapviewer.viewer.GeoPosition;
 
-import models.Edge;
-import models.HighResEdge;
+import models.pointBased.Edge;
+import models.pointBased.HighResEdge;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>

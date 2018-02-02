@@ -11,13 +11,12 @@ import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.viewer.GeoPosition;
 
 import gui.MyMap;
+import main.Constants;
 import main.MainController;
 import main.RouteController;
-import models.Constants;
-import models.Edge;
-import models.EdgeType;
-import models.MapRoute;
-import newVersion.painter.IRoutePainter;
+import models.pointBased.Edge;
+import models.pointBased.EdgeType;
+import models.pointBased.MapRoute;
 
 /**
  * Paints a route
