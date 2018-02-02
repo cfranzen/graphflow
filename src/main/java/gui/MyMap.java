@@ -126,7 +126,8 @@ public class MyMap extends JXMapViewer implements PropertyChangeListener {
 	 * @param controller
 	 * @param routeController
 	 */
-	private void addUserInteractions(MainController controller, RouteController routeController, WaypointController waypointController) {
+	private void addUserInteractions(MainController controller, RouteController routeController,
+			WaypointController waypointController) {
 		MouseInputListener mia = new PanMouseInputListener(this);
 		addMouseListener(mia);
 		addMouseMotionListener(mia);
@@ -165,7 +166,7 @@ public class MyMap extends JXMapViewer implements PropertyChangeListener {
 		routePaintController.setRouteController(routeController);
 
 		// Create a waypoint painter that takes all the waypoints
-//		waypointPainter = new SwingWaypointOverlayPainter();
+		// waypointPainter = new SwingWaypointOverlayPainter();
 		waypointPainter = new WaypointPainter<>();
 		waypointPainter.setRenderer(new CapacityWaypointRenderer());
 

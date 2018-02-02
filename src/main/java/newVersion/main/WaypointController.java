@@ -71,11 +71,6 @@ public class WaypointController {
 				/ (float) (Math.min(Constants.MAX_ZOOM_LEVEL, ZOOM_LIMIT) - Math.min(zoomlevel, ZOOM_LIMIT - 1))));
 		zoomIndex = zoomIndex >= zoomWaypoints.size() ? zoomWaypoints.size() - 1 : zoomIndex;
 		return zoomWaypoints.get((int) zoomIndex);
-
-		// return zoomWaypoints.get(Math.min(Constants.ZOOM_LEVEL_COUNT,
-		// Math.max(0, (int) (Constants.ZOOM_LEVEL_COUNT * 2
-		// / (float) (Constants.MAX_ZOOM_LEVEL) * (Constants.MAX_ZOOM_LEVEL -
-		// zoomlevel)))));
 	}
 
 	public void setWaypoints(List<CapacityWaypoint> waypoints) {

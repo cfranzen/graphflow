@@ -4,7 +4,6 @@
 package gui;
 
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -21,7 +20,7 @@ import newVersion.main.Optimizer;
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
  *
  */
-public class WaypointClickMouseListener extends AbstractBean implements MouseListener {
+public class WaypointClickMouseListener extends AbstractBean implements SimpleMouseClickListener {
 
 	private MyMap map;
 	private CapacityWaypoint waypointFrom;
@@ -43,6 +42,10 @@ public class WaypointClickMouseListener extends AbstractBean implements MouseLis
 	 */
 	@Override
 	public void mouseClicked(MouseEvent e) {
+		toggleWaypoints(e);
+	}
+
+	public void toggleWaypoints(MouseEvent e) {
 		GeoPosition gp = map.getCoordsForMouse(e);
 		// System.out.println("ClickPos:" + gp.toString() + " | Zoom: " +
 		Map<CapacityWaypoint, Double> distanceMap = new HashMap<>();
@@ -52,9 +55,6 @@ public class WaypointClickMouseListener extends AbstractBean implements MouseLis
 			double distance = Optimizer.getDistance(gp, wp);
 			if (distance < precision) {
 				distanceMap.put(waypoint, distance);
-				// System.out.println(wp.toString() + " - DIST: " +
-				// MainController.getDistance(gp, wp));
-
 			}
 		}
 		Entry<CapacityWaypoint, Double> minEntry = null;
@@ -94,48 +94,6 @@ public class WaypointClickMouseListener extends AbstractBean implements MouseLis
 			}
 			firePropertyChange(Constants.EVENT_NAME_WAYPOINT_TO, oldValue, getWaypointTo());
 		}
-
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
-	 */
-	@Override
-	public void mousePressed(MouseEvent e) {
-		// NOOP
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
-	 */
-	@Override
-	public void mouseReleased(MouseEvent e) {
-		// NOOP
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent)
-	 */
-	@Override
-	public void mouseEntered(MouseEvent e) {
-		// NOOP
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent)
-	 */
-	@Override
-	public void mouseExited(MouseEvent e) {
-		// NOOP
 	}
 
 	public CapacityWaypoint getWaypointFrom() {

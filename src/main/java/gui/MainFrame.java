@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.MouseEvent;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -17,7 +18,6 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JSlider;
-import javax.swing.JTextArea;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -43,7 +43,7 @@ public class MainFrame extends JFrame {
 	private JSlider timeSlider;
 
 	/**
-	 * @param ta 
+	 * @param ta
 	 * 
 	 */
 	public MainFrame(MainController controller, MyMap mapViewer) {
@@ -109,7 +109,7 @@ public class MainFrame extends JFrame {
 			}
 		});
 		layeredPane.add(minusBtn, new Integer(40));
-		
+
 		// Add time table to frame
 		JPanel timePanel = new JPanel();
 		timePanel.add(timeTextLabel);
@@ -123,25 +123,45 @@ public class MainFrame extends JFrame {
 		JButton painterBtn = new JButton();
 		painterBtn.setText("Next Painter");
 		painterBtn.setBounds(0, 115, 142, 25);
-		painterBtn.addActionListener(new ActionListener() {
-
+		painterBtn.addMouseListener(new SimpleMouseClickListener() {
+			
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				PaintController.getInstance().nextPainter();
+			public void mouseClicked(MouseEvent e) {
+				if (e.getButton() == MouseEvent.BUTTON1) {
+					PaintController.getInstance().nextPainter(true);
+				} else if (e.getButton() == MouseEvent.BUTTON3) {
+					PaintController.getInstance().nextPainter(false);
+				}
 			}
 		});
 		layeredPane.add(painterBtn, new Integer(40));
 		
-// TextArea for in window display, consumes much ressources
-//		JTextArea ta = new JTextArea();
-//		LogManager.getRootLogger().addAppender(new TextAreaOutputStream(ta, 3).getAppender());
-//		ta.setBounds(5, (int) (getSize().getHeight() - 180), getSize().width, 48);
-//		ta.setOpaque(false);
-//		layeredPane.add(ta, new Integer(30));
+		JButton screenshotBtn = new JButton();
+		screenshotBtn.setText("Make screenshot");
+		screenshotBtn.setBounds(0, 145, 142, 25);
+		screenshotBtn.addMouseListener(new SimpleMouseClickListener() {
+			
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				ImageWriter.makeScreenshot(mapViewer);
+			}
+		});
+		layeredPane.add(screenshotBtn, new Integer(40));
 		
+		
+		
+
+		// TextArea for in window display, consumes much ressources
+		// JTextArea ta = new JTextArea();
+		// LogManager.getRootLogger().addAppender(new TextAreaOutputStream(ta,
+		// 3).getAppender());
+		// ta.setBounds(5, (int) (getSize().getHeight() - 180), getSize().width,
+		// 48);
+		// ta.setOpaque(false);
+		// layeredPane.add(ta, new Integer(30));
+
 		timeSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 0);
 		timeSlider.addChangeListener(new ChangeListener() {
-
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				JSlider source = (JSlider) e.getSource();
@@ -173,7 +193,7 @@ public class MainFrame extends JFrame {
 	public void updateLastMessage(String message) {
 		lastMessageLabel.setText(message);
 	}
-	
+
 	/**
 	 * New value of the {@link ProgressBar} in percent
 	 * 

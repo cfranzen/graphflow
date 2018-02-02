@@ -64,7 +64,9 @@ public class LinePicturePainter implements IRoutePainter {
 	 */
 	@Override
 	public void drawRoute(Graphics2D g, MyMap map) {
-		initColorMap();
+		if (colorMap == null) {
+			initColorMap();
+		}
 		// IRoutePainter.drawUsedEdgesGreyLines(g, map, routeController);
 		if (nodeBasedColoring) {
 			nodeBasedColoring(g, map);
@@ -81,11 +83,11 @@ public class LinePicturePainter implements IRoutePainter {
 		List<Edge> route = routeController.getPaintRoute();
 		// set the stroke of the copy, not the original
 		// for (Edge edge : route) {
+		Stroke dashed = new BasicStroke((int) (1.2 * Constants.MAX_ZOOM_LEVEL - map.getZoom() + 1),
+				BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0,
+				new float[] { (float) (1.2 * Constants.MAX_ZOOM_LEVEL - map.getZoom() + 1), 20 }, 0);
 		for (int i = 0; i < route.size(); i++) {
 			Edge edge = route.get(i);
-			Stroke dashed = new BasicStroke((int) (1.2 * Constants.MAX_ZOOM_LEVEL - map.getZoom() + 1),
-					BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0,
-					new float[] { (float) (1.2 * Constants.MAX_ZOOM_LEVEL - map.getZoom() + 1), 20 }, 0);
 			g.setStroke(dashed);
 			g.setColor(colorMap.get(edge.id));
 			DefaultRoutePainter.drawNormalLine(g, map, edge.getStart(), edge.getDest());
@@ -94,9 +96,6 @@ public class LinePicturePainter implements IRoutePainter {
 		route = routeController.getPaintSeaRoute();
 		for (int i = 0; i < route.size(); i++) {
 			Edge edge = route.get(i);
-			Stroke dashed = new BasicStroke((int) (1.2 * Constants.MAX_ZOOM_LEVEL - map.getZoom() + 1),
-					BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0,
-					new float[] { (float) (1.2 * Constants.MAX_ZOOM_LEVEL - map.getZoom() + 1), 20 }, 0);
 			g.setStroke(dashed);
 			g.setColor(colorMap.get(edge.id));
 			DefaultRoutePainter.drawNormalLine(g, map, edge.getStart(), edge.getDest());
@@ -129,9 +128,6 @@ public class LinePicturePainter implements IRoutePainter {
 	 * 
 	 */
 	private void initColorMap() {
-		if (colorMap != null) {
-			return;
-		}
 		colorMap = new HashMap<>();
 		for (Edge edge : routeController.getRoute()) {
 			Color randomColor = new Color((int) (Math.random() * 0x1000000));

@@ -93,10 +93,19 @@ public class PaintController implements Painter<JXMapViewer> {
 	}
 
 	/**
+	 * Increases or decreases the index for the next painter.
+	 * 
+	 * @param next <code>true</code>
+	 *            increases the painter index</br>
+	 *            <code>false</code> decreases the painter index
 	 * 
 	 */
-	public void nextPainter() {
-		currentPainterIndex = currentPainterIndex == MAX_PAINTERS - 1 ? 0 : ++currentPainterIndex;
+	public void nextPainter(boolean next) {
+		if (next) {
+			currentPainterIndex = currentPainterIndex == MAX_PAINTERS - 1 ? 0 : ++currentPainterIndex;
+		} else {
+			currentPainterIndex = currentPainterIndex == 0 ? MAX_PAINTERS - 1 : --currentPainterIndex;
+		}
 		MainController.getInstance().getMapViewer().repaint();
 	}
 

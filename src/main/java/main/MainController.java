@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashSet;
-import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -141,7 +140,8 @@ public class MainController {
 		Constants.timesteps = input.timesteps;
 
 		// Load sea data
-		List<Edge> seaNodes = SeaNodeFactory.loadSeaNodes(cliInput.seaNodes);
+		// List<Edge> seaNodes = 
+		SeaNodeFactory.loadSeaNodes(cliInput.seaNodes);
 
 		mainFrame.setVisible(true);
 
@@ -179,7 +179,8 @@ public class MainController {
 				deleteFile(Constants.SAVENAME_WAYPOINT_CONTROLLER);
 				deleteFile(Constants.SAVENAME_SEA_CONTROLLER);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				logger.error("Could not remove existing save files!");
+				logger.error(e.getMessage());
 				e.printStackTrace();
 			}
 		} else {
@@ -193,8 +194,6 @@ public class MainController {
 				waypointController = (WaypointController) load(Constants.SAVENAME_WAYPOINT_CONTROLLER,
 						WaypointController.class);
 				seaController = (SeaNodeFactory) load(Constants.SAVENAME_SEA_CONTROLLER, SeaNodeFactory.class);
-				// mapViewer = (MyMap) load(Constants.SAVENAME_MAP,
-				// MyMap.class);
 				logger.info("Loading successfully");
 				return true;
 			}
