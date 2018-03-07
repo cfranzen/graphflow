@@ -14,6 +14,7 @@ import painter.EntityFlowPainter;
 import painter.IRoutePainter;
 import painter.LinePicturePainter;
 import painter.NewEntityFlowPainter;
+import painter.PointPicturePainter;
 
 /**
  * @author n.frantzen <nils.frantzen@rwth-aachen.de>
@@ -21,7 +22,7 @@ import painter.NewEntityFlowPainter;
  */
 public class PaintController implements Painter<JXMapViewer> {
 
-	private static final int MAX_PAINTERS = 5;
+	private static final int MAX_PAINTERS = 7;
 	private static PaintController instance;
 	// private IRoutePainter painter1 = new EntityFlowPainter();
 	// private IRoutePainter painter2 = new NewEntityFlowPainter();
@@ -36,8 +37,9 @@ public class PaintController implements Painter<JXMapViewer> {
 		painters[2] = new NewEntityFlowPainter();
 		painters[3] = new LinePicturePainter(true);
 		painters[4] = new LinePicturePainter(false);
+		painters[5] = new PointPicturePainter(true);
+		painters[6] = new PointPicturePainter(false);
 
-		// NOOP
 	}
 
 	public static PaintController getInstance() {
